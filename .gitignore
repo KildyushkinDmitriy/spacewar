@@ -1,0 +1,15 @@
+# IDE files
+/.idea
+/.vs
+*.user
+
+# temporary build files
+/spacewar/Debug
+/spacewar/Release
+
+# ignoring only built exe, but not sfml ddls near them
+/Debug/spacewar*
+/Release/spacewar*
+
+# misc sfml files
+/SFML_untracked
