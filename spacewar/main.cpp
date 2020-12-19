@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <SFML/Graphics.hpp>
 
+#include "game.h"
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "SFML window");
@@ -19,10 +21,23 @@ int main()
     }
     sf::Text text("Hello SFML", font, 50);
 
-    // window.setFramerateLimit(60);
 
-    sf::Clock timer;
+    sf::RectangleShape shipShape;
+    shipShape.setSize({50, 50});
     
+    GameWorld world{};
+
+    world.boundary.left = 0;
+    world.boundary.top = 0;
+    world.boundary.width = window.getSize().x;
+    world.boundary.height = window.getSize().y;
+
+    world.ship.pos.x = world.boundary.width / 2.f;
+    world.ship.pos.y = world.boundary.height / 2.f;
+
+    // window.setFramerateLimit(60);
+    
+    sf::Clock timer;
     while (window.isOpen())
     {
         float dt = timer.restart().asSeconds();
@@ -37,19 +52,49 @@ int main()
             }
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        // input
         {
-            sf::Vector2f pos = sprite.getPosition();
-            pos.x += 50.f * dt;
-            sprite.setPosition(pos);
+            world.ship.movementInput = {};
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+            {
+                world.ship.movementInput.x += 1.0f;
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+            {
+                world.ship.movementInput.x -= 1.0f;
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+            {
+                world.ship.movementInput.y -= 1.0f;
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+            {
+                world.ship.movementInput.y += 1.0f;
+            }
         }
 
-        window.clear();
+        // update
+        {
+            world.ship.velocity += world.ship.movementInput * world.ship.acceleration * dt;
+            world.ship.pos += world.ship.velocity * dt;
+        }
 
-        window.draw(sprite);
-        window.draw(text);
+        // render
+        { 
+            window.clear();
 
-        window.display();
+            // window.draw(sprite);
+            // window.draw(text);
+
+            shipShape.setPosition(world.ship.pos);
+            window.draw(shipShape);
+
+            window.display();
+        }
     }
     
     return EXIT_SUCCESS;
