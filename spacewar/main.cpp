@@ -8,7 +8,7 @@ int main()
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "SFML window");
 
     sf::Texture texture;
-    if (!texture.loadFromFile("images/image.png"))
+    if (!texture.loadFromFile("images/ship.png"))
     {
         return EXIT_FAILURE;
     }
@@ -24,7 +24,9 @@ int main()
 
     sf::RectangleShape shipShape;
     shipShape.setSize({50, 50});
-    
+    shipShape.setOrigin({25, 25});
+    shipShape.setTexture(&texture);
+
     GameWorld world{};
 
     world.boundary.left = 0;
@@ -36,13 +38,13 @@ int main()
     world.ship.pos.y = world.boundary.height / 2.f;
 
     // window.setFramerateLimit(60);
-    
+
     sf::Clock timer;
     while (window.isOpen())
     {
         float dt = timer.restart().asSeconds();
         dt = std::clamp(dt, 0.f, 0.1f);
-        
+
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -54,48 +56,48 @@ int main()
 
         // input
         {
-            world.ship.movementInput = {};
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-            {
-                world.ship.movementInput.x += 1.0f;
-            }
+            world.ship.input = {};
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
             {
-                world.ship.movementInput.x -= 1.0f;
+                world.ship.input.steer -= 1.0f;
             }
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
             {
-                world.ship.movementInput.y -= 1.0f;
+                world.ship.input.steer += 1.0f;
             }
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-            {
-                world.ship.movementInput.y += 1.0f;
-            }
+            world.ship.input.fire = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
+            world.ship.input.accelerate = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
         }
 
         // update
         {
-            world.ship.velocity += world.ship.movementInput * world.ship.acceleration * dt;
+            world.ship.rotation += world.ship.input.steer * world.ship.steeringSpeed * dt;
+            if (world.ship.input.accelerate)
+            {
+                Vec2f forwardDir{cos(world.ship.rotation), sin(world.ship.rotation)};
+                world.ship.velocity += forwardDir * world.ship.acceleration * dt;
+            }
             world.ship.pos += world.ship.velocity * dt;
         }
 
         // render
-        { 
+        {
             window.clear();
 
             // window.draw(sprite);
             // window.draw(text);
 
             shipShape.setPosition(world.ship.pos);
+            // ship sprite is pointing upwards, but with zero rotation it must be pointing right, so offset the rotation
+            shipShape.setRotation(radToDeg(world.ship.rotation + TAU / 4.f));
             window.draw(shipShape);
 
             window.display();
         }
     }
-    
+
     return EXIT_SUCCESS;
 }
