@@ -1,5 +1,4 @@
-#include <chrono>
-#include <SFML/Audio.hpp>
+#include <algorithm>
 #include <SFML/Graphics.hpp>
 
 int main()
@@ -27,7 +26,7 @@ int main()
     while (window.isOpen())
     {
         float dt = timer.restart().asSeconds();
-        dt = std::min(dt, 0.1f);
+        dt = std::clamp(dt, 0.f, 0.1f);
         
         sf::Event event;
         while (window.pollEvent(event))
