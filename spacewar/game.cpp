@@ -66,3 +66,4 @@ void gameUpdate(GameWorld& world, const float dt)
         world.projectiles.erase(world.projectiles.begin() + index);
     }
 }
+

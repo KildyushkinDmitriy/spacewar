@@ -8,28 +8,18 @@ using Vec2 = sf::Vector2f;
 constexpr float PI = 3.14159265359f;
 constexpr float TAU = PI * 2.f; // full turn in radians
 
-inline float radToDeg(const float rad)
-{
-    return rad / PI * 180.f;
-}
+float radToDeg(float rad);
 
-inline bool floatEq(const float a, const float b, const float tolerance = 0.0001)
-{
-    return std::fabs(a - b) <= tolerance;
-}
+bool floatEq(float a, float b, float tolerance = 0.0001);
+float floatWrap(float val, float max);
+Vec2 vec2Wrap(Vec2 val, Vec2 max);
 
-inline float floatWrap(const float val, const float max)
-{
-    const int whole = static_cast<int>(val / max);
-    const float remainder = val - whole * max;
-    if (val >= 0.f)
-    {
-        return remainder;
-    }
-    return max + remainder;
-}
+float vec2Dot(Vec2 a, Vec2 b);
+float vec2LengthSq(Vec2 vec);
+float vec2Length(Vec2 vec);
+float vec2DistSq(Vec2 a, Vec2 b);
+float vec2Dist(Vec2 a, Vec2 b);
 
-inline Vec2 vec2Wrap(const Vec2 val, const Vec2 max)
-{
-    return Vec2{floatWrap(val.x, max.x), floatWrap(val.y, max.y)};
-}
+bool isPointInsideCircle(Vec2 point, Vec2 circleOrigin, float circleRadius);
+bool isPointOnSegment(Vec2 point, Vec2 segmentP1, Vec2 segmentP2, float precision = 0.0001);
+bool isSegmentIntersectCircle(Vec2 segmentP1, Vec2 segmentP2, Vec2 circleOrigin, float circleRadius);
