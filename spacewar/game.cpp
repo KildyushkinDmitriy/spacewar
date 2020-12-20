@@ -2,11 +2,6 @@
 
 #include <algorithm>
 
-static Vec2 calcNewPosition(const Vec2 pos, const Vec2 velocity, float dt, const Vec2 worldSize)
-{
-    return vec2Wrap(pos + velocity * dt, worldSize);
-}
-
 void gameUpdate(GameWorld& world, const float dt)
 {
     // Clear dead ships
@@ -32,7 +27,7 @@ void gameUpdate(GameWorld& world, const float dt)
             ship.velocity += forwardDir * settings.shipAcceleration * dt;
         }
 
-        ship.pos = calcNewPosition(ship.pos, ship.velocity, dt, world.size);
+        ship.pos = vec2Wrap(ship.pos + ship.velocity * dt, world.size);
 
         // Shoot
         ship.shootCooldownLeft -= dt;
@@ -68,7 +63,7 @@ void gameUpdate(GameWorld& world, const float dt)
             continue;
         }
 
-        const Vec2 newPos = calcNewPosition(projectile.pos, projectile.velocity, dt, world.size);
+        const Vec2 newPos = projectile.pos + projectile.velocity * dt;
 
         for (Ship& ship : world.ships)
         {
@@ -79,7 +74,7 @@ void gameUpdate(GameWorld& world, const float dt)
             }
         }
 
-        projectile.pos = newPos;
+        projectile.pos = vec2Wrap(newPos, world.size);
     }
 
     for (size_t index : projectilesToDeleteIndices)
