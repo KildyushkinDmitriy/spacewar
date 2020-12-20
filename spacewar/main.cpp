@@ -3,8 +3,12 @@
 
 #include "game.h"
 
+void runTests();
+
 int main()
 {
+    runTests();
+
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "SFML window");
 
     sf::Texture texture;
@@ -28,16 +32,8 @@ int main()
     shipShape.setTexture(&texture);
 
     GameWorld world{};
-
-    world.boundary.left = 0;
-    world.boundary.top = 0;
-    world.boundary.width = window.getSize().x;
-    world.boundary.height = window.getSize().y;
-
-    world.ship.pos.x = world.boundary.width / 2.f;
-    world.ship.pos.y = world.boundary.height / 2.f;
-
-    // window.setFramerateLimit(60);
+    world.size = Vec2{window.getSize()};
+    world.ship.pos = world.size / 2.f;
 
     sf::Clock timer;
     while (window.isOpen())
@@ -75,12 +71,16 @@ int main()
         // update
         {
             world.ship.rotation += world.ship.input.steer * world.ship.steeringSpeed * dt;
+            world.ship.rotation = floatWrap(world.ship.rotation, TAU);
+
             if (world.ship.input.accelerate)
             {
-                Vec2f forwardDir{cos(world.ship.rotation), sin(world.ship.rotation)};
+                Vec2 forwardDir{cos(world.ship.rotation), sin(world.ship.rotation)};
                 world.ship.velocity += forwardDir * world.ship.acceleration * dt;
             }
+
             world.ship.pos += world.ship.velocity * dt;
+            world.ship.pos = vec2Wrap(world.ship.pos, world.size);
         }
 
         // render

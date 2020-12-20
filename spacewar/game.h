@@ -1,20 +1,6 @@
 ﻿#pragma once
 
-#include <cmath>
-
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/System/Vector2.hpp>
-
-using Vec2f = sf::Vector2f;
-using Rectf = sf::FloatRect;
-
-constexpr float PI = 3.14159265359;
-constexpr float TAU = PI * 2; // full turn in radians
-
-inline float radToDeg(float rad)
-{
-    return rad / PI * 180.f;
-}
+#include "game_math.h"
 
 struct PlayerInput
 {
@@ -25,11 +11,11 @@ struct PlayerInput
 
 struct Ship
 {
-    Vec2f pos{};
-    float rotation = 0;
-
-    Vec2f velocity{};
+    Vec2 pos{};
+    Vec2 velocity{};
     float acceleration = 50.f;
+
+    float rotation = 0;
     float steeringSpeed = TAU / 4.f;
 
     PlayerInput input{};
@@ -37,6 +23,6 @@ struct Ship
 
 struct GameWorld
 {
-    Rectf boundary{};
+    Vec2 size{};
     Ship ship{};
 };
