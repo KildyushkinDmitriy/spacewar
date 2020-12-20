@@ -9,7 +9,7 @@ struct PlayerKeymap
 {
     sf::Keyboard::Key left = sf::Keyboard::Unknown;
     sf::Keyboard::Key right = sf::Keyboard::Unknown;
-    sf::Keyboard::Key fire = sf::Keyboard::Unknown;
+    sf::Keyboard::Key shoot = sf::Keyboard::Unknown;
     sf::Keyboard::Key accelerate = sf::Keyboard::Unknown;
 };
 
@@ -27,7 +27,7 @@ PlayerInput readPlayerInput(const PlayerKeymap& keymap)
         result.steer += 1.0f;
     }
 
-    result.fire = sf::Keyboard::isKeyPressed(keymap.fire);
+    result.shoot = sf::Keyboard::isKeyPressed(keymap.shoot);
     result.accelerate = sf::Keyboard::isKeyPressed(keymap.accelerate);
 
     return result;
@@ -84,6 +84,7 @@ GameWorld createWorld(const Vec2 size)
     world.settings.projectileSpeed = 300.f;
     world.settings.projectileLifetime = 5.f;
     world.settings.shipCollisionRadius = 20.f;
+    world.settings.muzzleExtraOffset = 5.f;
 
     return world;
 }
@@ -135,13 +136,13 @@ int main()
     PlayerKeymap player1Keymap;
     player1Keymap.left = sf::Keyboard::A;
     player1Keymap.right = sf::Keyboard::D;
-    player1Keymap.fire = sf::Keyboard::W;
+    player1Keymap.shoot = sf::Keyboard::W;
     player1Keymap.accelerate = sf::Keyboard::S;
 
     PlayerKeymap player2Keymap;
     player2Keymap.left = sf::Keyboard::J;
     player2Keymap.right = sf::Keyboard::L;
-    player2Keymap.fire = sf::Keyboard::I;
+    player2Keymap.shoot = sf::Keyboard::I;
     player2Keymap.accelerate = sf::Keyboard::K;
 
     sf::Clock timer;

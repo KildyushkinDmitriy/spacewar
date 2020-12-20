@@ -45,10 +45,97 @@ static void testIsSegmentIntersectCircle()
     assert(!isSegmentIntersectCircle(Vec2{8.f, 1.f}, Vec2{-12.f, 8.f}, Vec2{10.f, 5.f}, 3.f));
 }
 
+static void testProjectileKillsShip()
+{
+    GameWorld world{};
+    world.size = Vec2{100.f, 100.f};
+    world.settings.shipCollisionRadius = 5.f;
+
+    {
+        Ship ship{};
+        ship.pos = Vec2{10.f, 10.f};
+        world.ships.push_back(ship);
+    }
+
+    {
+        Projectile projectile{};
+        projectile.lifetimeLeft = 100.f;
+        projectile.pos = Vec2{20.f, 14.f};
+        projectile.velocity = Vec2{-10.f, 0.f};
+        world.projectiles.push_back(projectile);
+    }
+
+    assert(!world.ships[0].isDead);
+    assert(world.projectiles.size() == 1);
+
+    gameUpdate(world, 10.f);
+
+    assert(world.ships[0].isDead);
+    assert(world.projectiles.size() == 0);
+}
+
+static void testShipsKillEachOther()
+{
+    GameWorld world{};
+    world.size = Vec2{100.f, 100.f};
+    world.settings.shipCollisionRadius = 0.5f;
+    world.settings.projectileLifetime = 10000.f;
+    world.settings.projectileSpeed = 10.f;
+    world.settings.shootCooldown = 2.0f;
+    world.settings.muzzleExtraOffset = 0.1;
+
+    {
+        Ship ship{};
+        ship.pos = Vec2{10.f, 10.f};
+        ship.input.shoot = true;
+        world.ships.push_back(ship);
+    }
+
+    {
+        Ship ship{};
+        ship.pos = Vec2{20.f, 10.f};
+        ship.rotation = TAU / 2.f;
+        ship.input.shoot = true;
+        world.ships.push_back(ship);
+    }
+
+    assert(!world.ships[0].isDead);
+    assert(!world.ships[1].isDead);
+
+    gameUpdate(world, 0.5f);
+
+    assert(!world.ships[0].isDead);
+    assert(!world.ships[1].isDead);
+
+    gameUpdate(world, 0.5f);
+
+    assert(world.ships[0].isDead);
+    assert(world.ships[1].isDead);
+}
+
+void testProjectileLifetime()
+{
+    GameWorld world{};
+    world.size = Vec2{100.f, 100.f};
+    {
+        Projectile projectile{};
+        projectile.lifetimeLeft = 1.f;
+        world.projectiles.push_back(projectile);
+    }
+
+    assert(world.projectiles.size() == 1);
+    gameUpdate(world, 0.9f);
+    assert(world.projectiles.size() == 1);
+    gameUpdate(world, 0.2f);
+    assert(world.projectiles.size() == 0);
+}
+
 void runTests()
 {
     testFloatWrap();
     testIsPointInsideCircle();
     testIsPointOnSegment();
     testIsSegmentIntersectCircle();
+    testProjectileKillsShip();
+    testShipsKillEachOther();
 }

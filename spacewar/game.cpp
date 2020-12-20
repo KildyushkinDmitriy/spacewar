@@ -35,10 +35,10 @@ void gameUpdate(GameWorld& world, const float dt)
         {
             ship.shootCooldownLeft = 0;
 
-            if (ship.input.fire)
+            if (ship.input.shoot)
             {
                 Projectile projectile;
-                projectile.pos = ship.pos + forwardDir * 30.f;
+                projectile.pos = ship.pos + forwardDir * (settings.shipCollisionRadius + settings.muzzleExtraOffset);
                 projectile.rotation = ship.rotation;
                 projectile.velocity = forwardDir * settings.projectileSpeed;
                 projectile.lifetimeLeft = settings.projectileLifetime;
@@ -65,20 +65,22 @@ void gameUpdate(GameWorld& world, const float dt)
 
         const Vec2 newPos = projectile.pos + projectile.velocity * dt;
 
+        // test projectile collision against all ships
         for (Ship& ship : world.ships)
         {
             if (isSegmentIntersectCircle(projectile.pos, newPos, ship.pos, settings.shipCollisionRadius))
             {
                 ship.isDead = true;
                 projectilesToDeleteIndices.push_back(projectileIndex);
+                break;
             }
         }
 
         projectile.pos = vec2Wrap(newPos, world.size);
     }
 
-    for (size_t index : projectilesToDeleteIndices)
+    for (int i = projectilesToDeleteIndices.size() - 1; i >= 0; --i)
     {
-        world.projectiles.erase(world.projectiles.begin() + index);
+        world.projectiles.erase(world.projectiles.begin() + projectilesToDeleteIndices[i]);
     }
 }

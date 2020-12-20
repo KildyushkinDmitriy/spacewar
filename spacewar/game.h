@@ -11,13 +11,15 @@ struct GameplaySettings
     float projectileSpeed = 0.f;
     float projectileLifetime = 0.f;
     float shipCollisionRadius = 0.f;
+    // a place where projectile is born is offset from ship's center (shipCollisionRadius + muzzleExtraOffset), so ship will not insta-kill itself on shoot
+    float muzzleExtraOffset = 0.f; 
 };
 
 struct PlayerInput
 {
     float steer = 0.f;
     bool accelerate = false;
-    bool fire = false;
+    bool shoot = false;
 };
 
 struct Ship
