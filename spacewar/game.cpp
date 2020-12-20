@@ -16,6 +16,11 @@ void gameUpdate(GameWorld& world, const float dt)
     // Ships
     for (Ship& ship : world.ships)
     {
+        if (ship.isDead)
+        {
+            continue;
+        }
+
         // Move
         ship.rotation += ship.input.steer * settings.shipSteeringSpeed * dt;
         ship.rotation = floatWrap(ship.rotation, TAU);
@@ -46,6 +51,25 @@ void gameUpdate(GameWorld& world, const float dt)
                 world.projectiles.push_back(projectile);
 
                 ship.shootCooldownLeft = settings.shootCooldown;
+            }
+        }
+    }
+
+    // Check each ship pair for collision
+    for (int i = 0; i < world.ships.size(); ++i)
+    {
+        for (int j = i + 1; j < world.ships.size(); ++j)
+        {
+            Ship& ship1 = world.ships[i];
+            Ship& ship2 = world.ships[j];
+
+            const float radius = settings.shipCollisionRadius;
+
+            // note: no continuous collision here yet
+            if (isCircleIntersectCircle(ship1.pos, radius, ship2.pos, radius))
+            {
+                ship1.isDead = true;
+                ship2.isDead = true;
             }
         }
     }

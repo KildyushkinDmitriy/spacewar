@@ -45,6 +45,14 @@ static void testIsSegmentIntersectCircle()
     assert(!isSegmentIntersectCircle(Vec2{8.f, 1.f}, Vec2{-12.f, 8.f}, Vec2{10.f, 5.f}, 3.f));
 }
 
+static void testIsCircleIntersectCircle()
+{
+    assert(isCircleIntersectCircle(Vec2{0.f, 0.f}, 1.f, Vec2{0.0f, 0.f}, 1.f));
+    assert(isCircleIntersectCircle(Vec2{0.f, 0.f}, 1.f, Vec2{0.5f, 0.f}, 1.f));
+    assert(!isCircleIntersectCircle(Vec2{0.f, 0.f}, 1.f, Vec2{3.f, 0.f}, 1.f));
+    assert(isCircleIntersectCircle(Vec2{-5.f, -5.f}, 5.f, Vec2{0.0f, 0.f}, 3.f));
+}
+
 static void testProjectileKillsShip()
 {
     GameWorld world{};
@@ -74,7 +82,7 @@ static void testProjectileKillsShip()
     assert(world.projectiles.size() == 0);
 }
 
-static void testShipsKillEachOther()
+static void testShipsKillEachOtherWithProjectiles()
 {
     GameWorld world{};
     world.size = Vec2{100.f, 100.f};
@@ -130,13 +138,50 @@ void testProjectileLifetime()
     assert(world.projectiles.size() == 0);
 }
 
+static void testShipShipCollisionKillsBoth()
+{
+    GameWorld world{};
+    world.size = Vec2{100.f, 100.f};
+    world.settings.shipCollisionRadius = 0.5f;
+
+    {
+        Ship ship{};
+        ship.pos = Vec2{10.f, 10.f};
+        ship.velocity = Vec2{5.f, 0.f};
+        world.ships.push_back(ship);
+    }
+
+    {
+        Ship ship{};
+        ship.pos = Vec2{20.f, 10.f};
+        ship.velocity = Vec2{-5.f, 0.f};
+        world.ships.push_back(ship);
+    }
+
+    assert(!world.ships[0].isDead);
+    assert(!world.ships[1].isDead);
+
+    gameUpdate(world, 0.5f);
+
+    assert(!world.ships[0].isDead);
+    assert(!world.ships[1].isDead);
+
+    gameUpdate(world, 0.5f);
+
+    assert(world.ships[0].isDead);
+    assert(world.ships[1].isDead);
+}
+
 void runTests()
 {
     testFloatWrap();
     testIsPointInsideCircle();
     testIsPointOnSegment();
     testIsSegmentIntersectCircle();
+    testIsCircleIntersectCircle();
+
     testProjectileKillsShip();
-    testShipsKillEachOther();
+    testShipsKillEachOtherWithProjectiles();
     testProjectileLifetime();
+    testShipShipCollisionKillsBoth();
 }

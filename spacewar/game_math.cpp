@@ -51,10 +51,9 @@ float vec2Dist(const Vec2 a, const Vec2 b)
     return std::sqrt(vec2DistSq(a, b));
 }
 
-bool isPointInsideCircle(const Vec2 point, const Vec2 circleOrigin, const float circleRadius)
+bool isPointInsideCircle(const Vec2 point, const Vec2 circleCenter, const float circleRadius)
 {
-    const Vec2 diff = point - circleOrigin;
-    return vec2LengthSq(diff) <= circleRadius * circleRadius;
+    return vec2DistSq(point, circleCenter) <= circleRadius * circleRadius;
 }
 
 bool isPointOnSegment(const Vec2 point, const Vec2 segmentP1, const Vec2 segmentP2, const float precision)
@@ -66,15 +65,15 @@ bool isPointOnSegment(const Vec2 point, const Vec2 segmentP1, const Vec2 segment
     return floatEq(length, dist1 + dist2, precision);
 }
 
-bool isSegmentIntersectCircle(const Vec2 segmentP1, const Vec2 segmentP2, const Vec2 circleOrigin,
+bool isSegmentIntersectCircle(const Vec2 segmentP1, const Vec2 segmentP2, const Vec2 circleCenter,
                               const float circleRadius)
 {
-    if (isPointInsideCircle(segmentP1, circleOrigin, circleRadius))
+    if (isPointInsideCircle(segmentP1, circleCenter, circleRadius))
     {
         return true;
     }
 
-    if (isPointInsideCircle(segmentP2, circleOrigin, circleRadius))
+    if (isPointInsideCircle(segmentP2, circleCenter, circleRadius))
     {
         return true;
     }
@@ -82,13 +81,11 @@ bool isSegmentIntersectCircle(const Vec2 segmentP1, const Vec2 segmentP2, const 
     const float lineLengthSq = vec2DistSq(segmentP1, segmentP2);
 
     const float dot = (
-        (circleOrigin.x - segmentP1.x) * (segmentP2.x - segmentP1.x)
-        + (circleOrigin.y - segmentP1.y) * (segmentP2.y - segmentP1.y)
+        (circleCenter.x - segmentP1.x) * (segmentP2.x - segmentP1.x)
+        + (circleCenter.y - segmentP1.y) * (segmentP2.y - segmentP1.y)
     ) / lineLengthSq;
 
-    const float closestX = segmentP1.x + dot * (segmentP2.x - segmentP1.x);
-    const float closestY = segmentP1.y + dot * (segmentP2.y - segmentP1.y);
-    const Vec2 closest{closestX, closestY};
+    const Vec2 closest = segmentP1 + dot * (segmentP2 - segmentP1);
 
     const bool onSegment = isPointOnSegment(closest, segmentP1, segmentP2);
     if (!onSegment)
@@ -96,7 +93,7 @@ bool isSegmentIntersectCircle(const Vec2 segmentP1, const Vec2 segmentP2, const 
         return false;
     }
 
-    const float distClosestToCircleOriginSq = vec2DistSq(closest, circleOrigin);
+    const float distClosestToCircleOriginSq = vec2DistSq(closest, circleCenter);
 
     if (distClosestToCircleOriginSq <= circleRadius * circleRadius)
     {
@@ -104,4 +101,11 @@ bool isSegmentIntersectCircle(const Vec2 segmentP1, const Vec2 segmentP2, const 
     }
 
     return false;
+}
+
+bool isCircleIntersectCircle(const Vec2 circle1Center, const float circle1Radius, const Vec2 circle2Center,
+                             const float circle2Radius)
+{
+    const float radiusSum = circle1Radius + circle2Radius;
+    return vec2DistSq(circle1Center, circle2Center) <= radiusSum * radiusSum;
 }
