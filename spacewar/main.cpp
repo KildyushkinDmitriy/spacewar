@@ -90,27 +90,33 @@ int main()
     }
     sf::Text text("Hello SFML", font, 50);
 
-    sf::RectangleShape shipShape;
-    {
-        const Vec2 shipShapeSize{50, 50};
-        shipShape.setSize(shipShapeSize);
-        shipShape.setOrigin(shipShapeSize / 2.f);
-        shipShape.setTexture(&texture);
-    }
-
-    sf::RectangleShape projectileShape;
-    {
-        const Vec2 projectileShapeSize{10, 10};
-        projectileShape.setSize(projectileShapeSize);
-        projectileShape.setOrigin(projectileShapeSize / 2.f);
-        projectileShape.setTexture(&texture);
-    }
-
     GameWorld world{};
     world.size = Vec2{window.getSize()};
     world.ships.resize(2);
     world.ships[0].pos = world.size / 2.f + Vec2{-200.f, -200.f};
     world.ships[1].pos = world.size / 2.f + Vec2{200.f, 200.f};
+
+    sf::RectangleShape shipShape;
+    {
+        const Vec2 size{50, 50};
+        shipShape.setSize(size);
+        shipShape.setOrigin(size / 2.f);
+        shipShape.setTexture(&texture);
+    }
+
+    sf::RectangleShape projectileShape;
+    {
+        const Vec2 size{10, 10};
+        projectileShape.setSize(size);
+        projectileShape.setOrigin(size / 2.f);
+        projectileShape.setTexture(&texture);
+    }
+
+    sf::CircleShape shipCollisionShape{world.settings.shipCollisionRadius};
+    {
+        shipCollisionShape.setOrigin(Vec2{shipCollisionShape.getRadius(), shipCollisionShape.getRadius()});
+        shipCollisionShape.setFillColor(sf::Color::Red);
+    }
 
     PlayerKeymap player1Keymap;
     player1Keymap.left = sf::Keyboard::A;
@@ -154,7 +160,16 @@ int main()
 
             for (const Ship& ship : world.ships)
             {
+                shipShape.setFillColor(sf::Color::White);
+                if (ship.isDead)
+                {
+                    shipShape.setFillColor(sf::Color::Blue);
+                }
+
                 renderObj(ship.pos, ship.rotation, world.size, shipShape, window);
+
+                shipCollisionShape.setPosition(ship.pos);
+                window.draw(shipCollisionShape);
             }
 
             for (const Projectile& projectile : world.projectiles)

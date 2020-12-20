@@ -11,6 +11,7 @@ struct GameplaySettings
     float shootCooldown = 1.f;
     float projectileSpeed = 300.f;
     float projectileLifetime = 5.f;
+    float shipCollisionRadius = 20.f;
 };
 
 struct PlayerInput
@@ -30,6 +31,8 @@ struct Ship
     PlayerInput input{};
 
     float shootCooldownLeft = 0.f;
+
+    bool isDead = false;
 };
 
 struct Projectile
