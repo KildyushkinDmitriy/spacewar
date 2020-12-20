@@ -26,3 +26,5 @@ struct GameWorld
     Vec2 size{};
     Ship ship{};
 };
+
+void gameUpdate(GameWorld& world, float dt);
