@@ -138,4 +138,5 @@ void runTests()
     testIsSegmentIntersectCircle();
     testProjectileKillsShip();
     testShipsKillEachOther();
+    testProjectileLifetime();
 }
