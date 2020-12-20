@@ -33,38 +33,39 @@ PlayerInput readPlayerInput(const PlayerKeymap& keymap)
     return result;
 }
 
-void renderShip(const Ship& ship, const Vec2& worldSize, sf::Shape& renderShape, sf::RenderWindow& window)
+void renderObj(const Vec2 pos, const float rotation, const Vec2& worldSize, sf::Shape& renderShape,
+               sf::RenderWindow& window)
 {
-    // ship sprite is pointing upwards, but with zero rotation it must be pointing right, so offset the rotation
-    renderShape.setRotation(radToDeg(ship.rotation + TAU / 4.f));
+    // sprite is pointing upwards, but with zero rotation it must be pointing right, so offset the rotation
+    renderShape.setRotation(radToDeg(rotation + TAU / 4.f));
 
-    // draw ship 9 times for wrap around world case, hoping sfml will do the culling 
+    // draw obj 9 times for wrap around world case, hoping sfml will do the culling 
     {
-        renderShape.setPosition(ship.pos);
+        renderShape.setPosition(pos);
         window.draw(renderShape);
 
-        renderShape.setPosition(ship.pos + Vec2{worldSize.x, 0.f});
+        renderShape.setPosition(pos + Vec2{worldSize.x, 0.f});
         window.draw(renderShape);
 
-        renderShape.setPosition(ship.pos + Vec2{-worldSize.x, 0.f});
+        renderShape.setPosition(pos + Vec2{-worldSize.x, 0.f});
         window.draw(renderShape);
 
-        renderShape.setPosition(ship.pos + Vec2{0.f, worldSize.y});
+        renderShape.setPosition(pos + Vec2{0.f, worldSize.y});
         window.draw(renderShape);
 
-        renderShape.setPosition(ship.pos + Vec2{0.f, -worldSize.y});
+        renderShape.setPosition(pos + Vec2{0.f, -worldSize.y});
         window.draw(renderShape);
 
-        renderShape.setPosition(ship.pos + worldSize);
+        renderShape.setPosition(pos + worldSize);
         window.draw(renderShape);
 
-        renderShape.setPosition(ship.pos - worldSize);
+        renderShape.setPosition(pos - worldSize);
         window.draw(renderShape);
 
-        renderShape.setPosition(ship.pos + Vec2{-worldSize.x, worldSize.y});
+        renderShape.setPosition(pos + Vec2{-worldSize.x, worldSize.y});
         window.draw(renderShape);
 
-        renderShape.setPosition(ship.pos + Vec2{worldSize.x, -worldSize.y});
+        renderShape.setPosition(pos + Vec2{worldSize.x, -worldSize.y});
         window.draw(renderShape);
     }
 }
@@ -89,11 +90,21 @@ int main()
     }
     sf::Text text("Hello SFML", font, 50);
 
-
     sf::RectangleShape shipShape;
-    shipShape.setSize({50, 50});
-    shipShape.setOrigin({25, 25});
-    shipShape.setTexture(&texture);
+    {
+        const Vec2 shipShapeSize{50, 50};
+        shipShape.setSize(shipShapeSize);
+        shipShape.setOrigin(shipShapeSize / 2.f);
+        shipShape.setTexture(&texture);
+    }
+
+    sf::RectangleShape projectileShape;
+    {
+        const Vec2 projectileShapeSize{10, 10};
+        projectileShape.setSize(projectileShapeSize);
+        projectileShape.setOrigin(projectileShapeSize / 2.f);
+        projectileShape.setTexture(&texture);
+    }
 
     GameWorld world{};
     world.size = Vec2{window.getSize()};
@@ -143,7 +154,12 @@ int main()
 
             for (const Ship& ship : world.ships)
             {
-                renderShip(ship, world.size, shipShape, window);
+                renderObj(ship.pos, ship.rotation, world.size, shipShape, window);
+            }
+
+            for (const Projectile& projectile : world.projectiles)
+            {
+                renderObj(projectile.pos, projectile.rotation, world.size, projectileShape, window);
             }
 
             // window.draw(sprite);
