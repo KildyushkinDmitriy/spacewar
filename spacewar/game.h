@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "game_math.h"
+#include <vector>
 
 struct PlayerInput
 {
@@ -24,7 +25,7 @@ struct Ship
 struct GameWorld
 {
     Vec2 size{};
-    Ship ship{};
+    std::vector<Ship> ships{};
 };
 
 void gameUpdate(GameWorld& world, float dt);

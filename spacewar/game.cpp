@@ -2,15 +2,18 @@
 
 void gameUpdate(GameWorld& world, const float dt)
 {
-    world.ship.rotation += world.ship.input.steer * world.ship.steeringSpeed * dt;
-    world.ship.rotation = floatWrap(world.ship.rotation, TAU);
-
-    if (world.ship.input.accelerate)
+    for (Ship& ship : world.ships)
     {
-        const Vec2 forwardDir{cos(world.ship.rotation), sin(world.ship.rotation)};
-        world.ship.velocity += forwardDir * world.ship.acceleration * dt;
-    }
+        ship.rotation += ship.input.steer * ship.steeringSpeed * dt;
+        ship.rotation = floatWrap(ship.rotation, TAU);
 
-    world.ship.pos += world.ship.velocity * dt;
-    world.ship.pos = vec2Wrap(world.ship.pos, world.size);
+        if (ship.input.accelerate)
+        {
+            const Vec2 forwardDir{cos(ship.rotation), sin(ship.rotation)};
+            ship.velocity += forwardDir * ship.acceleration * dt;
+        }
+
+        ship.pos += ship.velocity * dt;
+        ship.pos = vec2Wrap(ship.pos, world.size);
+    }
 }
