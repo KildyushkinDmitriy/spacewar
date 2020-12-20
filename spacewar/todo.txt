@@ -15,7 +15,6 @@ Requirements:
 TODO:
 
 - core
-  - projectile vs ship collision detection
   - ship vs ship collision detection
   - restart after death
   - black hole
