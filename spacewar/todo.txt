@@ -1,0 +1,34 @@
+The focus for the test is the following:
+
+- I would like to see how you structure your code and what design and architectural decisions you make.
+- This is a  gameplay test so the  "game" part of the assignment (is it fun, does it feel and play well) will be important. You are encouraged to be creative. 
+- We expect a "finished" game, including UI, game states, scoring or anything else that fits your vision.
+- 2D is perfectly fine
+
+Requirements:
+
+- Written in C++
+- Be sure it compiles and works out of the box in Visual Studio 2017. I advise you to try out your zip on a separate machine first, before sending it to us, to ensure all dependencies are included.
+- Feel free to use graphics libraries. 
+- You have one week to finish this. Extensions are possible upon request.
+
+TODO:
+
+- core
+  - second player
+  - projectiles with collision detection
+  - restart after death
+  - black hole
+  - hyperjump
+  - scoring + ui game state (score screen, restart screen)
+  - config file with gameplay stats? hot-reloadable?
+  - tweak gameplay stats for fun
+  - start game screen
+
+- additional?
+  - visualize thrusting
+  - AI
+  - visualize gravity force?
+  - particles
+  - sounds
+  - visualize remaining fuel
