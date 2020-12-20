@@ -90,10 +90,38 @@ int main()
             // window.draw(sprite);
             // window.draw(text);
 
-            shipShape.setPosition(world.ship.pos);
             // ship sprite is pointing upwards, but with zero rotation it must be pointing right, so offset the rotation
             shipShape.setRotation(radToDeg(world.ship.rotation + TAU / 4.f));
-            window.draw(shipShape);
+
+            // draw ship 9 times for wrap around world case, hoping sfml will do the culling 
+            {
+                shipShape.setPosition(world.ship.pos);
+                window.draw(shipShape);
+
+                shipShape.setPosition(world.ship.pos + Vec2{world.size.x, 0.f});
+                window.draw(shipShape);
+
+                shipShape.setPosition(world.ship.pos + Vec2{-world.size.x, 0.f});
+                window.draw(shipShape);
+
+                shipShape.setPosition(world.ship.pos + Vec2{0.f, world.size.y});
+                window.draw(shipShape);
+
+                shipShape.setPosition(world.ship.pos + Vec2{0.f, -world.size.y});
+                window.draw(shipShape);
+
+                shipShape.setPosition(world.ship.pos + world.size);
+                window.draw(shipShape);
+
+                shipShape.setPosition(world.ship.pos - world.size);
+                window.draw(shipShape);
+
+                shipShape.setPosition(world.ship.pos + Vec2{-world.size.x, world.size.y});
+                window.draw(shipShape);
+
+                shipShape.setPosition(world.ship.pos + Vec2{world.size.x, -world.size.y});
+                window.draw(shipShape);
+            }
 
             window.display();
         }
