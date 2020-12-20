@@ -70,6 +70,24 @@ void renderObj(const Vec2 pos, const float rotation, const Vec2& worldSize, sf::
     }
 }
 
+GameWorld createWorld(const Vec2 size)
+{
+    GameWorld world{};
+    world.size = size;
+    world.ships.resize(2);
+    world.ships[0].pos = world.size / 2.f + size / 4.f;
+    world.ships[1].pos = world.size / 2.f - size / 4.f;
+
+    world.settings.shipAcceleration = 50.f;
+    world.settings.shipSteeringSpeed = TAU / 4.f;
+    world.settings.shootCooldown = 1.f;
+    world.settings.projectileSpeed = 300.f;
+    world.settings.projectileLifetime = 5.f;
+    world.settings.shipCollisionRadius = 20.f;
+
+    return world;
+}
+
 int main()
 {
     runTests();
@@ -90,11 +108,7 @@ int main()
     }
     sf::Text text("Hello SFML", font, 50);
 
-    GameWorld world{};
-    world.size = Vec2{window.getSize()};
-    world.ships.resize(2);
-    world.ships[0].pos = world.size / 2.f + Vec2{-200.f, -200.f};
-    world.ships[1].pos = world.size / 2.f + Vec2{200.f, 200.f};
+    GameWorld world = createWorld(Vec2{window.getSize()});
 
     sf::RectangleShape shipShape;
     {
@@ -139,6 +153,11 @@ int main()
         sf::Event event;
         while (window.pollEvent(event))
         {
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+            {
+                world = createWorld(Vec2{window.getSize()});
+            }
+
             if (event.type == sf::Event::Closed)
             {
                 window.close();
@@ -168,8 +187,8 @@ int main()
 
                 renderObj(ship.pos, ship.rotation, world.size, shipShape, window);
 
-                shipCollisionShape.setPosition(ship.pos);
-                window.draw(shipCollisionShape);
+                // shipCollisionShape.setPosition(ship.pos);
+                // window.draw(shipCollisionShape);
             }
 
             for (const Projectile& projectile : world.projectiles)

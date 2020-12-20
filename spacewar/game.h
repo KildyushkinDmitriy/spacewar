@@ -5,13 +5,12 @@
 
 struct GameplaySettings
 {
-    float shipAcceleration = 50.f;
-    float shipSteeringSpeed = TAU / 4.f;
-
-    float shootCooldown = 1.f;
-    float projectileSpeed = 300.f;
-    float projectileLifetime = 5.f;
-    float shipCollisionRadius = 20.f;
+    float shipAcceleration = 0.f;
+    float shipSteeringSpeed = 0.f;
+    float shootCooldown = 0.f;
+    float projectileSpeed = 0.f;
+    float projectileLifetime = 0.f;
+    float shipCollisionRadius = 0.f;
 };
 
 struct PlayerInput
@@ -24,7 +23,7 @@ struct PlayerInput
 struct Ship
 {
     Vec2 pos{};
-    float rotation = 0;
+    float rotation = 0.f;
 
     Vec2 velocity{};
 
@@ -38,7 +37,7 @@ struct Ship
 struct Projectile
 {
     Vec2 pos{};
-    float rotation = 0;
+    float rotation = 0.f;
 
     Vec2 velocity{};
     
