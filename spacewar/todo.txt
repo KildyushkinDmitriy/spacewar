@@ -15,7 +15,6 @@ Requirements:
 TODO:
 
 - core
-  - second player
   - projectiles with collision detection
   - restart after death
   - black hole
