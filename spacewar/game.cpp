@@ -5,7 +5,8 @@
 float gameGetGravityWellPowerAtRadius(const GravityWell& well, const float radius)
 {
     const float normalized = std::clamp(radius / well.maxRadius, 0.f, 1.f);
-    const float powerFactor = 0.005f / std::pow(normalized + 0.07f, 2.f);
+    // const float powerFactor = 0.005f / std::pow(normalized + 0.07f, 2.f);
+    const float powerFactor = 0.0025f / std::pow(normalized + 0.045f, 2.f);
     return powerFactor * well.maxPower;
 }
 
@@ -62,6 +63,18 @@ void gameUpdate(GameWorld& world, const float dt)
         if (ship.input.accelerate)
         {
             ship.velocity += forwardDir * settings.shipAcceleration * dt;
+        }
+
+        ship.accelerateImpulseCooldownLeft -= dt;
+        if (ship.accelerateImpulseCooldownLeft <= 0)
+        {
+            ship.accelerateImpulseCooldownLeft = 0;
+
+            if (ship.input.accelerateImpulse)
+            {
+                ship.velocity += forwardDir * settings.shipAccelerationImpulse;
+                ship.accelerateImpulseCooldownLeft = settings.shipAccelerationImpulseCooldown;
+            }
         }
 
         ship.pos = vec2Wrap(ship.pos + ship.velocity * dt, world.size);

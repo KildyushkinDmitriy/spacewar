@@ -6,6 +6,8 @@
 struct GameplaySettings
 {
     float shipAcceleration = 0.f;
+    float shipAccelerationImpulse = 0.f;
+    float shipAccelerationImpulseCooldown = 0.f;
     float shipSteeringSpeed = 0.f;
     float shootCooldown = 0.f;
     float projectileSpeed = 0.f;
@@ -20,6 +22,7 @@ struct PlayerInput
 {
     float steer = 0.f;
     bool accelerate = false;
+    bool accelerateImpulse = false;
     bool shoot = false;
 };
 
@@ -33,6 +36,7 @@ struct Ship
     PlayerInput input{};
 
     float shootCooldownLeft = 0.f;
+    float accelerateImpulseCooldownLeft = 0.f;
 
     bool isDead = false;
 };

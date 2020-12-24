@@ -11,6 +11,7 @@ struct PlayerKeymap
     sf::Keyboard::Key right = sf::Keyboard::Unknown;
     sf::Keyboard::Key shoot = sf::Keyboard::Unknown;
     sf::Keyboard::Key accelerate = sf::Keyboard::Unknown;
+         sf::Keyboard::Key accelerateImpulse = sf::Keyboard::Unknown;
 };
 
 PlayerInput readPlayerInput(const PlayerKeymap& keymap)
@@ -29,6 +30,7 @@ PlayerInput readPlayerInput(const PlayerKeymap& keymap)
 
     result.shoot = sf::Keyboard::isKeyPressed(keymap.shoot);
     result.accelerate = sf::Keyboard::isKeyPressed(keymap.accelerate);
+    result.accelerateImpulse = sf::Keyboard::isKeyPressed(keymap.accelerateImpulse);
 
     return result;
 }
@@ -153,7 +155,8 @@ void renderGameDebugView(const GameWorld& world, sf::RenderWindow& window, sf::F
 
     for (const Ship& ship : world.ships)
     {
-        { // ship collision body
+        {
+            // ship collision body
             sf::CircleShape shipCollisionShape{world.settings.shipCollisionRadius};
             shipCollisionShape.setOrigin(Vec2{shipCollisionShape.getRadius(), shipCollisionShape.getRadius()});
             shipCollisionShape.setFillColor(ship.isDead ? sf::Color::Blue : sf::Color::Green);
@@ -170,7 +173,7 @@ void renderGameDebugView(const GameWorld& world, sf::RenderWindow& window, sf::F
             Vec2 gravityPower = gameGetGravityWellVectorAtPoint(well, ship.pos);
             drawThickLine(ship.pos, ship.pos + gravityPower, 5.f, sf::Color::Magenta, window);
         }
-        
+
         // input acceleration
         if (ship.input.accelerate)
         {
@@ -178,7 +181,8 @@ void renderGameDebugView(const GameWorld& world, sf::RenderWindow& window, sf::F
             drawThickLine(ship.pos, ship.pos + accel, 5.f, sf::Color::Green, window);
         }
 
-        { // ship direction
+        {
+            // ship direction
             sf::RectangleShape rectShape{Vec2{world.settings.shipCollisionRadius, 5.f}};
             rectShape.setPosition(ship.pos);
             rectShape.setOrigin(Vec2{0.f, rectShape.getSize().y / 2.f});
@@ -188,7 +192,8 @@ void renderGameDebugView(const GameWorld& world, sf::RenderWindow& window, sf::F
         }
     }
 
-    { // projectiles
+    {
+        // projectiles
         sf::CircleShape projectileShape{5.f};
         projectileShape.setOrigin(Vec2{projectileShape.getRadius(), projectileShape.getRadius()});
         projectileShape.setFillColor(sf::Color::Red);
@@ -219,17 +224,19 @@ GameWorld createWorld(const Vec2 size)
     GravityWell well;
     well.pos = size / 2.f;
     well.maxRadius = vec2Length(well.pos);
-    well.maxPower = 2000.f;
-    well.dragRadius = 100.f;
+    well.maxPower = 1500.f;
+    well.dragRadius = 50.f;
     world.gravityWells.push_back(well);
 
-    world.settings.shipAcceleration = 50.f;
-    world.settings.shipSteeringSpeed = TAU / 4.f;
+    world.settings.shipAcceleration = 25.f;
+    world.settings.shipAccelerationImpulse = 75.f;
+    world.settings.shipAccelerationImpulseCooldown = 3.f;
+    world.settings.shipSteeringSpeed = TAU / 2.f;
     world.settings.shootCooldown = 1.f;
-    world.settings.projectileSpeed = 300.f;
+    world.settings.projectileSpeed = 150.f;
     world.settings.projectileLifetime = 5.f;
-    world.settings.shipCollisionRadius = 20.f;
-    world.settings.muzzleExtraOffset = 5.f;
+    world.settings.shipCollisionRadius = 15.f;
+    world.settings.muzzleExtraOffset = 25.f;
     world.settings.gravityWellDragCoefficient = 0.3f;
 
     return world;
@@ -259,7 +266,7 @@ int main()
 
     sf::RectangleShape shipShape;
     {
-        const Vec2 size{50, 50};
+        const Vec2 size{35, 35};
         shipShape.setSize(size);
         shipShape.setOrigin(size / 2.f);
         shipShape.setTexture(&texture);
@@ -282,12 +289,14 @@ int main()
     player1Keymap.right = sf::Keyboard::D;
     player1Keymap.shoot = sf::Keyboard::W;
     player1Keymap.accelerate = sf::Keyboard::S;
+    player1Keymap.accelerateImpulse = sf::Keyboard::LShift;
 
     PlayerKeymap player2Keymap;
     player2Keymap.left = sf::Keyboard::J;
     player2Keymap.right = sf::Keyboard::L;
     player2Keymap.shoot = sf::Keyboard::I;
     player2Keymap.accelerate = sf::Keyboard::K;
+    player2Keymap.accelerateImpulse = sf::Keyboard::RShift;
 
     bool isDebugRender = false;
 
@@ -347,9 +356,19 @@ int main()
                 gravityWellShape.setPosition(world.size / 2.f);
                 window.draw(gravityWellShape);
 
+
+                bool kek = false;
                 for (const Ship& ship : world.ships)
                 {
-                    shipShape.setFillColor(sf::Color::White);
+                    if (kek)
+                    {
+                        shipShape.setFillColor(sf::Color::Cyan);
+                    }
+                    else
+                    {
+                        shipShape.setFillColor(sf::Color::White);
+                    }
+
                     if (ship.isDead)
                     {
                         shipShape.setFillColor(sf::Color::Blue);
@@ -359,6 +378,8 @@ int main()
 
                     // shipCollisionShape.setPosition(ship.pos);
                     // window.draw(shipCollisionShape);
+
+                    kek = true;
                 }
 
                 for (const Projectile& projectile : world.projectiles)
