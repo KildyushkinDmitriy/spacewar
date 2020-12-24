@@ -200,10 +200,12 @@ GameWorld createWorld(const Vec2 size)
 
     Ship ship1;
     ship1.pos = world.size / 2.f - size / 4.f;
+    ship1.rotation = TAU / 8.f * 5.f;
     world.ships.push_back(ship1);
 
     Ship ship2;
     ship2.pos = world.size / 2.f + size / 4.f;
+    ship2.rotation = TAU / 8.f;
     world.ships.push_back(ship2);
 
     GravityWell well;
