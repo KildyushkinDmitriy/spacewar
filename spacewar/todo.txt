@@ -15,12 +15,11 @@ Requirements:
 TODO:
 
 - core
-  - gravistar teleport to world bound
+  - acceleration impulse?
   - scoring + ui game state (score screen, restart screen)
   - config file with gameplay stats? hot-reloadable?
   - tweak gameplay stats for fun
   - start game screen with controls help
-  - hyperjump
 
 - additional?
   - visualize thrusting
@@ -28,7 +27,6 @@ TODO:
   - visualize gravity force?
   - particles
   - sounds
-  - visualize remaining fuel
   
 - bugs/improvements
   - projectile/ship collision when ship is wrapped around world size
