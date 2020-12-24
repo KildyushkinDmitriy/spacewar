@@ -141,6 +141,14 @@ void renderGameDebugView(const GameWorld& world, sf::RenderWindow& window, sf::F
             gravityPowerText.setPosition(measure.point + Vec2{10.f, -10.f});
             window.draw(gravityPowerText);
         }
+
+        sf::CircleShape dragCircleShape{well.dragRadius};
+        dragCircleShape.setOrigin(Vec2{dragCircleShape.getRadius(), dragCircleShape.getRadius()});
+        dragCircleShape.setPosition(well.pos);
+        dragCircleShape.setFillColor(sf::Color::Transparent);
+        dragCircleShape.setOutlineColor(sf::Color::Magenta);
+        dragCircleShape.setOutlineThickness(5.f);
+        window.draw(dragCircleShape);
     }
 
     for (const Ship& ship : world.ships)
@@ -212,6 +220,7 @@ GameWorld createWorld(const Vec2 size)
     well.pos = size / 2.f;
     well.maxRadius = vec2Length(well.pos);
     well.maxPower = 2000.f;
+    well.dragRadius = 100.f;
     world.gravityWells.push_back(well);
 
     world.settings.shipAcceleration = 50.f;
@@ -221,6 +230,7 @@ GameWorld createWorld(const Vec2 size)
     world.settings.projectileLifetime = 5.f;
     world.settings.shipCollisionRadius = 20.f;
     world.settings.muzzleExtraOffset = 5.f;
+    world.settings.gravityWellDragCoefficient = 0.3f;
 
     return world;
 }

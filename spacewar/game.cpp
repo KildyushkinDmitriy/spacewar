@@ -47,20 +47,39 @@ void gameUpdate(GameWorld& world, const float dt)
         ship.rotation += ship.input.steer * settings.shipSteeringSpeed * dt;
         ship.rotation = floatWrap(ship.rotation, TAU);
 
+        // drag + gravity near well
+        for (const GravityWell& well : world.gravityWells)
+        {
+            if (vec2Dist(well.pos, ship.pos) < well.dragRadius)
+            {
+                ship.velocity -= ship.velocity * dt * settings.gravityWellDragCoefficient;
+            }
+            ship.velocity += gameGetGravityWellVectorAtPoint(well, ship.pos) * dt;
+        }
+        
         const Vec2 forwardDir = vec2RotationToDir(ship.rotation);
-
+        
         if (ship.input.accelerate)
         {
             ship.velocity += forwardDir * settings.shipAcceleration * dt;
         }
 
-        // Gravity wells
+        ship.pos = vec2Wrap(ship.pos + ship.velocity * dt, world.size);
+
+        // teleport ship on collision with well
         for (const GravityWell& well : world.gravityWells)
         {
-            ship.velocity += gameGetGravityWellVectorAtPoint(well, ship.pos) * dt;
-        }
+            if (isPointInsideCircle(ship.pos, well.pos, 10.f))
+            {
+                ship.pos = world.size;
 
-        ship.pos = vec2Wrap(ship.pos + ship.velocity * dt, world.size);
+                const float length = vec2Length(ship.velocity);
+                if (length > 0.001f)
+                {
+                    ship.velocity = ship.velocity / length * 10.f;
+                }
+            }
+        }
 
         // Shoot
         ship.shootCooldownLeft -= dt;

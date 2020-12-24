@@ -13,6 +13,7 @@ struct GameplaySettings
     float shipCollisionRadius = 0.f;
     // a place where projectile is born is offset from ship's center (shipCollisionRadius + muzzleExtraOffset), so ship will not insta-kill itself on shoot
     float muzzleExtraOffset = 0.f;
+    float gravityWellDragCoefficient = 0.0;
 };
 
 struct PlayerInput
@@ -51,6 +52,7 @@ struct GravityWell
     Vec2 pos{};
     float maxRadius = 0.f;
     float maxPower = 0.f;
+    float dragRadius = 0.f;
 };
 
 struct GameWorld
