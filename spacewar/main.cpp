@@ -246,7 +246,9 @@ int main()
 {
     runTests();
 
-    sf::RenderWindow window(sf::VideoMode(1000, 1000), "SFML window");
+    sf::ContextSettings settings;
+    settings.antialiasingLevel = 8;
+    sf::RenderWindow window{sf::VideoMode(1000, 1000), "Spacewars!", sf::Style::Default, settings};
 
     sf::Texture texture;
     if (!texture.loadFromFile("images/ship.png"))
