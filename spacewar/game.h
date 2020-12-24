@@ -12,7 +12,7 @@ struct GameplaySettings
     float projectileLifetime = 0.f;
     float shipCollisionRadius = 0.f;
     // a place where projectile is born is offset from ship's center (shipCollisionRadius + muzzleExtraOffset), so ship will not insta-kill itself on shoot
-    float muzzleExtraOffset = 0.f; 
+    float muzzleExtraOffset = 0.f;
 };
 
 struct PlayerInput
@@ -42,16 +42,27 @@ struct Projectile
     float rotation = 0.f;
 
     Vec2 velocity{};
-    
+
     float lifetimeLeft = 0.f;
+};
+
+struct GravityWell
+{
+    Vec2 pos{};
+    float maxRadius = 0.f;
+    float maxPower = 0.f;
 };
 
 struct GameWorld
 {
-    GameplaySettings settings;
+    GameplaySettings settings{};
     Vec2 size{};
     std::vector<Ship> ships{};
     std::vector<Projectile> projectiles{};
+    std::vector<GravityWell> gravityWells{};
 };
 
 void gameUpdate(GameWorld& world, float dt);
+
+float gameGetGravityWellPowerAtRadius(const GravityWell& well, float radius);
+Vec2 gameGetGravityWellVectorAtPoint(const GravityWell& well, Vec2 point);

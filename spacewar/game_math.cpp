@@ -51,6 +51,11 @@ float vec2Dist(const Vec2 a, const Vec2 b)
     return std::sqrt(vec2DistSq(a, b));
 }
 
+Vec2 vec2RotationToDir(const float rotation)
+{
+    return Vec2{cos(rotation), sin(rotation)};
+}
+
 bool isPointInsideCircle(const Vec2 point, const Vec2 circleCenter, const float circleRadius)
 {
     return vec2DistSq(point, circleCenter) <= circleRadius * circleRadius;
@@ -87,20 +92,13 @@ bool isSegmentIntersectCircle(const Vec2 segmentP1, const Vec2 segmentP2, const 
 
     const Vec2 closest = segmentP1 + dot * (segmentP2 - segmentP1);
 
-    const bool onSegment = isPointOnSegment(closest, segmentP1, segmentP2);
-    if (!onSegment)
+    if (!isPointOnSegment(closest, segmentP1, segmentP2))
     {
         return false;
     }
 
     const float distClosestToCircleOriginSq = vec2DistSq(closest, circleCenter);
-
-    if (distClosestToCircleOriginSq <= circleRadius * circleRadius)
-    {
-        return true;
-    }
-
-    return false;
+    return distClosestToCircleOriginSq <= circleRadius * circleRadius;
 }
 
 bool isCircleIntersectCircle(const Vec2 circle1Center, const float circle1Radius, const Vec2 circle2Center,

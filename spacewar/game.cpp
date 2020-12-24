@@ -2,6 +2,28 @@
 
 #include <algorithm>
 
+float gameGetGravityWellPowerAtRadius(const GravityWell& well, const float radius)
+{
+    const float normalized = std::clamp(radius / well.maxRadius, 0.f, 1.f);
+    const float powerFactor = 0.005f / std::pow(normalized + 0.07f, 2.f);
+    return powerFactor * well.maxPower;
+}
+
+Vec2 gameGetGravityWellVectorAtPoint(const GravityWell& well, const Vec2 point)
+{
+    const Vec2 diffVec = well.pos - point;
+    const float diffLength = vec2Length(diffVec);
+
+    if (diffLength <= 0.001f)
+    {
+        return Vec2{0.f, 0.f};
+    }
+
+    const Vec2 powerDir = diffVec / diffLength;
+    const float power = gameGetGravityWellPowerAtRadius(well, diffLength);
+    return powerDir * power;
+}
+
 void gameUpdate(GameWorld& world, const float dt)
 {
     // Clear dead ships
@@ -25,11 +47,17 @@ void gameUpdate(GameWorld& world, const float dt)
         ship.rotation += ship.input.steer * settings.shipSteeringSpeed * dt;
         ship.rotation = floatWrap(ship.rotation, TAU);
 
-        const Vec2 forwardDir{cos(ship.rotation), sin(ship.rotation)};
+        const Vec2 forwardDir = vec2RotationToDir(ship.rotation);
 
         if (ship.input.accelerate)
         {
             ship.velocity += forwardDir * settings.shipAcceleration * dt;
+        }
+
+        // Gravity wells
+        for (const GravityWell& well : world.gravityWells)
+        {
+            ship.velocity += gameGetGravityWellVectorAtPoint(well, ship.pos) * dt;
         }
 
         ship.pos = vec2Wrap(ship.pos + ship.velocity * dt, world.size);

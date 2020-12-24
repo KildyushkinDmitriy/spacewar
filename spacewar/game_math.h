@@ -9,16 +9,16 @@ constexpr float PI = 3.14159265359f;
 constexpr float TAU = PI * 2.f; // full turn in radians
 
 float radToDeg(float rad);
-
 bool floatEq(float a, float b, float tolerance = 0.0001);
 float floatWrap(float val, float max);
-Vec2 vec2Wrap(Vec2 val, Vec2 max);
 
 float vec2Dot(Vec2 a, Vec2 b);
 float vec2LengthSq(Vec2 vec);
 float vec2Length(Vec2 vec);
 float vec2DistSq(Vec2 a, Vec2 b);
 float vec2Dist(Vec2 a, Vec2 b);
+Vec2 vec2Wrap(Vec2 val, Vec2 max);
+Vec2 vec2RotationToDir(float rotation);
 
 bool isPointInsideCircle(Vec2 point, Vec2 circleCenter, float circleRadius);
 bool isPointOnSegment(Vec2 point, Vec2 segmentP1, Vec2 segmentP2, float precision = 0.0001);

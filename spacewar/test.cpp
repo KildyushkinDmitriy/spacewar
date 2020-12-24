@@ -20,8 +20,7 @@ static void testIsPointInsideCircle()
     assert(isPointInsideCircle(Vec2{-5.f, 0.f}, Vec2{0.f, 0.f}, 5.1f));
     assert(!isPointInsideCircle(Vec2{-5.2f, 0.f}, Vec2{0.f, 0.f}, 5.1f));
 
-    const float angle = TAU / 8.f;
-    const Vec2 point = Vec2{std::cos(angle), std::sin(angle)} * 3.f;
+    const Vec2 point = vec2RotationToDir(TAU / 8.f) * 3.f;
 
     assert(isPointInsideCircle(point, Vec2{0.f, 0.f}, 3.1f));
     assert(!isPointInsideCircle(point, Vec2{0.f, 0.f}, 2.9f));
