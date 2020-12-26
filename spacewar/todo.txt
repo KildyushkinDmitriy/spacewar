@@ -15,7 +15,6 @@ Requirements:
 TODO:
 
 - core
-  - scoring
   - start game screen with controls help
 
 - additional?
