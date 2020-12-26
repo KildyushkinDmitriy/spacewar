@@ -180,10 +180,10 @@ void renderGameOverUi(
     if (time > animationTime) {
         const int restartTimeLeftInt = static_cast<int>(gameOverState.timeWhenRestart - gameOverState.timeInState + 1.f);
         textRender.setString("Next round in " + std::to_string(restartTimeLeftInt));
-        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 150.f});
+        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 200.f});
         window.draw(textRender);
         textRender.setString("or press Space");
-        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 200.f});
+        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 250.f});
         window.draw(textRender);
     }
 }
