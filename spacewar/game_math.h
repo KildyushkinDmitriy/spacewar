@@ -5,9 +5,10 @@
 using Vec2 = sf::Vector2f;
 
 constexpr float PI = 3.14159265359f;
-constexpr float TAU = PI * 2.f; // full turn in radians
 
 float radToDeg(float rad);
+float degToRad(float deg);
+
 bool floatEq(float a, float b, float tolerance = 0.0001);
 float floatWrap(float val, float max);
 

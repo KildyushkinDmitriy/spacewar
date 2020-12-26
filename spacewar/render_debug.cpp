@@ -5,12 +5,12 @@
 static void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, const sf::Color color, sf::RenderWindow& window)
 {
     const Vec2 diff = b - a;
-    const float angle = std::atan2f(diff.y, diff.x);
+    const float angleRad = std::atan2f(diff.y, diff.x);
 
     sf::RectangleShape rectShape{Vec2{vec2Length(diff), thickness}};
     rectShape.setPosition(a);
     rectShape.setOrigin(Vec2{0.f, thickness / 2.f});
-    rectShape.rotate(radToDeg(angle));
+    rectShape.rotate(radToDeg(angleRad));
     rectShape.setFillColor(color);
     window.draw(rectShape);
 }
@@ -22,7 +22,7 @@ void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, sf::Font&
     {
         const int gradationsCount = 20;
         const float radiusIncrement = well.maxRadius / (gradationsCount - 1);
-        const Vec2 dir = vec2RotationToDir(TAU / 8.f * 5.f);
+        const Vec2 dir = vec2RotationToDir(180.f + 45.f);
 
         struct Measure
         {
@@ -116,7 +116,7 @@ void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, sf::Font&
             sf::RectangleShape rectShape{Vec2{world.settings.shipCollisionRadius, 5.f}};
             rectShape.setPosition(ship.pos);
             rectShape.setOrigin(Vec2{0.f, rectShape.getSize().y / 2.f});
-            rectShape.rotate(radToDeg(ship.rotation));
+            rectShape.rotate(ship.rotation);
             rectShape.setFillColor(sf::Color::Black);
             window.draw(rectShape);
         }

@@ -7,6 +7,12 @@ float radToDeg(const float rad)
     return rad / PI * 180.f;
 }
 
+
+float degToRad(const float deg)
+{
+    return deg / 180.f * PI;
+}
+
 bool floatEq(const float a, const float b, const float tolerance)
 {
     return std::fabs(a - b) <= tolerance;
@@ -55,7 +61,8 @@ float vec2Dist(const Vec2 a, const Vec2 b)
 
 Vec2 vec2RotationToDir(const float rotation)
 {
-    return Vec2{cos(rotation), sin(rotation)};
+    const float rad = degToRad(rotation);
+    return Vec2{cos(rad), sin(rad)};
 }
 
 bool isPointInsideCircle(const Vec2 point, const Vec2 circleCenter, const float circleRadius)

@@ -6,7 +6,7 @@ static void renderObj(const Vec2 pos, const float rotation, const Vec2& worldSiz
                       sf::RenderWindow& window)
 {
     // sprite is pointing upwards, but with zero rotation it must be pointing right, so offset the rotation
-    renderShape.setRotation(radToDeg(rotation + TAU / 4.f));
+    renderShape.setRotation(rotation + 90.f);
 
     // draw obj 9 times for wrap around world case, hoping sfml will do the culling 
     {

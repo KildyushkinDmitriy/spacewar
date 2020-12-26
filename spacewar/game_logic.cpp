@@ -46,7 +46,7 @@ void gameUpdate(GameWorld& world, const float dt)
 
         // Move
         ship.rotation += ship.input.steer * settings.shipSteeringSpeed * dt;
-        ship.rotation = floatWrap(ship.rotation, TAU);
+        ship.rotation = floatWrap(ship.rotation, 360.f);
 
         // drag + gravity near well
         for (const GravityWell& well : world.gravityWells)

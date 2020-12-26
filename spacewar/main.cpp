@@ -15,12 +15,12 @@ GameWorld createWorld(const Vec2 size)
 
     Ship ship1;
     ship1.pos = world.size / 2.f - size / 4.f;
-    ship1.rotation = TAU / 8.f * 5.f;
+    ship1.rotation = 180.f + 45.f;
     world.ships.push_back(ship1);
 
     Ship ship2;
     ship2.pos = world.size / 2.f + size / 4.f;
-    ship2.rotation = TAU / 8.f;
+    ship2.rotation = 45.f;
     world.ships.push_back(ship2);
 
     GravityWell well;
@@ -33,7 +33,7 @@ GameWorld createWorld(const Vec2 size)
     world.settings.shipAcceleration = 25.f;
     world.settings.shipAccelerationImpulse = 75.f;
     world.settings.shipAccelerationImpulseCooldown = 3.f;
-    world.settings.shipSteeringSpeed = TAU / 2.f;
+    world.settings.shipSteeringSpeed = 180.f;
     world.settings.shootCooldown = 1.f;
     world.settings.projectileSpeed = 150.f;
     world.settings.projectileLifetime = 5.f;
