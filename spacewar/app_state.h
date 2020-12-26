@@ -1,14 +1,20 @@
 ﻿#pragma once
+#include <variant>
 
-namespace AppState
+struct AppStateStarting
 {
-    struct Game
-    {
-    };
+    float time = 0.f;
+    std::vector<bool> playersPushedButtons;
+};
 
-    struct GameOver
-    {
-        GameResult gameResult{};
-        float restartTimeLeft = 0.f;
-    };
-}
+struct AppStateGame
+{
+};
+
+struct AppStateGameOver
+{
+    GameResult gameResult{};
+    float restartTimeLeft = 0.f;
+};
+
+using AppState = std::variant<AppStateStarting, AppStateGame, AppStateGameOver>;

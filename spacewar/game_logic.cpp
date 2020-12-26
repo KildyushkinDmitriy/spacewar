@@ -94,9 +94,9 @@ std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
     }
 
     // Check each ship pair for collision
-    for (int i = 0; i < world.ships.size(); ++i)
+    for (size_t i = 0; i < world.ships.size(); ++i)
     {
-        for (int j = i + 1; j < world.ships.size(); ++j)
+        for (size_t j = i + 1; j < world.ships.size(); ++j)
         {
             Ship& ship1 = world.ships[i];
             Ship& ship2 = world.ships[j];
@@ -112,7 +112,7 @@ std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
         }
     }
 
-    // Teleport ship on collision with well. Do it strictly after ship|ship collision check
+    // Teleport ship on collision with well. Do it strictly after ship/ship collision check
     for (Ship& ship : world.ships)
     {
         for (const GravityWell& well : world.gravityWells)
@@ -167,7 +167,7 @@ std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
     // Game result
     int deadShipsCount = 0;
     int aliveShipIndex = -1;
-    for (int i = 0; i < world.ships.size(); ++i)
+    for (size_t i = 0; i < world.ships.size(); ++i)
     {
         Ship& ship = world.ships[i];
         if (ship.isDead)
@@ -176,7 +176,7 @@ std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
         }
         else
         {
-            aliveShipIndex = i;
+            aliveShipIndex = static_cast<int>(i);
         }
     }
 

@@ -44,6 +44,27 @@ GameWorld createWorld(const Vec2 size)
     return world;
 }
 
+void startingStateSfEventHandler(AppStateStarting& startingState, const std::vector<Player>& players,
+                                 const sf::Event& event)
+{
+    if (event.type != sf::Event::KeyReleased)
+    {
+        return;
+    }
+
+    for (int i = 0; i < players.size(); ++i)
+    {
+        const Player& player = players[i];
+        forEachKeyInKeymap(player.keymap, [&event, &startingState, i](const sf::Keyboard::Key key)
+        {
+            if (event.key.code == key)
+            {
+                startingState.playersPushedButtons[i] = true;
+            }
+        });
+    }
+}
+
 int main()
 {
     runTests();
@@ -64,8 +85,6 @@ int main()
         return EXIT_FAILURE;
     }
 
-    std::variant<AppState::Game, AppState::GameOver> appState = AppState::Game{};
-
     GameWorld world = createWorld(Vec2{window.getSize()});
 
     std::vector<Player> players{
@@ -82,6 +101,9 @@ int main()
             "IJKL"
         }
     };
+
+    AppState appState = AppStateStarting{};
+    std::get<AppStateStarting>(appState).playersPushedButtons.resize(players.size(), false);
 
     bool isDebugRender = false;
 
@@ -103,15 +125,20 @@ int main()
             {
                 isDebugRender = !isDebugRender;
             }
+
+            if (auto* startingState = std::get_if<AppStateStarting>(&appState))
+            {
+                startingStateSfEventHandler(*startingState, players, event);
+            }
         }
 
         assert(world.ships.size() == players.size());
 
         // update
-        if (std::holds_alternative<AppState::Game>(appState))
+        if (std::holds_alternative<AppStateGame>(appState))
         {
             // player input
-            for (int i = 0; i < players.size(); ++i)
+            for (size_t i = 0; i < players.size(); ++i)
             {
                 world.ships[i].input = readPlayerInput(players[i].keymap);
             }
@@ -124,10 +151,10 @@ int main()
                     players[simResult->victoriousPlayerIndex].score++;
                 }
 
-                appState = AppState::GameOver{simResult.value(), 10.f};
+                appState = AppStateGameOver{simResult.value(), 10.f};
             }
         }
-        else if (auto* gameOverState = std::get_if<AppState::GameOver>(&appState))
+        else if (auto* gameOverState = std::get_if<AppStateGameOver>(&appState))
         {
             for (Ship& ship : world.ships)
             {
@@ -141,28 +168,50 @@ int main()
             if (restartButtonPressed || gameOverState->restartTimeLeft <= 0)
             {
                 world = createWorld(Vec2{window.getSize()});
-                appState = AppState::Game{};
+                appState = AppStateGame{};
+            }
+        }
+        else if (auto* startingState = std::get_if<AppStateStarting>(&appState))
+        {
+            startingState->time += dt;
+
+            std::vector<bool>& readyVec = startingState->playersPushedButtons;
+
+            const bool allReady = std::all_of(readyVec.begin(), readyVec.end(), [](const bool ready)
+            {
+                return ready;
+            });
+
+            if (allReady)
+            {
+                world = createWorld(Vec2{window.getSize()});
+                appState = AppStateGame{};
             }
         }
 
         // render
         window.clear();
 
-        if (isDebugRender)
+        if (std::holds_alternative<AppStateGame>(appState) || std::holds_alternative<AppStateGameOver>(appState))
         {
-            renderGameDebug(world, window, font);
-        }
-        else
-        {
-            renderGame(world, window, texture);
+            if (isDebugRender)
+            {
+                renderGameDebug(world, window, font);
+            }
+            else
+            {
+                renderGame(world, window, texture);
+            }
         }
 
-        if (auto* gameOverState = std::get_if<AppState::GameOver>(&appState))
+        if (const auto* gameOverState = std::get_if<AppStateGameOver>(&appState))
         {
             renderGameOverUi(*gameOverState, players, window, font);
         }
-
-        // renderGameOverUi(AppState::GameOver{GameResult{0}, 3.f}, playerScores, window, font);
+        else if (const auto* startingState = std::get_if<AppStateStarting>(&appState))
+        {
+            renderStartingUi(*startingState, players, window, font);
+        }
 
         window.display();
     }

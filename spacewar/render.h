@@ -8,5 +8,6 @@
 
 void renderGame(const GameWorld& world, sf::RenderWindow& window, const sf::Texture& shipTexture);
 void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, const sf::Font& font);
-void renderGameOverUi(const AppState::GameOver& gameOverState, const std::vector<Player>& players, sf::RenderWindow& window, const sf::Font& font);
+void renderGameOverUi(const AppStateGameOver& gameOverState, const std::vector<Player>& players, sf::RenderWindow& window, const sf::Font& font);
+void renderStartingUi(const AppStateStarting& startingState, const std::vector<Player>& players, sf::RenderWindow& window, const sf::Font& font);
 

@@ -3,6 +3,7 @@
 #include "game_logic.h"
 
 #include <SFML/Window/Keyboard.hpp>
+#include <functional>
 
 struct PlayerKeymap
 {
@@ -19,6 +20,15 @@ struct Player
     std::string name{};
     int score = 0;
 };
+
+inline void forEachKeyInKeymap(const PlayerKeymap& keymap, const std::function<void(sf::Keyboard::Key)>& callback)
+{
+    callback(keymap.left);
+    callback(keymap.right);
+    callback(keymap.shoot);
+    callback(keymap.accelerate);
+    callback(keymap.accelerateImpulse);
+}
 
 inline ShipInput readPlayerInput(const PlayerKeymap& keymap)
 {

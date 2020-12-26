@@ -112,7 +112,7 @@ void renderGame(const GameWorld& world, sf::RenderWindow& window, const sf::Text
 }
 
 void renderGameOverUi(
-    const AppState::GameOver& gameOverState,
+    const AppStateGameOver& gameOverState,
     const std::vector<Player>& players,
     sf::RenderWindow& window,
     const sf::Font& font
@@ -153,7 +153,7 @@ void renderGameOverUi(
 
     if (players.size() > 0)
     {
-        const Player& player = players[0]; 
+        const Player& player = players[0];
         textRender.setString(player.name + " score");
         positionTextWithCenterAlignment(textRender, windowCenter + Vec2{-300.f, 0.f});
         window.draw(textRender);
@@ -173,6 +173,96 @@ void renderGameOverUi(
         textRender.setString(std::to_string(player.score));
         positionTextWithCenterAlignment(textRender, windowCenter + Vec2{300.f, 50.f});
         window.draw(textRender);
+    }
+}
+
+
+void renderStartingUi(const AppStateStarting& startingState, const std::vector<Player>& players,
+                         sf::RenderWindow& window, const sf::Font& font)
+{
+    const float time = startingState.time;
+    const Vec2 windowCenter = Vec2{window.getSize()} / 2.f;
+
+    sf::Text textRender;
+    textRender.setFont(font);
+    textRender.setOutlineThickness(2.f);
+    textRender.setOutlineColor(sf::Color::Black);
+
+    float animationTime = 0.f;
+
+    {
+        constexpr float gameTitleAppearTime = 1.f;
+        animationTime += gameTitleAppearTime;
+        // game title
+        static const std::string gameFullTitleStr = "SPACEWAR!";
+
+        const int curTitleLength = static_cast<int>(time / (gameTitleAppearTime / gameFullTitleStr.size()));
+        const std::string gameTitleStr = gameFullTitleStr.substr(0, curTitleLength);
+
+        textRender.setCharacterSize(80);
+        textRender.setString(gameTitleStr);
+        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0, -300.f});
+        window.draw(textRender);
+    }
+
+    textRender.setCharacterSize(40);
+
+    animationTime += 1.f;
+
+    constexpr float timeBetweenLinesAppear = 0.3f;
+    constexpr float yIncrement = 50.f;
+    Vec2 curPos;
+
+    const auto drawLine = [&](const std::string str)
+    {
+        if (time > animationTime)
+        {
+            textRender.setString(str);
+            textRender.setPosition(curPos);
+            window.draw(textRender);
+            curPos.y += yIncrement;
+            animationTime += timeBetweenLinesAppear;
+        }
+    };
+
+    if (players.size() > 0)
+    {
+        const Player& player = players[0];
+        curPos = windowCenter + Vec2{-400.f, 0.f};
+
+        drawLine(player.name + " Player:");
+        drawLine("A,D - rotate");
+        drawLine("W - shoot");
+        drawLine("S - thrust");
+        drawLine("Left Shift - burst");
+
+        if (time > animationTime)
+        {
+            textRender.setString(startingState.playersPushedButtons[0] ? "Ready" : "Press any key");
+            textRender.setPosition(windowCenter + Vec2{-400.f, 300.f});
+            window.draw(textRender);
+            animationTime += timeBetweenLinesAppear;
+        }
+    }
+
+    if (players.size() > 1)
+    {
+        const Player& player = players[1];
+        curPos = windowCenter + Vec2{100.f, 0.f};
+
+        drawLine(player.name + " Player:");
+        drawLine("J,L - rotate");
+        drawLine("I - shoot");
+        drawLine("K - thrust");
+        drawLine("Right Shift - burst");
+
+        if (time > animationTime)
+        {
+            textRender.setString(startingState.playersPushedButtons[1] ? "Ready" : "Press any key");
+            textRender.setPosition(windowCenter + Vec2{100.f, 300.f});
+            window.draw(textRender);
+            animationTime += timeBetweenLinesAppear;
+        }
     }
 }
 
