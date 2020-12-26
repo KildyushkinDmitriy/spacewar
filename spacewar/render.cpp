@@ -149,6 +149,13 @@ void renderGameOverUi(const AppState::GameOver& gameOverState, sf::RenderWindow&
         textRender.setPosition(Vec2{window.getSize()} / 2.f - Vec2{localBounds.width / 2.f, -150.f});
     }
     window.draw(textRender);
+
+    textRender.setString("or press Space");
+    {
+        const sf::FloatRect localBounds = textRender.getLocalBounds();
+        textRender.setPosition(Vec2{window.getSize()} / 2.f - Vec2{localBounds.width / 2.f, -200.f});
+    }
+    window.draw(textRender);
 }
 
 void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, sf::Font& font)

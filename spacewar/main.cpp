@@ -112,7 +112,7 @@ int main()
             std::optional<GameResult> simResult = gameSimulate(world, dt);
             if (simResult.has_value())
             {
-                appState = AppState::GameOver{simResult.value(), 5.f};
+                appState = AppState::GameOver{simResult.value(), 10.f};
             }
         }
         else if (auto* gameOverState = std::get_if<AppState::GameOver>(&appState))
