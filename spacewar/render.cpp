@@ -1,8 +1,6 @@
-﻿#include "game_logic.h"
+﻿#include "render.h"
 
 #include <SFML/Graphics.hpp>
-
-#include "app_state.h"
 
 static void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, const sf::Color color,
                           sf::RenderWindow& window)
@@ -55,7 +53,13 @@ static void renderObj(const Vec2 pos, const float rotation, const Vec2& worldSiz
     }
 }
 
-void renderGame(const GameWorld& world, sf::RenderWindow& window, sf::Texture& shipTexture)
+static void positionTextWithCenterAlignment(sf::Text& textRender, const Vec2 pos)
+{
+    const sf::FloatRect localBounds = textRender.getLocalBounds();
+    textRender.setPosition(pos - Vec2{localBounds.width / 2.f, localBounds.height / 2.f});
+}
+
+void renderGame(const GameWorld& world, sf::RenderWindow& window, const sf::Texture& shipTexture)
 {
     sf::RectangleShape shipShape;
     {
@@ -107,7 +111,12 @@ void renderGame(const GameWorld& world, sf::RenderWindow& window, sf::Texture& s
     }
 }
 
-void renderGameOverUi(const AppState::GameOver& gameOverState, sf::RenderWindow& window, sf::Font& font)
+void renderGameOverUi(
+    const AppState::GameOver& gameOverState,
+    const std::vector<Player>& players,
+    sf::RenderWindow& window,
+    const sf::Font& font
+)
 {
     const GameResult& gameResult = gameOverState.gameResult;
     sf::String gameResultString;
@@ -116,49 +125,58 @@ void renderGameOverUi(const AppState::GameOver& gameOverState, sf::RenderWindow&
     {
         gameResultString = "Tie!";
     }
-    else if (gameResult.victoriousPlayerIndex == 0)
-    {
-        gameResultString = "WASD Player wins!";
-    }
-    else if (gameResult.victoriousPlayerIndex == 1)
-    {
-        gameResultString = "IJKL Player wins!";
-    }
     else
     {
-        gameResultString = "Player " + std::to_string(gameResult.victoriousPlayerIndex + 1) + " wins!";
+        gameResultString = players[gameResult.victoriousPlayerIndex].name + " player wins round!";
     }
 
-    sf::Text textRender{};
+    sf::Text textRender;
     textRender.setCharacterSize(40);
     textRender.setFont(font);
     textRender.setOutlineThickness(2.f);
     textRender.setOutlineColor(sf::Color::Black);
 
+    const Vec2 windowCenter = Vec2{window.getSize()} / 2.f;
+
     textRender.setString(gameResultString);
-    {
-        const sf::FloatRect localBounds = textRender.getLocalBounds();
-        textRender.setPosition(Vec2{window.getSize()} / 2.f - Vec2{localBounds.width / 2.f, 150.f});
-    }
+    positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, -150.f});
     window.draw(textRender);
 
     const int restartTimeLeftInt = static_cast<int>(gameOverState.restartTimeLeft + 1.f);
     textRender.setString("Next round in " + std::to_string(restartTimeLeftInt));
-    {
-        const sf::FloatRect localBounds = textRender.getLocalBounds();
-        textRender.setPosition(Vec2{window.getSize()} / 2.f - Vec2{localBounds.width / 2.f, -150.f});
-    }
+    positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 150.f});
     window.draw(textRender);
 
     textRender.setString("or press Space");
-    {
-        const sf::FloatRect localBounds = textRender.getLocalBounds();
-        textRender.setPosition(Vec2{window.getSize()} / 2.f - Vec2{localBounds.width / 2.f, -200.f});
-    }
+    positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 200.f});
     window.draw(textRender);
+
+    if (players.size() > 0)
+    {
+        const Player& player = players[0]; 
+        textRender.setString(player.name + " score");
+        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{-300.f, 0.f});
+        window.draw(textRender);
+
+        textRender.setString(std::to_string(player.score));
+        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{-300.f, 50.f});
+        window.draw(textRender);
+    }
+
+    if (players.size() > 1)
+    {
+        const Player& player = players[1];
+        textRender.setString(player.name + " score");
+        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{300.f, 0.f});
+        window.draw(textRender);
+
+        textRender.setString(std::to_string(player.score));
+        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{300.f, 50.f});
+        window.draw(textRender);
+    }
 }
 
-void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, sf::Font& font)
+void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, const sf::Font& font)
 {
     // gravitation field visualize
     for (const GravityWell& well : world.gravityWells)

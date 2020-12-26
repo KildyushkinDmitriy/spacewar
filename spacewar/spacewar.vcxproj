@@ -149,7 +149,7 @@
     <ClInclude Include="app_state.h" />
     <ClInclude Include="game_logic.h" />
     <ClInclude Include="game_math.h" />
-    <ClInclude Include="player_input.h" />
+    <ClInclude Include="player.h" />
     <ClInclude Include="render.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

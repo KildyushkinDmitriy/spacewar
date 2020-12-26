@@ -13,6 +13,13 @@ struct PlayerKeymap
     sf::Keyboard::Key accelerateImpulse = sf::Keyboard::Unknown;
 };
 
+struct Player
+{
+    PlayerKeymap keymap{};
+    std::string name{};
+    int score = 0;
+};
+
 inline ShipInput readPlayerInput(const PlayerKeymap& keymap)
 {
     ShipInput result;

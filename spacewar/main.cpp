@@ -1,9 +1,10 @@
 #include "game_logic.h"
-#include "player_input.h"
+#include "player.h"
 #include "render.h"
 
 #include <SFML/Graphics.hpp>
 #include <variant>
+#include <cassert>
 
 void runTests();
 
@@ -63,15 +64,23 @@ int main()
         return EXIT_FAILURE;
     }
 
-    GameWorld world = createWorld(Vec2{window.getSize()});
-
     std::variant<AppState::Game, AppState::GameOver> appState = AppState::Game{};
 
-    const PlayerKeymap player1Keymap{
-        sf::Keyboard::A, sf::Keyboard::D, sf::Keyboard::W, sf::Keyboard::S, sf::Keyboard::LShift
-    };
-    const PlayerKeymap player2Keymap{
-        sf::Keyboard::J, sf::Keyboard::L, sf::Keyboard::I, sf::Keyboard::K, sf::Keyboard::RShift
+    GameWorld world = createWorld(Vec2{window.getSize()});
+
+    std::vector<Player> players{
+        {
+            PlayerKeymap{
+                sf::Keyboard::A, sf::Keyboard::D, sf::Keyboard::W, sf::Keyboard::S, sf::Keyboard::LShift
+            },
+            "WASD"
+        },
+        {
+            PlayerKeymap{
+                sf::Keyboard::J, sf::Keyboard::L, sf::Keyboard::I, sf::Keyboard::K, sf::Keyboard::RShift
+            },
+            "IJKL"
+        }
     };
 
     bool isDebugRender = false;
@@ -96,22 +105,25 @@ int main()
             }
         }
 
+        assert(world.ships.size() == players.size());
+
         // update
         if (std::holds_alternative<AppState::Game>(appState))
         {
             // player input
-            if (world.ships.size() > 0)
+            for (int i = 0; i < players.size(); ++i)
             {
-                world.ships[0].input = readPlayerInput(player1Keymap);
-            }
-            if (world.ships.size() > 1)
-            {
-                world.ships[1].input = readPlayerInput(player2Keymap);
+                world.ships[i].input = readPlayerInput(players[i].keymap);
             }
 
             std::optional<GameResult> simResult = gameSimulate(world, dt);
             if (simResult.has_value())
             {
+                if (!simResult->isTie())
+                {
+                    players[simResult->victoriousPlayerIndex].score++;
+                }
+
                 appState = AppState::GameOver{simResult.value(), 10.f};
             }
         }
@@ -147,8 +159,10 @@ int main()
 
         if (auto* gameOverState = std::get_if<AppState::GameOver>(&appState))
         {
-            renderGameOverUi(*gameOverState, window, font);
+            renderGameOverUi(*gameOverState, players, window, font);
         }
+
+        // renderGameOverUi(AppState::GameOver{GameResult{0}, 3.f}, playerScores, window, font);
 
         window.display();
     }
