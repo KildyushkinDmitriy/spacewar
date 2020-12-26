@@ -235,7 +235,7 @@ GameWorld createWorld(const Vec2 size)
     world.settings.shootCooldown = 1.f;
     world.settings.projectileSpeed = 150.f;
     world.settings.projectileLifetime = 5.f;
-    world.settings.shipCollisionRadius = 15.f;
+    world.settings.shipCollisionRadius = 12.f;
     world.settings.muzzleExtraOffset = 25.f;
     world.settings.gravityWellDragCoefficient = 0.3f;
 
@@ -255,7 +255,6 @@ int main()
     {
         return EXIT_FAILURE;
     }
-    sf::Sprite sprite(texture);
 
     sf::Font font;
     if (!font.loadFromFile("fonts/arial.ttf"))
