@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 
-void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, const sf::Color color, sf::RenderWindow& window)
+static void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, const sf::Color color, sf::RenderWindow& window)
 {
     const Vec2 diff = b - a;
     const float angle = std::atan2f(diff.y, diff.x);
@@ -15,7 +15,7 @@ void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, const sf::
     window.draw(rectShape);
 }
 
-void renderGameDebugView(const GameWorld& world, sf::RenderWindow& window, sf::Font& font)
+void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, sf::Font& font)
 {
     // gravitation field visualize
     for (const GravityWell& well : world.gravityWells)

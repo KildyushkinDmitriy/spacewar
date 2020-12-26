@@ -18,7 +18,7 @@ struct GameplaySettings
     float gravityWellDragCoefficient = 0.0;
 };
 
-struct PlayerInput
+struct ShipInput
 {
     float steer = 0.f;
     bool accelerate = false;
@@ -33,7 +33,7 @@ struct Ship
 
     Vec2 velocity{};
 
-    PlayerInput input{};
+    ShipInput input{};
 
     float shootCooldownLeft = 0.f;
     float accelerateImpulseCooldownLeft = 0.f;
