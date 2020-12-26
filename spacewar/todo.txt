@@ -14,15 +14,10 @@ Requirements:
 
 TODO:
 
-- core
-  - start game screen with controls help
-
-- additional?
-  - visualize thrusting
-  - AI
-  - visualize gravity force?
-  - particles
-  - sounds
+- visualize thrusting
+- visualize ship death
+- projectile/projectile collision
+- AI
   
 - bugs/improvements
   - projectile/ship collision when ship is wrapped around world size
