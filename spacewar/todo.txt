@@ -15,7 +15,7 @@ Requirements:
 TODO:
 
 - core
-  - scoring + ui game state (score screen, restart screen)
+  - scoring
   - start game screen with controls help
 
 - additional?
