@@ -52,7 +52,7 @@ void startingStateSfEventHandler(AppStateStarting& startingState, const std::vec
         return;
     }
 
-    for (int i = 0; i < players.size(); ++i)
+    for (size_t i = 0; i < players.size(); ++i)
     {
         const Player& player = players[i];
         forEachKeyInKeymap(player.keymap, [&event, &startingState, i](const sf::Keyboard::Key key)
