@@ -1,5 +1,7 @@
 ﻿#include "game_math.h"
 
+#include <cmath>
+
 float radToDeg(const float rad)
 {
     return rad / PI * 180.f;

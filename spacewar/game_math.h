@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <SFML/System/Vector2.hpp>
-#include <cmath>
 
 using Vec2 = sf::Vector2f;
 

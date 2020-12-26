@@ -1,6 +1,6 @@
 ﻿#include <assert.h>
 
-#include "game.h"
+#include "game_logic.h"
 
 static void testFloatWrap()
 {
