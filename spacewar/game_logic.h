@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include "game_math.h"
+
+#include <optional>
 #include <vector>
 
 struct GameplaySettings
@@ -68,7 +70,14 @@ struct GameWorld
     std::vector<GravityWell> gravityWells{};
 };
 
-void gameUpdate(GameWorld& world, float dt);
+struct GameResult
+{
+    int victoriousPlayerIndex = -1;
+
+    bool isTie() const { return victoriousPlayerIndex == -1; }
+};
+
+std::optional<GameResult> gameSimulate(GameWorld& world, float dt);
 
 float gameGetGravityWellPowerAtRadius(const GravityWell& well, float radius);
 Vec2 gameGetGravityWellVectorAtPoint(const GravityWell& well, Vec2 point);

@@ -143,13 +143,14 @@
     <ClCompile Include="game_math.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="render.cpp" />
-    <ClCompile Include="render_debug.cpp" />
     <ClCompile Include="tests.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app_state.h" />
     <ClInclude Include="game_logic.h" />
     <ClInclude Include="game_math.h" />
     <ClInclude Include="player_input.h" />
+    <ClInclude Include="render.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

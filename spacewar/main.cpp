@@ -1,12 +1,11 @@
 #include "game_logic.h"
 #include "player_input.h"
+#include "render.h"
 
 #include <SFML/Graphics.hpp>
+#include <variant>
 
 void runTests();
-
-void renderGame(const GameWorld& world, sf::RenderWindow& window, sf::Texture& shipTexture);
-void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, sf::Font& font);
 
 GameWorld createWorld(const Vec2 size)
 {
@@ -50,7 +49,7 @@ int main()
 
     sf::ContextSettings settings;
     settings.antialiasingLevel = 8;
-    sf::RenderWindow window{sf::VideoMode(1000, 1000), "Spacewars!", sf::Style::Default, settings};
+    sf::RenderWindow window{sf::VideoMode{1000, 1000}, "Spacewars!", sf::Style::Default, settings};
 
     sf::Texture texture;
     if (!texture.loadFromFile("images/ship.png"))
@@ -66,10 +65,12 @@ int main()
 
     GameWorld world = createWorld(Vec2{window.getSize()});
 
-    PlayerKeymap player1Keymap{
+    std::variant<AppState::Game, AppState::GameOver> appState = AppState::Game{};
+
+    const PlayerKeymap player1Keymap{
         sf::Keyboard::A, sf::Keyboard::D, sf::Keyboard::W, sf::Keyboard::S, sf::Keyboard::LShift
     };
-    PlayerKeymap player2Keymap{
+    const PlayerKeymap player2Keymap{
         sf::Keyboard::J, sf::Keyboard::L, sf::Keyboard::I, sf::Keyboard::K, sf::Keyboard::RShift
     };
 
@@ -89,29 +90,48 @@ int main()
                 window.close();
             }
 
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
-            {
-                world = createWorld(Vec2{window.getSize()});
-            }
-
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Tilde)
             {
                 isDebugRender = !isDebugRender;
             }
         }
 
-        // player input
-        if (world.ships.size() > 0)
-        {
-            world.ships[0].input = readPlayerInput(player1Keymap);
-        }
-        if (world.ships.size() > 1)
-        {
-            world.ships[1].input = readPlayerInput(player2Keymap);
-        }
-
         // update
-        gameUpdate(world, dt);
+        if (std::holds_alternative<AppState::Game>(appState))
+        {
+            // player input
+            if (world.ships.size() > 0)
+            {
+                world.ships[0].input = readPlayerInput(player1Keymap);
+            }
+            if (world.ships.size() > 1)
+            {
+                world.ships[1].input = readPlayerInput(player2Keymap);
+            }
+
+            std::optional<GameResult> simResult = gameSimulate(world, dt);
+            if (simResult.has_value())
+            {
+                appState = AppState::GameOver{simResult.value(), 5.f};
+            }
+        }
+        else if (auto* gameOverState = std::get_if<AppState::GameOver>(&appState))
+        {
+            for (Ship& ship : world.ships)
+            {
+                ship.input = {};
+            }
+            gameSimulate(world, dt);
+
+            const bool restartButtonPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
+            gameOverState->restartTimeLeft -= dt;
+
+            if (restartButtonPressed || gameOverState->restartTimeLeft <= 0)
+            {
+                world = createWorld(Vec2{window.getSize()});
+                appState = AppState::Game{};
+            }
+        }
 
         // render
         window.clear();
@@ -123,6 +143,11 @@ int main()
         else
         {
             renderGame(world, window, texture);
+        }
+
+        if (auto* gameOverState = std::get_if<AppState::GameOver>(&appState))
+        {
+            renderGameOverUi(*gameOverState, window, font);
         }
 
         window.display();

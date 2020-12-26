@@ -1,11 +1,11 @@
 ﻿#include "game_logic.h"
 
+#include <cassert>
 #include <algorithm>
 
 float gameGetGravityWellPowerAtRadius(const GravityWell& well, const float radius)
 {
     const float normalized = std::clamp(radius / well.maxRadius, 0.f, 1.f);
-    // const float powerFactor = 0.005f / std::pow(normalized + 0.07f, 2.f);
     const float powerFactor = 0.0025f / std::pow(normalized + 0.045f, 2.f);
     return powerFactor * well.maxPower;
 }
@@ -25,15 +25,8 @@ Vec2 gameGetGravityWellVectorAtPoint(const GravityWell& well, const Vec2 point)
     return powerDir * power;
 }
 
-void gameUpdate(GameWorld& world, const float dt)
+std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
 {
-    // Clear dead ships
-    // const auto res = std::remove_if(world.ships.begin(), world.ships.end(), [](const Ship& ship)
-    // {
-    // return ship.isDead;
-    // });
-    // world.ships.erase(res, world.ships.end());
-
     const GameplaySettings& settings = world.settings;
 
     // Ships
@@ -57,9 +50,9 @@ void gameUpdate(GameWorld& world, const float dt)
             }
             ship.velocity += gameGetGravityWellVectorAtPoint(well, ship.pos) * dt;
         }
-        
+
         const Vec2 forwardDir = vec2RotationToDir(ship.rotation);
-        
+
         if (ship.input.accelerate)
         {
             ship.velocity += forwardDir * settings.shipAcceleration * dt;
@@ -78,21 +71,6 @@ void gameUpdate(GameWorld& world, const float dt)
         }
 
         ship.pos = vec2Wrap(ship.pos + ship.velocity * dt, world.size);
-
-        // teleport ship on collision with well
-        for (const GravityWell& well : world.gravityWells)
-        {
-            if (isPointInsideCircle(ship.pos, well.pos, 10.f))
-            {
-                ship.pos = world.size;
-
-                const float length = vec2Length(ship.velocity);
-                if (length > 0.001f)
-                {
-                    ship.velocity = ship.velocity / length * 10.f;
-                }
-            }
-        }
 
         // Shoot
         ship.shootCooldownLeft -= dt;
@@ -134,6 +112,24 @@ void gameUpdate(GameWorld& world, const float dt)
         }
     }
 
+    // Teleport ship on collision with well. Do it strictly after ship|ship collision check
+    for (Ship& ship : world.ships)
+    {
+        for (const GravityWell& well : world.gravityWells)
+        {
+            if (isPointInsideCircle(ship.pos, well.pos, 10.f))
+            {
+                ship.pos = world.size;
+
+                const float length = vec2Length(ship.velocity);
+                if (length > 0.001f)
+                {
+                    ship.velocity = ship.velocity / length * 10.f;
+                }
+            }
+        }
+    }
+
     // Projectiles
     std::vector<size_t> projectilesToDeleteIndices{};
 
@@ -167,4 +163,33 @@ void gameUpdate(GameWorld& world, const float dt)
     {
         world.projectiles.erase(world.projectiles.begin() + projectilesToDeleteIndices[i]);
     }
+
+    // Game result
+    int deadShipsCount = 0;
+    int aliveShipIndex = -1;
+    for (int i = 0; i < world.ships.size(); ++i)
+    {
+        Ship& ship = world.ships[i];
+        if (ship.isDead)
+        {
+            deadShipsCount++;
+        }
+        else
+        {
+            aliveShipIndex = i;
+        }
+    }
+
+    if (deadShipsCount == 0)
+    {
+        return {};
+    }
+
+    if (deadShipsCount == world.ships.size())
+    {
+        return GameResult{-1};
+    }
+
+    assert(aliveShipIndex != -1);
+    return GameResult{aliveShipIndex};
 }

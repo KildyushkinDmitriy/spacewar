@@ -75,7 +75,9 @@ static void testProjectileKillsShip()
     assert(!world.ships[0].isDead);
     assert(world.projectiles.size() == 1);
 
-    gameUpdate(world, 10.f);
+    const std::optional<GameResult> gameResult = gameSimulate(world, 10.f);
+    assert(gameResult.has_value());
+    assert(gameResult->isTie());
 
     assert(world.ships[0].isDead);
     assert(world.projectiles.size() == 0);
@@ -109,12 +111,19 @@ static void testShipsKillEachOtherWithProjectiles()
     assert(!world.ships[0].isDead);
     assert(!world.ships[1].isDead);
 
-    gameUpdate(world, 0.5f);
+    {
+        const std::optional<GameResult> gameResult = gameSimulate(world, 0.5f);
+        assert(!gameResult.has_value());
+    }
 
     assert(!world.ships[0].isDead);
     assert(!world.ships[1].isDead);
 
-    gameUpdate(world, 0.5f);
+    {
+        const std::optional<GameResult> gameResult = gameSimulate(world, 0.5f);
+        assert(gameResult.has_value());
+        assert(gameResult->isTie());
+    }
 
     assert(world.ships[0].isDead);
     assert(world.ships[1].isDead);
@@ -131,9 +140,9 @@ void testProjectileLifetime()
     }
 
     assert(world.projectiles.size() == 1);
-    gameUpdate(world, 0.9f);
+    gameSimulate(world, 0.9f);
     assert(world.projectiles.size() == 1);
-    gameUpdate(world, 0.2f);
+    gameSimulate(world, 0.2f);
     assert(world.projectiles.size() == 0);
 }
 
@@ -160,27 +169,71 @@ static void testShipShipCollisionKillsBoth()
     assert(!world.ships[0].isDead);
     assert(!world.ships[1].isDead);
 
-    gameUpdate(world, 0.5f);
+    {
+        const std::optional<GameResult> gameResult = gameSimulate(world, 0.5f);
+        assert(!gameResult.has_value());
+    }
 
     assert(!world.ships[0].isDead);
     assert(!world.ships[1].isDead);
 
-    gameUpdate(world, 0.5f);
+    {
+        const std::optional<GameResult> gameResult = gameSimulate(world, 0.5f);
+        assert(gameResult.has_value());
+        assert(gameResult->isTie());
+    }
 
     assert(world.ships[0].isDead);
     assert(world.ships[1].isDead);
 }
 
+static void testPlayerWinsGameWithKill()
+{
+    GameWorld world{};
+    world.size = Vec2{100.f, 100.f};
+    world.settings.shipCollisionRadius = 0.5f;
+    world.settings.projectileLifetime = 10000.f;
+    world.settings.projectileSpeed = 10.f;
+    world.settings.shootCooldown = 100.0f;
+    world.settings.muzzleExtraOffset = 0.1f;
+
+    {
+        Ship ship{};
+        ship.pos = Vec2{10.f, 10.f};
+        ship.input.shoot = true;
+        world.ships.push_back(ship);
+    }
+
+    {
+        Ship ship{};
+        ship.pos = Vec2{20.f, 10.f};
+        world.ships.push_back(ship);
+    }
+
+    assert(!world.ships[0].isDead);
+    assert(!world.ships[1].isDead);
+
+    const std::optional<GameResult> gameResult = gameSimulate(world, 1.f);
+    
+    assert(world.ships[1].isDead);
+    assert(gameResult.has_value());
+    assert(!gameResult->isTie());
+    assert(gameResult->victoriousPlayerIndex == 0);
+}
+
 void runTests()
 {
+    // math tests
     testFloatWrap();
     testIsPointInsideCircle();
     testIsPointOnSegment();
     testIsSegmentIntersectCircle();
     testIsCircleIntersectCircle();
 
+    // game simulation tests
     testProjectileKillsShip();
     testShipsKillEachOtherWithProjectiles();
     testProjectileLifetime();
     testShipShipCollisionKillsBoth();
+    testPlayerWinsGameWithKill();
 }
