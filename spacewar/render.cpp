@@ -118,40 +118,40 @@ void renderGameOverUi(
     const sf::Font& font
 )
 {
-    const GameResult& gameResult = gameOverState.gameResult;
-    sf::String gameResultString;
-
-    if (gameResult.isTie())
-    {
-        gameResultString = "Tie!";
-    }
-    else
-    {
-        gameResultString = players[gameResult.victoriousPlayerIndex].name + " player wins round!";
-    }
+    const float time = gameOverState.timeInState;
+    const Vec2 windowCenter = Vec2{window.getSize()} / 2.f;
 
     sf::Text textRender;
     textRender.setCharacterSize(40);
     textRender.setFont(font);
     textRender.setOutlineThickness(2.f);
     textRender.setOutlineColor(sf::Color::Black);
+    
+    float animationTime = 0.f;
 
-    const Vec2 windowCenter = Vec2{window.getSize()} / 2.f;
+    animationTime += 1.f;
 
-    textRender.setString(gameResultString);
-    positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, -150.f});
-    window.draw(textRender);
+    if (time > animationTime) {
+        const GameResult& gameResult = gameOverState.gameResult;
+        sf::String gameResultString;
 
-    const int restartTimeLeftInt = static_cast<int>(gameOverState.restartTimeLeft + 1.f);
-    textRender.setString("Next round in " + std::to_string(restartTimeLeftInt));
-    positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 150.f});
-    window.draw(textRender);
+        if (gameResult.isTie())
+        {
+            gameResultString = "Tie!";
+        }
+        else
+        {
+            gameResultString = players[gameResult.victoriousPlayerIndex].name + " player wins round!";
+        }
 
-    textRender.setString("or press Space");
-    positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 200.f});
-    window.draw(textRender);
+        textRender.setString(gameResultString);
+        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, -150.f});
+        window.draw(textRender);
 
-    if (players.size() > 0)
+        animationTime += 1.f;
+    }
+
+    if (players.size() > 0 && time > animationTime)
     {
         const Player& player = players[0];
         textRender.setString(player.name + " score");
@@ -163,7 +163,7 @@ void renderGameOverUi(
         window.draw(textRender);
     }
 
-    if (players.size() > 1)
+    if (players.size() > 1 && time > animationTime)
     {
         const Player& player = players[1];
         textRender.setString(player.name + " score");
@@ -174,13 +174,25 @@ void renderGameOverUi(
         positionTextWithCenterAlignment(textRender, windowCenter + Vec2{300.f, 50.f});
         window.draw(textRender);
     }
+
+    animationTime += 1.f;
+
+    if (time > animationTime) {
+        const int restartTimeLeftInt = static_cast<int>(gameOverState.timeWhenRestart - gameOverState.timeInState + 1.f);
+        textRender.setString("Next round in " + std::to_string(restartTimeLeftInt));
+        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 150.f});
+        window.draw(textRender);
+        textRender.setString("or press Space");
+        positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 200.f});
+        window.draw(textRender);
+    }
 }
 
 
 void renderStartingUi(const AppStateStarting& startingState, const std::vector<Player>& players,
                          sf::RenderWindow& window, const sf::Font& font)
 {
-    const float time = startingState.time;
+    const float time = startingState.timeInState;
     const Vec2 windowCenter = Vec2{window.getSize()} / 2.f;
 
     sf::Text textRender;
@@ -213,7 +225,7 @@ void renderStartingUi(const AppStateStarting& startingState, const std::vector<P
     constexpr float yIncrement = 50.f;
     Vec2 curPos;
 
-    const auto drawLine = [&](const std::string str)
+    const auto drawTextLine = [&](const std::string str)
     {
         if (time > animationTime)
         {
@@ -230,15 +242,15 @@ void renderStartingUi(const AppStateStarting& startingState, const std::vector<P
         const Player& player = players[0];
         curPos = windowCenter + Vec2{-400.f, 0.f};
 
-        drawLine(player.name + " Player:");
-        drawLine("A,D - rotate");
-        drawLine("W - shoot");
-        drawLine("S - thrust");
-        drawLine("Left Shift - burst");
+        drawTextLine(player.name + " Player:");
+        drawTextLine("A,D - rotate");
+        drawTextLine("W - shoot");
+        drawTextLine("S - thrust");
+        drawTextLine("Left Shift - burst");
 
         if (time > animationTime)
         {
-            textRender.setString(startingState.playersPushedButtons[0] ? "Ready" : "Press any key");
+            textRender.setString(startingState.playersReady[0] ? "Ready" : "Press any key");
             textRender.setPosition(windowCenter + Vec2{-400.f, 300.f});
             window.draw(textRender);
             animationTime += timeBetweenLinesAppear;
@@ -250,15 +262,15 @@ void renderStartingUi(const AppStateStarting& startingState, const std::vector<P
         const Player& player = players[1];
         curPos = windowCenter + Vec2{100.f, 0.f};
 
-        drawLine(player.name + " Player:");
-        drawLine("J,L - rotate");
-        drawLine("I - shoot");
-        drawLine("K - thrust");
-        drawLine("Right Shift - burst");
+        drawTextLine(player.name + " Player:");
+        drawTextLine("J,L - rotate");
+        drawTextLine("I - shoot");
+        drawTextLine("K - thrust");
+        drawTextLine("Right Shift - burst");
 
         if (time > animationTime)
         {
-            textRender.setString(startingState.playersPushedButtons[1] ? "Ready" : "Press any key");
+            textRender.setString(startingState.playersReady[1] ? "Ready" : "Press any key");
             textRender.setPosition(windowCenter + Vec2{100.f, 300.f});
             window.draw(textRender);
             animationTime += timeBetweenLinesAppear;

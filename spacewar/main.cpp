@@ -59,7 +59,7 @@ void startingStateSfEventHandler(AppStateStarting& startingState, const std::vec
         {
             if (event.key.code == key)
             {
-                startingState.playersPushedButtons[i] = true;
+                startingState.playersReady[i] = true;
             }
         });
     }
@@ -103,7 +103,7 @@ int main()
     };
 
     AppState appState = AppStateStarting{};
-    std::get<AppStateStarting>(appState).playersPushedButtons.resize(players.size(), false);
+    std::get<AppStateStarting>(appState).playersReady.resize(players.size(), false);
 
     bool isDebugRender = false;
 
@@ -151,7 +151,7 @@ int main()
                     players[simResult->victoriousPlayerIndex].score++;
                 }
 
-                appState = AppStateGameOver{simResult.value(), 10.f};
+                appState = AppStateGameOver{simResult.value(), 15.f};
             }
         }
         else if (auto* gameOverState = std::get_if<AppStateGameOver>(&appState))
@@ -163,9 +163,9 @@ int main()
             gameSimulate(world, dt);
 
             const bool restartButtonPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
-            gameOverState->restartTimeLeft -= dt;
+            gameOverState->timeInState += dt;
 
-            if (restartButtonPressed || gameOverState->restartTimeLeft <= 0)
+            if (restartButtonPressed || gameOverState->timeInState > gameOverState->timeWhenRestart)
             {
                 world = createWorld(Vec2{window.getSize()});
                 appState = AppStateGame{};
@@ -173,9 +173,9 @@ int main()
         }
         else if (auto* startingState = std::get_if<AppStateStarting>(&appState))
         {
-            startingState->time += dt;
+            startingState->timeInState += dt;
 
-            std::vector<bool>& readyVec = startingState->playersPushedButtons;
+            std::vector<bool>& readyVec = startingState->playersReady;
 
             const bool allReady = std::all_of(readyVec.begin(), readyVec.end(), [](const bool ready)
             {
