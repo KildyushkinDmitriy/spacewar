@@ -110,16 +110,44 @@ void renderGame(const GameWorld& world, sf::RenderWindow& window, sf::Texture& s
 void renderGameOverUi(const AppState::GameOver& gameOverState, sf::RenderWindow& window, sf::Font& font)
 {
     const GameResult& gameResult = gameOverState.gameResult;
-    const sf::String text = gameResult.isTie()
-                                ? "Tie!"
-                                : "Player " + std::to_string(gameResult.victoriousPlayerIndex + 1) + " wins!";
+    sf::String gameResultString;
+
+    if (gameResult.isTie())
+    {
+        gameResultString = "Tie!";
+    }
+    else if (gameResult.victoriousPlayerIndex == 0)
+    {
+        gameResultString = "WASD Player wins!";
+    }
+    else if (gameResult.victoriousPlayerIndex == 1)
+    {
+        gameResultString = "IJKL Player wins!";
+    }
+    else
+    {
+        gameResultString = "Player " + std::to_string(gameResult.victoriousPlayerIndex + 1) + " wins!";
+    }
 
     sf::Text textRender{};
-    textRender.setString(text);
+    textRender.setCharacterSize(40);
     textRender.setFont(font);
-    textRender.setCharacterSize(20);
-    // gravityPowerText.setFillColor(sf::Color::Magenta);
-    textRender.setPosition(Vec2{window.getSize()} / 2.f);
+    textRender.setOutlineThickness(2.f);
+    textRender.setOutlineColor(sf::Color::Black);
+
+    textRender.setString(gameResultString);
+    {
+        const sf::FloatRect localBounds = textRender.getLocalBounds();
+        textRender.setPosition(Vec2{window.getSize()} / 2.f - Vec2{localBounds.width / 2.f, 150.f});
+    }
+    window.draw(textRender);
+
+    const int restartTimeLeftInt = static_cast<int>(gameOverState.restartTimeLeft + 1.f);
+    textRender.setString("Next round in " + std::to_string(restartTimeLeftInt));
+    {
+        const sf::FloatRect localBounds = textRender.getLocalBounds();
+        textRender.setPosition(Vec2{window.getSize()} / 2.f - Vec2{localBounds.width / 2.f, -150.f});
+    }
     window.draw(textRender);
 }
 
