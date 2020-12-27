@@ -15,9 +15,10 @@ Requirements:
 TODO:
 
 - better visual for gravity well
+- better projectile visual
 - background visual
-- projectile/projectile collision
 - AI
+- projectile/projectile collision
   
 - bugs/improvements
   - projectile/ship collision when ship is wrapped around world size
