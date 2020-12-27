@@ -2,6 +2,8 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "game_visual.h"
+
 static void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, const sf::Color color,
                           sf::RenderWindow& window)
 {
@@ -59,7 +61,8 @@ static void positionTextWithCenterAlignment(sf::Text& textRender, const Vec2 pos
     textRender.setPosition(pos - Vec2{localBounds.width / 2.f, localBounds.height / 2.f});
 }
 
-void renderGame(const GameWorld& world, sf::RenderWindow& window, const sf::Texture& shipTexture)
+void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::RenderWindow& window,
+                const sf::Texture& shipTexture)
 {
     sf::RectangleShape shipShape;
     {
@@ -82,6 +85,20 @@ void renderGame(const GameWorld& world, sf::RenderWindow& window, const sf::Text
     gravityWellShape.setFillColor(sf::Color::Cyan);
     gravityWellShape.setPosition(world.size / 2.f);
     window.draw(gravityWellShape);
+
+    sf::CircleShape particleShape;
+    for (const Particle& particle : visualWorld.particles)
+    {
+        const float t = particle.lifetime / particle.totalLifetime;
+        const float radius = floatLerp(particle.startRadius, particle.finishRadius, t);
+        const sf::Color color = colorLerp(particle.startColor, particle.finishColor, t);
+
+        particleShape.setRadius(radius);
+        particleShape.setOrigin(Vec2{particleShape.getRadius(), particleShape.getRadius()});
+        particleShape.setPosition(particle.pos);
+        particleShape.setFillColor(color);
+        window.draw(particleShape);
+    }
 
     bool isSecondShip = false;
     for (const Ship& ship : world.ships)
@@ -126,12 +143,13 @@ void renderGameOverUi(
     textRender.setFont(font);
     textRender.setOutlineThickness(2.f);
     textRender.setOutlineColor(sf::Color::Black);
-    
+
     float animationTime = 0.f;
 
     animationTime += 1.f;
 
-    if (time > animationTime) {
+    if (time > animationTime)
+    {
         const GameResult& gameResult = gameOverState.gameResult;
         sf::String gameResultString;
 
@@ -177,8 +195,10 @@ void renderGameOverUi(
 
     animationTime += 1.f;
 
-    if (time > animationTime) {
-        const int restartTimeLeftInt = static_cast<int>(gameOverState.timeWhenRestart - gameOverState.timeInState + 1.f);
+    if (time > animationTime)
+    {
+        const int restartTimeLeftInt = static_cast<int>(gameOverState.timeWhenRestart - gameOverState.timeInState + 1.f
+        );
         textRender.setString("Next round in " + std::to_string(restartTimeLeftInt));
         positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 200.f});
         window.draw(textRender);
@@ -190,7 +210,7 @@ void renderGameOverUi(
 
 
 void renderStartingUi(const AppStateStarting& startingState, const std::vector<Player>& players,
-                         sf::RenderWindow& window, const sf::Font& font)
+                      sf::RenderWindow& window, const sf::Font& font)
 {
     const float time = startingState.timeInState;
     const Vec2 windowCenter = Vec2{window.getSize()} / 2.f;

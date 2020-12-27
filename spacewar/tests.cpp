@@ -52,6 +52,14 @@ static void testIsCircleIntersectCircle()
     assert(isCircleIntersectCircle(Vec2{-5.f, -5.f}, 5.f, Vec2{0.0f, 0.f}, 3.f));
 }
 
+static void testColorLerp()
+{
+    const ColorRange range = ColorRange{sf::Color{255, 0, 0, 150}, sf::Color{255, 255, 0, 150}};
+    const sf::Color interpolated = colorLerp(range.min, range.max, 0.5f);
+    const sf::Color expected = sf::Color{255, 255 / 2, 0, 150};
+    assert(expected == interpolated);
+}
+
 static void testProjectileKillsShip()
 {
     GameWorld world{};
@@ -91,7 +99,7 @@ static void testShipsKillEachOtherWithProjectiles()
     world.settings.projectileLifetime = 10000.f;
     world.settings.projectileSpeed = 10.f;
     world.settings.shootCooldown = 2.0f;
-    world.settings.muzzleExtraOffset = 0.1;
+    world.settings.muzzleExtraOffset = 0.1f;
 
     {
         Ship ship{};
@@ -214,7 +222,7 @@ static void testPlayerWinsGameWithKill()
     assert(!world.ships[1].isDead);
 
     const std::optional<GameResult> gameResult = gameSimulate(world, 1.f);
-    
+
     assert(world.ships[1].isDead);
     assert(gameResult.has_value());
     assert(!gameResult->isTie());
@@ -229,6 +237,7 @@ void runTests()
     testIsPointOnSegment();
     testIsSegmentIntersectCircle();
     testIsCircleIntersectCircle();
+    testColorLerp();
 
     // game simulation tests
     testProjectileKillsShip();

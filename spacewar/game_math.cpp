@@ -1,6 +1,7 @@
 ﻿#include "game_math.h"
 
 #include <cmath>
+#include <random>
 
 float radToDeg(const float rad)
 {
@@ -114,4 +115,37 @@ bool isCircleIntersectCircle(const Vec2 circle1Center, const float circle1Radius
 {
     const float radiusSum = circle1Radius + circle2Radius;
     return vec2DistSq(circle1Center, circle2Center) <= radiusSum * radiusSum;
+}
+
+float floatLerp(const float from, const float to, const float t)
+{
+    return from + t * (to - from);
+}
+
+sf::Color colorLerp(const sf::Color from, const sf::Color to, const float t)
+{
+    sf::Color result;
+    result.r = static_cast<sf::Uint8>(floatLerp(from.r, to.r, t));
+    result.g = static_cast<sf::Uint8>(floatLerp(from.g, to.g, t));
+    result.b = static_cast<sf::Uint8>(floatLerp(from.b, to.b, t));
+    result.a = static_cast<sf::Uint8>(floatLerp(from.a, to.a, t));
+    return result;
+}
+
+std::default_random_engine rndEngine{std::random_device{}()};
+
+float randomFloatRange(const float min, const float max)
+{
+    const std::uniform_real_distribution<float> distribution{min, max};
+    return distribution(rndEngine);
+}
+
+float FloatRange::getRandom() const
+{
+    return randomFloatRange(min, max);
+}
+
+sf::Color ColorRange::getRandom() const
+{
+    return colorLerp(min, max, randomFloatRange(0.f, 1.f));
 }

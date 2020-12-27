@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="game_logic.cpp" />
     <ClCompile Include="game_math.cpp" />
+    <ClCompile Include="game_visual.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="tests.cpp" />
@@ -149,6 +150,7 @@
     <ClInclude Include="app_state.h" />
     <ClInclude Include="game_logic.h" />
     <ClInclude Include="game_math.h" />
+    <ClInclude Include="game_visual.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="render.h" />
   </ItemGroup>

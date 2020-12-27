@@ -1,4 +1,5 @@
 #include "game_logic.h"
+#include "game_visual.h"
 #include "player.h"
 #include "render.h"
 
@@ -44,6 +45,23 @@ GameWorld createWorld(const Vec2 size)
     return world;
 }
 
+GameVisualWorld createVisualWorld()
+{
+    GameVisualWorld visualWorld;
+
+    ParticlesEmitter& shipThrustEmitter = visualWorld.shipThrustEmitter;
+    shipThrustEmitter.particlesPerSec = 30.f;
+    shipThrustEmitter.angleRange = FloatRange{-10.f, 10.f};
+    shipThrustEmitter.speedRange = FloatRange{180.f, 220.f};
+    shipThrustEmitter.lifetimeRange = FloatRange{0.4f, 0.6f};
+    shipThrustEmitter.startRadiusRange = FloatRange{7.f, 12.f};
+    shipThrustEmitter.finishRadiusRange = FloatRange{1.f, 2.f};
+    shipThrustEmitter.startColorRange = ColorRange{sf::Color{255, 0, 0, 150}, sf::Color{255, 150, 0, 150}};
+    shipThrustEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
+
+    return visualWorld;
+}
+
 void startingStateSfEventHandler(AppStateStarting& startingState, const std::vector<Player>& players,
                                  const sf::Event& event)
 {
@@ -85,7 +103,16 @@ int main()
         return EXIT_FAILURE;
     }
 
-    GameWorld world = createWorld(Vec2{window.getSize()});
+    GameWorld world;
+    GameVisualWorld visualWorld;
+
+    const auto initWorlds = [&world, &visualWorld, &window]()
+    {
+        world = createWorld(Vec2{window.getSize()});
+        visualWorld = createVisualWorld();
+    };
+
+    initWorlds();
 
     std::vector<Player> players{
         {
@@ -104,6 +131,7 @@ int main()
 
     AppState appState = AppStateStarting{};
     std::get<AppStateStarting>(appState).playersReady.resize(players.size(), false);
+
 
     bool isDebugRender = false;
 
@@ -144,6 +172,8 @@ int main()
             }
 
             std::optional<GameResult> simResult = gameSimulate(world, dt);
+            gameVisualSimulate(visualWorld, world, dt);
+
             if (simResult.has_value())
             {
                 if (!simResult->isTie())
@@ -160,14 +190,16 @@ int main()
             {
                 ship.input = {};
             }
+
             gameSimulate(world, dt);
+            gameVisualSimulate(visualWorld, world, dt);
 
             const bool restartButtonPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
             gameOverState->timeInState += dt;
 
             if (restartButtonPressed || gameOverState->timeInState > gameOverState->timeWhenRestart)
             {
-                world = createWorld(Vec2{window.getSize()});
+                initWorlds();
                 appState = AppStateGame{};
             }
         }
@@ -184,7 +216,7 @@ int main()
 
             if (allReady)
             {
-                world = createWorld(Vec2{window.getSize()});
+                initWorlds();
                 appState = AppStateGame{};
             }
         }
@@ -200,7 +232,7 @@ int main()
             }
             else
             {
-                renderGame(world, window, texture);
+                renderGame(world, visualWorld, window, texture);
             }
         }
 
