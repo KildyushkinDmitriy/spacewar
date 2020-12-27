@@ -101,6 +101,11 @@ std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
             Ship& ship1 = world.ships[i];
             Ship& ship2 = world.ships[j];
 
+            if (ship1.isDead || ship2.isDead)
+            {
+                continue;
+            }
+
             const float radius = settings.shipCollisionRadius;
 
             // note: no continuous collision here yet
