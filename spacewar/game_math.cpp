@@ -61,7 +61,7 @@ float vec2Dist(const Vec2 a, const Vec2 b)
 
 Vec2 vec2RotationToDir(const float rotation)
 {
-    const float rad = degToRad(rotation);
+    const float rad = degToRad(floatWrap(rotation, 360.f));
     return Vec2{cos(rad), sin(rad)};
 }
 

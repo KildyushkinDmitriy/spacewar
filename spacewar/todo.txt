@@ -14,7 +14,6 @@ Requirements:
 
 TODO:
 
-- visualize ship death
 - better visual for gravity well
 - background visual
 - projectile/projectile collision

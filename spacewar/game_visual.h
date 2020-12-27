@@ -41,9 +41,23 @@ struct ParticlesEmitter
     float timer = 0.f;
 };
 
+struct DeadShipPiece
+{
+    Vec2 pos{};
+    Vec2 velocity{};
+
+    float rotation = 0.f;
+    float angularSpeed = 0.f;
+
+    int shipIndex = 0;
+    int pieceIndex = 0;
+};
+
 struct GameVisualWorld
 {
     std::vector<Particle> particles;
+    std::vector<bool> shipsDead; // used to track that visual sim handled ship death
+    std::vector<DeadShipPiece> deadShipPieces;
     ParticlesEmitter shipThrustEmitter;
 };
 

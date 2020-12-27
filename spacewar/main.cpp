@@ -45,7 +45,7 @@ GameWorld createWorld(const Vec2 size)
     return world;
 }
 
-GameVisualWorld createVisualWorld()
+GameVisualWorld createVisualWorld(const GameWorld& logicWorld)
 {
     GameVisualWorld visualWorld;
 
@@ -59,6 +59,8 @@ GameVisualWorld createVisualWorld()
     shipThrustEmitter.startColorRange = ColorRange{sf::Color{255, 0, 0, 150}, sf::Color{255, 150, 0, 150}};
     shipThrustEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
 
+    visualWorld.shipsDead.resize(logicWorld.ships.size(), false);
+    
     return visualWorld;
 }
 
@@ -91,8 +93,8 @@ int main()
     settings.antialiasingLevel = 8;
     sf::RenderWindow window{sf::VideoMode{1000, 1000}, "Spacewars!", sf::Style::Default, settings};
 
-    sf::Texture texture;
-    if (!texture.loadFromFile("images/ship.png"))
+    sf::Texture shipTexture;
+    if (!shipTexture.loadFromFile("images/ship.png"))
     {
         return EXIT_FAILURE;
     }
@@ -109,7 +111,7 @@ int main()
     const auto initWorlds = [&world, &visualWorld, &window]()
     {
         world = createWorld(Vec2{window.getSize()});
-        visualWorld = createVisualWorld();
+        visualWorld = createVisualWorld(world);
     };
 
     initWorlds();
@@ -132,14 +134,12 @@ int main()
     AppState appState = AppStateStarting{};
     std::get<AppStateStarting>(appState).playersReady.resize(players.size(), false);
 
-
     bool isDebugRender = false;
 
     sf::Clock timer;
     while (window.isOpen())
     {
-        float dt = timer.restart().asSeconds();
-        dt = std::clamp(dt, 0.f, 0.1f);
+        const float dt = std::clamp(timer.restart().asSeconds(), 0.f, 0.1f);
 
         sf::Event event;
         while (window.pollEvent(event))
@@ -186,17 +186,22 @@ int main()
         }
         else if (auto* gameOverState = std::get_if<AppStateGameOver>(&appState))
         {
+            gameOverState->timeInState += dt;
+
             for (Ship& ship : world.ships)
             {
                 ship.input = {};
             }
 
-            gameSimulate(world, dt);
-            gameVisualSimulate(visualWorld, world, dt);
+            constexpr float timeInSlowMotion = 2.f;
+            const float slowMotionMultiplier = floatLerp(0.2f, 1.f,std::clamp(gameOverState->timeInState / timeInSlowMotion, 0.f, 1.f)); 
+            const float slowMotionDt = slowMotionMultiplier * dt;
+
+            gameSimulate(world, slowMotionDt);
+            gameVisualSimulate(visualWorld, world, slowMotionDt);
 
             const bool restartButtonPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
-            gameOverState->timeInState += dt;
-
+            
             if (restartButtonPressed || gameOverState->timeInState > gameOverState->timeWhenRestart)
             {
                 initWorlds();
@@ -232,7 +237,7 @@ int main()
             }
             else
             {
-                renderGame(world, visualWorld, window, texture);
+                renderGame(world, visualWorld, window, shipTexture);
             }
         }
 

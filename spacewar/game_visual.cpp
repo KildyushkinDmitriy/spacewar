@@ -59,7 +59,41 @@ static void simulateParticles(std::vector<Particle>& particles, const float dt)
     }
 }
 
-void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, float dt)
+static void simulateDeadShipPieces(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const float dt)
+{
+    for (size_t shipIndex = 0; shipIndex < logicWorld.ships.size(); ++shipIndex)
+    {
+        const Ship& ship = logicWorld.ships[shipIndex];
+        if (ship.isDead && !visualWorld.shipsDead[shipIndex])
+        {
+            visualWorld.shipsDead[shipIndex] = true;
+
+            for (int deadPieceIndex = 0; deadPieceIndex < 8; ++deadPieceIndex)
+            {
+                const Vec2 extraVelocityDir = vec2RotationToDir(90.f * 3 + deadPieceIndex * 360.f / 8.f);
+
+                DeadShipPiece shipPiece;
+                shipPiece.pos = ship.pos;
+                shipPiece.velocity = ship.velocity;
+                shipPiece.velocity += extraVelocityDir * randomFloatRange(0.f, 100.f);
+                shipPiece.rotation = ship.rotation;
+                shipPiece.angularSpeed = randomFloatRange(-30.f, 30.f);
+                shipPiece.pieceIndex = deadPieceIndex;
+                shipPiece.shipIndex = shipIndex;
+
+                visualWorld.deadShipPieces.push_back(shipPiece);
+            }
+        }
+    }
+
+    for (DeadShipPiece& shipPiece : visualWorld.deadShipPieces)
+    {
+        shipPiece.pos += shipPiece.velocity * dt;
+        shipPiece.rotation += shipPiece.angularSpeed * dt;
+    }
+}
+
+void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const float dt)
 {
     for (const Ship& ship : logicWorld.ships)
     {
@@ -73,4 +107,6 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
     }
 
     simulateParticles(visualWorld.particles, dt);
+
+    simulateDeadShipPieces(visualWorld, logicWorld, dt);
 }

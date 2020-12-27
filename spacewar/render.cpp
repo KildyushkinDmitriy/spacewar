@@ -1,8 +1,28 @@
 ﻿#include "render.h"
+#include "game_visual.h"
 
 #include <SFML/Graphics.hpp>
 
-#include "game_visual.h"
+class CustomVerticesShape : public sf::Drawable, public sf::Transformable
+{
+public:
+    CustomVerticesShape(const sf::Texture* texture, const sf::VertexArray& vertices)
+        : m_vertices(vertices),
+          m_texture(texture)
+    {
+    }
+
+private:
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    {
+        states.transform *= getTransform();
+        states.texture = m_texture;
+        target.draw(m_vertices, states);
+    }
+
+    const sf::VertexArray m_vertices;
+    const sf::Texture* m_texture;
+};
 
 static void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, const sf::Color color,
                           sf::RenderWindow& window)
@@ -18,40 +38,40 @@ static void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, con
     window.draw(rectShape);
 }
 
-static void renderObj(const Vec2 pos, const float rotation, const Vec2& worldSize, sf::Shape& renderShape,
-                      sf::RenderWindow& window)
+static void renderShipTexture9times(const Vec2 pos, const float rotation, const Vec2& worldSize, sf::Drawable& drawable,
+                      sf::Transformable& transformable, sf::RenderWindow& window)
 {
     // sprite is pointing upwards, but with zero rotation it must be pointing right, so offset the rotation
-    renderShape.setRotation(rotation + 90.f);
+    transformable.setRotation(rotation + 90.f);
 
     // draw obj 9 times for wrap around world case, hoping sfml will do the culling 
     {
-        renderShape.setPosition(pos);
-        window.draw(renderShape);
+        transformable.setPosition(pos);
+        window.draw(drawable);
 
-        renderShape.setPosition(pos + Vec2{worldSize.x, 0.f});
-        window.draw(renderShape);
+        transformable.setPosition(pos + Vec2{worldSize.x, 0.f});
+        window.draw(drawable);
 
-        renderShape.setPosition(pos + Vec2{-worldSize.x, 0.f});
-        window.draw(renderShape);
+        transformable.setPosition(pos + Vec2{-worldSize.x, 0.f});
+        window.draw(drawable);
 
-        renderShape.setPosition(pos + Vec2{0.f, worldSize.y});
-        window.draw(renderShape);
+        transformable.setPosition(pos + Vec2{0.f, worldSize.y});
+        window.draw(drawable);
 
-        renderShape.setPosition(pos + Vec2{0.f, -worldSize.y});
-        window.draw(renderShape);
+        transformable.setPosition(pos + Vec2{0.f, -worldSize.y});
+        window.draw(drawable);
 
-        renderShape.setPosition(pos + worldSize);
-        window.draw(renderShape);
+        transformable.setPosition(pos + worldSize);
+        window.draw(drawable);
 
-        renderShape.setPosition(pos - worldSize);
-        window.draw(renderShape);
+        transformable.setPosition(pos - worldSize);
+        window.draw(drawable);
 
-        renderShape.setPosition(pos + Vec2{-worldSize.x, worldSize.y});
-        window.draw(renderShape);
+        transformable.setPosition(pos + Vec2{-worldSize.x, worldSize.y});
+        window.draw(drawable);
 
-        renderShape.setPosition(pos + Vec2{worldSize.x, -worldSize.y});
-        window.draw(renderShape);
+        transformable.setPosition(pos + Vec2{worldSize.x, -worldSize.y});
+        window.draw(drawable);
     }
 }
 
@@ -100,10 +120,56 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
         window.draw(particleShape);
     }
 
-    bool isSecondShip = false;
-    for (const Ship& ship : world.ships)
+    const Vec2 shipTextureSize = Vec2{shipTexture.getSize()};
+
+    std::vector<sf::Vertex> shipPiecesVertices{9};
+    shipPiecesVertices[0].position = Vec2{0.5f, 0.5f};
+    shipPiecesVertices[1].position = Vec2{0.0f, 0.0f};
+    shipPiecesVertices[2].position = Vec2{0.5f, 0.0f};
+    shipPiecesVertices[3].position = Vec2{1.0f, 0.f};
+    shipPiecesVertices[4].position = Vec2{1.0f, 0.5f};
+    shipPiecesVertices[5].position = Vec2{1.0f, 1.0f};
+    shipPiecesVertices[6].position = Vec2{0.5f, 1.0f};
+    shipPiecesVertices[7].position = Vec2{0.0f, 1.0f};
+    shipPiecesVertices[8].position = Vec2{0.0f, 0.5f};
+
+    for (sf::Vertex& vertex : shipPiecesVertices)
     {
-        if (isSecondShip)
+        vertex.texCoords = vertex.position;
+        vertex.texCoords.x *= shipTextureSize.x;
+        vertex.texCoords.y *= shipTextureSize.y;
+    }
+
+    for (const DeadShipPiece& shipPiece : visualWorld.deadShipPieces)
+    {
+        const int i = shipPiece.pieceIndex;
+        sf::VertexArray triangleVertices{sf::Triangles, 3};
+        triangleVertices[0] = shipPiecesVertices[0];
+        triangleVertices[1] = shipPiecesVertices[i + 1];
+        triangleVertices[2] = shipPiecesVertices[i == 7 ? 1 : i + 2];
+
+        for (int vertexIdx = 0; vertexIdx < triangleVertices.getVertexCount(); ++vertexIdx)
+        {
+            sf::Color color = shipPiece.shipIndex == 1 ? sf::Color::Cyan : sf::Color::White;
+            triangleVertices[vertexIdx].color = color;
+        }
+
+        CustomVerticesShape customShape{&shipTexture, triangleVertices};
+        customShape.setOrigin(Vec2{0.5, 0.5});
+        customShape.setScale(shipShape.getSize());
+
+        renderShipTexture9times(shipPiece.pos, shipPiece.rotation, world.size, customShape, customShape, window);
+    }
+
+    for (int shipIndex = 0; shipIndex < world.ships.size(); ++shipIndex)
+    {
+        const Ship& ship = world.ships[shipIndex];
+        if (ship.isDead)
+        {
+            continue;
+        }
+
+        if (shipIndex == 1)
         {
             shipShape.setFillColor(sf::Color::Cyan);
         }
@@ -112,19 +178,12 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
             shipShape.setFillColor(sf::Color::White);
         }
 
-        if (ship.isDead)
-        {
-            shipShape.setFillColor(sf::Color::Blue);
-        }
-
-        renderObj(ship.pos, ship.rotation, world.size, shipShape, window);
-
-        isSecondShip = true;
+        renderShipTexture9times(ship.pos, ship.rotation, world.size, shipShape, shipShape, window);
     }
 
     for (const Projectile& projectile : world.projectiles)
     {
-        renderObj(projectile.pos, projectile.rotation, world.size, projectileShape, window);
+        renderShipTexture9times(projectile.pos, projectile.rotation, world.size, projectileShape, projectileShape, window);
     }
 }
 
