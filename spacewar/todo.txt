@@ -14,6 +14,7 @@ Requirements:
 
 TODO:
 
+- burst thrust visual
 - better visual for gravity well
 - better projectile visual
 - background visual
