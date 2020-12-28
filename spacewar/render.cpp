@@ -1,6 +1,7 @@
 ﻿#include "render.h"
 #include "game_visual.h"
 
+#include <array>
 #include <SFML/Graphics.hpp>
 
 class CustomVerticesShape : public sf::Drawable, public sf::Transformable
@@ -39,7 +40,7 @@ static void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, con
 }
 
 static void renderShipTexture9times(const Vec2 pos, const float rotation, const Vec2& worldSize, sf::Drawable& drawable,
-                      sf::Transformable& transformable, sf::RenderWindow& window)
+                                    sf::Transformable& transformable, sf::RenderWindow& window)
 {
     // sprite is pointing upwards, but with zero rotation it must be pointing right, so offset the rotation
     transformable.setRotation(rotation + 90.f);
@@ -84,28 +85,36 @@ static void positionTextWithCenterAlignment(sf::Text& textRender, const Vec2 pos
 void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::RenderWindow& window,
                 const sf::Texture& shipTexture)
 {
-    sf::RectangleShape shipShape;
+    sf::RectangleShape shipShape{Vec2{35, 35}};
+    shipShape.setOrigin(shipShape.getSize() / 2.f);
+    shipShape.setTexture(&shipTexture);
+
+    // Gravity well
+    for (const GravityWell& gravityWell : world.gravityWells)
     {
-        const Vec2 size{35, 35};
-        shipShape.setSize(size);
-        shipShape.setOrigin(size / 2.f);
-        shipShape.setTexture(&shipTexture);
+        sf::CircleShape gravityWellShape;
+        gravityWellShape.setPosition(gravityWell.pos);
+        
+        const float time = world.time;
+
+        const int count = 20;
+
+        for (int i = 0; i < count; ++i)
+        {
+            const float angle = floatWrap(time * 2.f + i * 260.f / count, 360.f);
+            const float radiusMultiplier = std::cos(degToRad(angle)) / 2.f + 0.5f;
+            const float radius = 100.f * radiusMultiplier;
+
+            gravityWellShape.setFillColor(colorLerp(sf::Color{0, 0, 0, 120}, sf::Color{0, 0, 0, 0}, radiusMultiplier));
+            
+            gravityWellShape.setRadius(radius);
+            gravityWellShape.setOrigin(Vec2{gravityWellShape.getRadius(), gravityWellShape.getRadius()});        
+            window.draw(gravityWellShape);  
+        }
+          
     }
 
-    sf::RectangleShape projectileShape;
-    {
-        const Vec2 size{10, 10};
-        projectileShape.setSize(size);
-        projectileShape.setOrigin(size / 2.f);
-        projectileShape.setTexture(&shipTexture);
-    }
-
-    sf::CircleShape gravityWellShape{10.f};
-    gravityWellShape.setOrigin(Vec2{gravityWellShape.getRadius(), gravityWellShape.getRadius()});
-    gravityWellShape.setFillColor(sf::Color::Cyan);
-    gravityWellShape.setPosition(world.size / 2.f);
-    window.draw(gravityWellShape);
-
+    // Particles
     sf::CircleShape particleShape;
     for (const Particle& particle : visualWorld.particles)
     {
@@ -122,7 +131,8 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
 
     const Vec2 shipTextureSize = Vec2{shipTexture.getSize()};
 
-    std::vector<sf::Vertex> shipPiecesVertices{9};
+    // Dead ship pieces
+    std::array<sf::Vertex, 9> shipPiecesVertices;
     shipPiecesVertices[0].position = Vec2{0.5f, 0.5f};
     shipPiecesVertices[1].position = Vec2{0.0f, 0.0f};
     shipPiecesVertices[2].position = Vec2{0.5f, 0.0f};
@@ -161,6 +171,7 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
         renderShipTexture9times(shipPiece.pos, shipPiece.rotation, world.size, customShape, customShape, window);
     }
 
+    // Ships
     for (size_t shipIndex = 0; shipIndex < world.ships.size(); ++shipIndex)
     {
         const Ship& ship = world.ships[shipIndex];
@@ -181,9 +192,15 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
         renderShipTexture9times(ship.pos, ship.rotation, world.size, shipShape, shipShape, window);
     }
 
+    // Projectiles
+    sf::RectangleShape projectileShape{Vec2{10, 10}};
+    projectileShape.setOrigin(projectileShape.getSize() / 2.f);
+    projectileShape.setTexture(&shipTexture);
+
     for (const Projectile& projectile : world.projectiles)
     {
-        renderShipTexture9times(projectile.pos, projectile.rotation, world.size, projectileShape, projectileShape, window);
+        renderShipTexture9times(projectile.pos, projectile.rotation, world.size, projectileShape, projectileShape,
+                                window);
     }
 }
 

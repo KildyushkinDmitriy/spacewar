@@ -68,6 +68,7 @@ struct GameWorld
     std::vector<Ship> ships{};
     std::vector<Projectile> projectiles{};
     std::vector<GravityWell> gravityWells{};
+    float time = 0.f;
 };
 
 struct GameEventGameResult

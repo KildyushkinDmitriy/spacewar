@@ -14,9 +14,8 @@ Requirements:
 
 TODO:
 
-- better visual for gravity well
 - better projectile visual
-- background visual
+- background stars visual
 - AI
 - projectile/projectile collision
   

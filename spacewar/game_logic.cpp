@@ -36,6 +36,8 @@ static void killShip(GameWorld& world, const size_t shipIndex, GameEvents& gameE
 
 GameEvents gameSimulate(GameWorld& world, const float dt)
 {
+    world.time += dt;
+    
     const GameplaySettings& settings = world.settings;
     GameEvents gameEvents;
 
