@@ -45,12 +45,12 @@ static void simulateParticleEmitter(
     }
 }
 
-std::pair<Vec2, float> getShipThrustPosAngle(const Ship& ship)
+std::pair<Vec2, float> getPosBehind(const Vec2& pos, const float rotation, const float offset)
 {
-    const float fireAngle = ship.rotation + 180.f;
-    const Vec2 backVec = vec2RotationToDir(fireAngle);
-    const Vec2 pos = ship.pos + backVec * 20.f;
-    return {pos, fireAngle};
+    const float invAngle = rotation + 180.f;
+    const Vec2 backVec = vec2RotationToDir(invAngle);
+    const Vec2 resultPos = pos + backVec * offset;
+    return {resultPos, invAngle};
 }
 
 void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents,
@@ -61,16 +61,23 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
     {
         if (ship.input.thrust)
         {
-            auto [pos, angle] =  getShipThrustPosAngle(ship);
+            auto [pos, angle] = getPosBehind(ship.pos, ship.rotation, 20.f);
             simulateParticleEmitter(visualWorld.particles, visualWorld.shipThrustEmitter, pos, angle, dt);
         }
+    }
+
+    // projectile trail emitters
+    for (const Projectile& projectile : logicWorld.projectiles)
+    {
+        auto [pos, angle] = getPosBehind(projectile.pos, projectile.rotation, 10.f);
+        simulateParticleEmitter(visualWorld.particles, visualWorld.projectileTrailEmitter, pos, angle, dt);
     }
 
     // ship thrust burst emit
     for (const GameEventShipThrustBurst& burst : gameEvents.shipThrustBurst)
     {
         const Ship ship = logicWorld.ships[burst.shipIndex];
-        auto [pos, angle] =  getShipThrustPosAngle(ship);
+        auto [pos, angle] = getPosBehind(ship.pos, ship.rotation, 17.f);
         ParticleBurstEmitter& emitter = visualWorld.shipThrustBurstEmitSettings;
         for (int i = 0; i < emitter.particlesCount; ++i)
         {

@@ -193,8 +193,9 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
     }
 
     // Projectiles
-    sf::RectangleShape projectileShape{Vec2{10, 10}};
+    sf::RectangleShape projectileShape{Vec2{10, 15}};
     projectileShape.setOrigin(projectileShape.getSize() / 2.f);
+    projectileShape.setFillColor(sf::Color{255, 100, 100, 255});
     projectileShape.setTexture(&shipTexture);
 
     for (const Projectile& projectile : world.projectiles)

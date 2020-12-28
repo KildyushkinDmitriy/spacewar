@@ -67,6 +67,7 @@ struct GameVisualWorld
     std::vector<Particle> particles;
     std::vector<DeadShipPiece> deadShipPieces;
     ParticleEmitter shipThrustEmitter;
+    ParticleEmitter projectileTrailEmitter;
     ParticleBurstEmitter shipThrustBurstEmitSettings;
 };
 

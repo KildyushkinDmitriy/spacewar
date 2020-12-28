@@ -68,6 +68,16 @@ GameVisualWorld createVisualWorld()
     shipThrustBurstEmitter.finishRadiusRange = FloatRange{2.f, 3.f};
     shipThrustBurstEmitter.startColorRange = ColorRange{sf::Color{255, 100, 0, 150}, sf::Color{255, 150, 0, 150}};
     shipThrustBurstEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
+
+    visualWorld.projectileTrailEmitter.particlesPerSec = 30.f;
+    ParticleEmitSettings& projectileTrailEmitter = visualWorld.projectileTrailEmitter.settings;
+    projectileTrailEmitter.angleRange = FloatRange{-5.f, 5.f};
+    projectileTrailEmitter.speedRange = FloatRange{15.f, 17.f};
+    projectileTrailEmitter.lifetimeRange = FloatRange{0.25f, 0.3f};
+    projectileTrailEmitter.startRadiusRange = FloatRange{4.f, 5.f};
+    projectileTrailEmitter.finishRadiusRange = FloatRange{1.f, 1.3f};
+    projectileTrailEmitter.startColorRange = ColorRange{sf::Color{100, 0, 0, 150}, sf::Color{100, 0, 0, 150}};
+    projectileTrailEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{0, 0, 0, 150}};
     
     return visualWorld;
 }
