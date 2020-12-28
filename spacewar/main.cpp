@@ -36,7 +36,7 @@ GameWorld createWorld(const Vec2 size)
     world.settings.shipThrustBurstImpulseCooldown = 3.f;
     world.settings.shipRotationSpeed = 180.f;
     world.settings.shootCooldown = 1.f;
-    world.settings.projectileSpeed = 150.f;
+    world.settings.projectileSpeed = 200.f;
     world.settings.projectileLifetime = 5.f;
     world.settings.shipCollisionRadius = 12.f;
     world.settings.muzzleExtraOffset = 25.f;
@@ -88,12 +88,11 @@ GameVisualWorld createVisualWorld(const Vec2 worldSize)
         star.periodsPerSec = randomFloatRange(0.1f, 0.5f);
         visualWorld.stars.push_back(star);
     }
-    
+
     return visualWorld;
 }
 
-void startingStateSfEventHandler(AppStateStarting& startingState, const std::vector<Player>& players,
-                                 const sf::Event& event)
+void startingStateSfEventHandler(AppStateStarting& startingState, std::vector<Player>& players, const sf::Event& event)
 {
     if (event.type != sf::Event::KeyReleased)
     {
@@ -102,7 +101,7 @@ void startingStateSfEventHandler(AppStateStarting& startingState, const std::vec
 
     for (size_t i = 0; i < players.size(); ++i)
     {
-        const Player& player = players[i];
+        Player& player = players[i];
         forEachKeyInKeymap(player.keymap, [&event, &startingState, i](const sf::Keyboard::Key key)
         {
             if (event.key.code == key)
@@ -110,6 +109,12 @@ void startingStateSfEventHandler(AppStateStarting& startingState, const std::vec
                 startingState.playersReady[i] = true;
             }
         });
+
+        if (event.key.code == player.makeAiKey)
+        {
+            player.isAi = true;
+            startingState.playersReady[i] = true;
+        }
     }
 }
 
@@ -149,13 +154,15 @@ int main()
             PlayerKeymap{
                 sf::Keyboard::A, sf::Keyboard::D, sf::Keyboard::W, sf::Keyboard::S, sf::Keyboard::LShift
             },
-            "WASD"
+            "WASD",
+            sf::Keyboard::Q
         },
         {
             PlayerKeymap{
                 sf::Keyboard::J, sf::Keyboard::L, sf::Keyboard::I, sf::Keyboard::K, sf::Keyboard::RShift
             },
-            "IJKL"
+            "IJKL",
+            sf::Keyboard::O
         }
     };
 
@@ -196,7 +203,11 @@ int main()
             // player input
             for (size_t i = 0; i < players.size(); ++i)
             {
-                world.ships[i].input = readPlayerInput(players[i].keymap);
+                const Player& player = players[i];
+
+                world.ships[i].input = player.isAi
+                                           ? aiGenerateInput(world, i, (i + 1) % players.size())
+                                           : readPlayerInput(player.keymap);
             }
 
             const GameEvents gameEvents = gameSimulate(world, dt);
@@ -222,14 +233,15 @@ int main()
             }
 
             constexpr float timeInSlowMotion = 2.f;
-            const float slowMotionMultiplier = floatLerp(0.2f, 1.f,std::clamp(gameOverState->timeInState / timeInSlowMotion, 0.f, 1.f)); 
+            const float t = std::clamp(gameOverState->timeInState / timeInSlowMotion, 0.f, 1.f);
+            const float slowMotionMultiplier = floatLerp(0.2f, 1.f, t);
             const float slowMotionDt = slowMotionMultiplier * dt;
 
             const GameEvents gameEvents = gameSimulate(world, slowMotionDt);
             gameVisualSimulate(visualWorld, world, gameEvents, slowMotionDt);
 
             const bool restartButtonPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
-            
+
             if (restartButtonPressed || gameOverState->timeInState > gameOverState->timeWhenRestart)
             {
                 initWorlds();

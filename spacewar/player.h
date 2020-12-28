@@ -18,35 +18,12 @@ struct Player
 {
     PlayerKeymap keymap{};
     std::string name{};
+    sf::Keyboard::Key makeAiKey = sf::Keyboard::Unknown;
+    
     int score = 0;
+    bool isAi = false;
 };
 
-inline void forEachKeyInKeymap(const PlayerKeymap& keymap, const std::function<void(sf::Keyboard::Key)>& callback)
-{
-    callback(keymap.left);
-    callback(keymap.right);
-    callback(keymap.shoot);
-    callback(keymap.thrust);
-    callback(keymap.thrustBurst);
-}
-
-inline ShipInput readPlayerInput(const PlayerKeymap& keymap)
-{
-    ShipInput result;
-
-    if (sf::Keyboard::isKeyPressed(keymap.left))
-    {
-        result.rotate -= 1.0f;
-    }
-
-    if (sf::Keyboard::isKeyPressed(keymap.right))
-    {
-        result.rotate += 1.0f;
-    }
-
-    result.shoot = sf::Keyboard::isKeyPressed(keymap.shoot);
-    result.thrust = sf::Keyboard::isKeyPressed(keymap.thrust);
-    result.thrustBurst = sf::Keyboard::isKeyPressed(keymap.thrustBurst);
-
-    return result;
-}
+void forEachKeyInKeymap(const PlayerKeymap& keymap, const std::function<void(sf::Keyboard::Key)>& callback);
+ShipInput readPlayerInput(const PlayerKeymap& keymap);
+ShipInput aiGenerateInput(const GameWorld& world, int selfShipIndex, int enemyShipIndex);

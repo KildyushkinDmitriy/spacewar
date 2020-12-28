@@ -332,7 +332,7 @@ void renderStartingUi(const AppStateStarting& startingState, const std::vector<P
 
     textRender.setCharacterSize(40);
 
-    animationTime += 1.f;
+    animationTime += 0.5f;
 
     constexpr float timeBetweenLinesAppear = 0.3f;
     constexpr float yIncrement = 50.f;
@@ -363,9 +363,17 @@ void renderStartingUi(const AppStateStarting& startingState, const std::vector<P
 
         if (time > animationTime)
         {
-            textRender.setString(startingState.playersReady[0] ? "Ready" : "Press any key");
+            textRender.setString(startingState.playersReady[0] ? players[0].isAi ? "AI" : "Ready" : "Press any key");
             textRender.setPosition(windowCenter + Vec2{-400.f, 300.f});
             window.draw(textRender);
+
+            if (!startingState.playersReady[0])
+            {
+                textRender.setString("or Q for AI");
+                textRender.setPosition(windowCenter + Vec2{-400.f, 350.f});
+                window.draw(textRender);    
+            }
+            
             animationTime += timeBetweenLinesAppear;
         }
     }
@@ -383,9 +391,17 @@ void renderStartingUi(const AppStateStarting& startingState, const std::vector<P
 
         if (time > animationTime)
         {
-            textRender.setString(startingState.playersReady[1] ? "Ready" : "Press any key");
+            textRender.setString(startingState.playersReady[1] ? players[0].isAi ? "AI" :"Ready" : "Press any key");
             textRender.setPosition(windowCenter + Vec2{100.f, 300.f});
             window.draw(textRender);
+
+            if (!startingState.playersReady[1])
+            {
+                textRender.setString("or O for AI");
+                textRender.setPosition(windowCenter + Vec2{100.f, 350.f});
+                window.draw(textRender);    
+            }
+            
             animationTime += timeBetweenLinesAppear;
         }
     }
