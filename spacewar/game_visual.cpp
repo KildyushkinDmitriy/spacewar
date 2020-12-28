@@ -1,5 +1,31 @@
 ﻿#include "game_visual.h"
 
+static void emitParticle(
+    std::vector<Particle>& particles,
+    const ParticleEmitSettings& emitter,
+    const Vec2 pos,
+    const float baseAngle
+)
+{
+    Particle particle;
+    particle.pos = pos;
+
+    const float angle = baseAngle + emitter.angleRange.getRandom();
+    const Vec2 dir = vec2RotationToDir(angle);
+    const float speed = emitter.speedRange.getRandom();
+
+    particle.velocity = dir * speed;
+    particle.totalLifetime = emitter.lifetimeRange.getRandom();
+
+    particle.startRadius = emitter.startRadiusRange.getRandom();
+    particle.finishRadius = emitter.finishRadiusRange.getRandom();
+
+    particle.startColor = emitter.startColorRange.getRandom();
+    particle.finishColor = emitter.finishColorRange.getRandom();
+
+    particles.push_back(particle);
+}
+
 static void simulateParticleEmitter(
     std::vector<Particle>& particles,
     ParticleEmitter& emitter,
@@ -15,37 +41,40 @@ static void simulateParticleEmitter(
     {
         emitter.timer -= timeBetweenParticles;
 
-        Particle particle;
-        particle.pos = pos;
-
-        const float angle = baseAngle + emitter.angleRange.getRandom();
-        const Vec2 dir = vec2RotationToDir(angle);
-        const float speed = emitter.speedRange.getRandom();
-
-        particle.velocity = dir * speed;
-        particle.totalLifetime = emitter.lifetimeRange.getRandom();
-
-        particle.startRadius = emitter.startRadiusRange.getRandom();
-        particle.finishRadius = emitter.finishRadiusRange.getRandom();
-
-        particle.startColor = emitter.startColorRange.getRandom();
-        particle.finishColor = emitter.finishColorRange.getRandom();
-
-        particles.push_back(particle);
+        emitParticle(particles, emitter.settings, pos, baseAngle);
     }
 }
 
-void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents, const float dt)
+std::pair<Vec2, float> getShipThrustPosAngle(const Ship& ship)
+{
+    const float fireAngle = ship.rotation + 180.f;
+    const Vec2 backVec = vec2RotationToDir(fireAngle);
+    const Vec2 pos = ship.pos + backVec * 20.f;
+    return {pos, fireAngle};
+}
+
+void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents,
+                        const float dt)
 {
     // ship thrust emitters
     for (const Ship& ship : logicWorld.ships)
     {
         if (ship.input.accelerate)
         {
-            const float fireAngle = ship.rotation + 180.f;
-            const Vec2 backVec = vec2RotationToDir(fireAngle);
-            const Vec2 pos = ship.pos + backVec * 20.f;
-            simulateParticleEmitter(visualWorld.particles, visualWorld.shipThrustEmitter, pos, fireAngle, dt);
+            auto [pos, angle] =  getShipThrustPosAngle(ship);
+            simulateParticleEmitter(visualWorld.particles, visualWorld.shipThrustEmitter, pos, angle, dt);
+        }
+    }
+
+    // ship thrust burst emit
+    for (const GameEventShipThrustBurst& burst : gameEvents.shipThrustBurst)
+    {
+        const Ship ship = logicWorld.ships[burst.shipIndex];
+        auto [pos, angle] =  getShipThrustPosAngle(ship);
+        ParticleBurstEmitter& emitter = visualWorld.shipThrustBurstEmitSettings;
+        for (int i = 0; i < emitter.particlesCount; ++i)
+        {
+            emitParticle(visualWorld.particles, emitter.settings, pos, angle);
         }
     }
 

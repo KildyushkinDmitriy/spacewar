@@ -49,8 +49,8 @@ GameVisualWorld createVisualWorld()
 {
     GameVisualWorld visualWorld;
 
-    ParticleEmitter& shipThrustEmitter = visualWorld.shipThrustEmitter;
-    shipThrustEmitter.particlesPerSec = 30.f;
+    visualWorld.shipThrustEmitter.particlesPerSec = 30.f;
+    ParticleEmitSettings& shipThrustEmitter = visualWorld.shipThrustEmitter.settings;
     shipThrustEmitter.angleRange = FloatRange{-10.f, 10.f};
     shipThrustEmitter.speedRange = FloatRange{180.f, 220.f};
     shipThrustEmitter.lifetimeRange = FloatRange{0.4f, 0.6f};
@@ -59,6 +59,16 @@ GameVisualWorld createVisualWorld()
     shipThrustEmitter.startColorRange = ColorRange{sf::Color{255, 0, 0, 150}, sf::Color{255, 150, 0, 150}};
     shipThrustEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
 
+    visualWorld.shipThrustBurstEmitSettings.particlesCount = 50.f;
+    ParticleEmitSettings& shipThrustBurstEmitter = visualWorld.shipThrustBurstEmitSettings.settings;
+    shipThrustBurstEmitter.angleRange = FloatRange{-30.f, 30.f};
+    shipThrustBurstEmitter.speedRange = FloatRange{150.f, 300.f};
+    shipThrustBurstEmitter.lifetimeRange = FloatRange{0.2f, 0.4f};
+    shipThrustBurstEmitter.startRadiusRange = FloatRange{9.f, 15.f};
+    shipThrustBurstEmitter.finishRadiusRange = FloatRange{2.f, 3.f};
+    shipThrustBurstEmitter.startColorRange = ColorRange{sf::Color{255, 100, 0, 150}, sf::Color{255, 150, 0, 150}};
+    shipThrustBurstEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
+    
     return visualWorld;
 }
 
