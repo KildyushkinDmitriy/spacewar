@@ -148,7 +148,7 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
         triangleVertices[1] = shipPiecesVertices[i + 1];
         triangleVertices[2] = shipPiecesVertices[i == 7 ? 1 : i + 2];
 
-        for (int vertexIdx = 0; vertexIdx < triangleVertices.getVertexCount(); ++vertexIdx)
+        for (size_t vertexIdx = 0; vertexIdx < triangleVertices.getVertexCount(); ++vertexIdx)
         {
             sf::Color color = shipPiece.shipIndex == 1 ? sf::Color::Cyan : sf::Color::White;
             triangleVertices[vertexIdx].color = color;
@@ -161,7 +161,7 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
         renderShipTexture9times(shipPiece.pos, shipPiece.rotation, world.size, customShape, customShape, window);
     }
 
-    for (int shipIndex = 0; shipIndex < world.ships.size(); ++shipIndex)
+    for (size_t shipIndex = 0; shipIndex < world.ships.size(); ++shipIndex)
     {
         const Ship& ship = world.ships[shipIndex];
         if (ship.isDead)

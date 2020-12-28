@@ -1,8 +1,8 @@
 ﻿#include "game_visual.h"
 
-static void simulateParticlesEmitter(
+static void simulateParticleEmitter(
     std::vector<Particle>& particles,
-    ParticlesEmitter& emitter,
+    ParticleEmitter& emitter,
     const Vec2 pos,
     const float baseAngle,
     const float dt
@@ -35,32 +35,43 @@ static void simulateParticlesEmitter(
     }
 }
 
-static void simulateParticles(std::vector<Particle>& particles, const float dt)
+void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const float dt)
 {
-    std::vector<size_t> toDeleteIndices{};
-
-    for (size_t particleIndex = 0; particleIndex < particles.size(); ++particleIndex)
+    // ship thrust emitters
+    for (const Ship& ship : logicWorld.ships)
     {
-        Particle& particle = particles[particleIndex];
+        if (ship.input.accelerate)
+        {
+            const float fireAngle = ship.rotation + 180.f;
+            const Vec2 backVec = vec2RotationToDir(fireAngle);
+            const Vec2 pos = ship.pos + backVec * 20.f;
+            simulateParticleEmitter(visualWorld.particles, visualWorld.shipThrustEmitter, pos, fireAngle, dt);
+        }
+    }
+
+    // particles
+    std::vector<size_t> particlesToDeleteIndices{};
+
+    for (size_t particleIndex = 0; particleIndex < visualWorld.particles.size(); ++particleIndex)
+    {
+        Particle& particle = visualWorld.particles[particleIndex];
         particle.lifetime += dt;
 
         if (particle.lifetime > particle.totalLifetime)
         {
-            toDeleteIndices.push_back(particleIndex);
+            particlesToDeleteIndices.push_back(particleIndex);
             continue;
         }
 
         particle.pos += particle.velocity * dt;
     }
 
-    for (int i = toDeleteIndices.size() - 1; i >= 0; --i)
+    for (int i = particlesToDeleteIndices.size() - 1; i >= 0; --i)
     {
-        particles.erase(particles.begin() + toDeleteIndices[i]);
+        visualWorld.particles.erase(visualWorld.particles.begin() + particlesToDeleteIndices[i]);
     }
-}
 
-static void simulateDeadShipPieces(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const float dt)
-{
+    // dead ship pieces
     for (size_t shipIndex = 0; shipIndex < logicWorld.ships.size(); ++shipIndex)
     {
         const Ship& ship = logicWorld.ships[shipIndex];
@@ -91,22 +102,4 @@ static void simulateDeadShipPieces(GameVisualWorld& visualWorld, const GameWorld
         shipPiece.pos += shipPiece.velocity * dt;
         shipPiece.rotation += shipPiece.angularSpeed * dt;
     }
-}
-
-void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const float dt)
-{
-    for (const Ship& ship : logicWorld.ships)
-    {
-        if (ship.input.accelerate)
-        {
-            const float fireAngle = ship.rotation + 180.f;
-            const Vec2 backVec = vec2RotationToDir(fireAngle);
-            const Vec2 pos = ship.pos + backVec * 20.f;
-            simulateParticlesEmitter(visualWorld.particles, visualWorld.shipThrustEmitter, pos, fireAngle, dt);
-        }
-    }
-
-    simulateParticles(visualWorld.particles, dt);
-
-    simulateDeadShipPieces(visualWorld, logicWorld, dt);
 }

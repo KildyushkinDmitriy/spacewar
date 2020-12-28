@@ -22,7 +22,7 @@ struct Particle
     float lifetime = 0;
 };
 
-struct ParticlesEmitter
+struct ParticleEmitter
 {
     // const:
     float particlesPerSec = 0.f;
@@ -58,7 +58,7 @@ struct GameVisualWorld
     std::vector<Particle> particles;
     std::vector<bool> shipsDead; // used to track that visual sim handled ship death
     std::vector<DeadShipPiece> deadShipPieces;
-    ParticlesEmitter shipThrustEmitter;
+    ParticleEmitter shipThrustEmitter;
 };
 
 void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, float dt);

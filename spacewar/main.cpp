@@ -49,7 +49,7 @@ GameVisualWorld createVisualWorld(const GameWorld& logicWorld)
 {
     GameVisualWorld visualWorld;
 
-    ParticlesEmitter& shipThrustEmitter = visualWorld.shipThrustEmitter;
+    ParticleEmitter& shipThrustEmitter = visualWorld.shipThrustEmitter;
     shipThrustEmitter.particlesPerSec = 30.f;
     shipThrustEmitter.angleRange = FloatRange{-10.f, 10.f};
     shipThrustEmitter.speedRange = FloatRange{180.f, 220.f};
