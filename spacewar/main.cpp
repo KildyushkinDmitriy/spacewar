@@ -45,7 +45,7 @@ GameWorld createWorld(const Vec2 size)
     return world;
 }
 
-GameVisualWorld createVisualWorld()
+GameVisualWorld createVisualWorld(const Vec2 worldSize)
 {
     GameVisualWorld visualWorld;
 
@@ -78,6 +78,16 @@ GameVisualWorld createVisualWorld()
     projectileTrailEmitter.finishRadiusRange = FloatRange{1.f, 1.3f};
     projectileTrailEmitter.startColorRange = ColorRange{sf::Color{100, 0, 0, 150}, sf::Color{100, 0, 0, 150}};
     projectileTrailEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{0, 0, 0, 150}};
+
+    for (int i = 0; i < 50; ++i)
+    {
+        Star star;
+        star.pos = Vec2{randomFloatRange(0, worldSize.x), randomFloatRange(0, worldSize.y)};
+        star.radius = randomFloatRange(0.5f, 2.f);
+        star.brightnessRange = FloatRange{randomFloatRange(0.4f, 0.7f), randomFloatRange(0.7f, 1.f)};
+        star.periodsPerSec = randomFloatRange(0.1f, 0.5f);
+        visualWorld.stars.push_back(star);
+    }
     
     return visualWorld;
 }
@@ -129,7 +139,7 @@ int main()
     const auto initWorlds = [&world, &visualWorld, &window]()
     {
         world = createWorld(Vec2{window.getSize()});
-        visualWorld = createVisualWorld();
+        visualWorld = createVisualWorld(world.size);
     };
 
     initWorlds();

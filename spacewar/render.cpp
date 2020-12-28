@@ -85,6 +85,26 @@ static void positionTextWithCenterAlignment(sf::Text& textRender, const Vec2 pos
 void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::RenderWindow& window,
                 const sf::Texture& shipTexture)
 {
+    const float time = world.time;
+
+    // Stars
+    sf::CircleShape starShape;
+    for (const Star& star : visualWorld.stars)
+    {
+        const float angle = floatWrap(time * star.periodsPerSec * 360.f, 360.f);
+        const float brightnessT = std::sin(degToRad(angle)) / 2.f + 0.5f;
+
+        const float brightness = floatLerp(star.brightnessRange.min, star.brightnessRange.max, brightnessT);
+        const sf::Uint8 colorMagnitude = brightness * 255.f;
+        const sf::Color color = sf::Color{colorMagnitude, colorMagnitude, colorMagnitude, 255};
+
+        starShape.setPosition(star.pos);
+        starShape.setFillColor(color);
+        starShape.setRadius(star.radius);
+        starShape.setOrigin(Vec2{starShape.getRadius(), starShape.getRadius()});
+        window.draw(starShape);
+    }
+
     sf::RectangleShape shipShape{Vec2{35, 35}};
     shipShape.setOrigin(shipShape.getSize() / 2.f);
     shipShape.setTexture(&shipTexture);
@@ -94,8 +114,6 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
     {
         sf::CircleShape gravityWellShape;
         gravityWellShape.setPosition(gravityWell.pos);
-        
-        const float time = world.time;
 
         const int count = 20;
 
@@ -106,12 +124,10 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
             const float radius = 100.f * radiusMultiplier;
 
             gravityWellShape.setFillColor(colorLerp(sf::Color{0, 0, 0, 120}, sf::Color{0, 0, 0, 0}, radiusMultiplier));
-            
             gravityWellShape.setRadius(radius);
-            gravityWellShape.setOrigin(Vec2{gravityWellShape.getRadius(), gravityWellShape.getRadius()});        
-            window.draw(gravityWellShape);  
+            gravityWellShape.setOrigin(Vec2{gravityWellShape.getRadius(), gravityWellShape.getRadius()});
+            window.draw(gravityWellShape);
         }
-          
     }
 
     // Particles

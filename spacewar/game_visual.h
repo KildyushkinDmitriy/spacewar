@@ -62,10 +62,21 @@ struct DeadShipPiece
     int pieceIndex = 0;
 };
 
+struct Star
+{
+    Vec2 pos{};
+    float radius = 0.f;
+
+    FloatRange brightnessRange{};
+    float periodsPerSec = 0.f;
+};
+
 struct GameVisualWorld
 {
     std::vector<Particle> particles;
     std::vector<DeadShipPiece> deadShipPieces;
+    std::vector<Star> stars;
+    
     ParticleEmitter shipThrustEmitter;
     ParticleEmitter projectileTrailEmitter;
     ParticleBurstEmitter shipThrustBurstEmitSettings;
