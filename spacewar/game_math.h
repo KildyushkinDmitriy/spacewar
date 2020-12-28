@@ -22,7 +22,8 @@ float vec2Length(Vec2 vec);
 float vec2DistSq(Vec2 a, Vec2 b);
 float vec2Dist(Vec2 a, Vec2 b);
 Vec2 vec2Wrap(Vec2 val, Vec2 max);
-Vec2 vec2RotationToDir(float rotation);
+Vec2 vec2AngleToDir(float angle);
+float vec2DirToAngle(Vec2 dir);
 
 bool isPointInsideCircle(Vec2 point, Vec2 circleCenter, float circleRadius);
 bool isPointOnSegment(Vec2 point, Vec2 segmentP1, Vec2 segmentP2, float precision = 0.0001);

@@ -37,8 +37,7 @@ ShipInput aiGenerateInput(const GameWorld& world, const int selfShipIndex, const
 
     const Vec2 vecToEnemy = enemyShip.pos - selfShip.pos;
     const float distToEnemy = vec2Length(vecToEnemy);
-
-    const float angleToEnemy = floatWrap(radToDeg(std::atan2f(vecToEnemy.y, vecToEnemy.x)), 360.f);
+    const float angleToEnemy = vec2DirToAngle(vecToEnemy);
 
     ShipInput result;
 

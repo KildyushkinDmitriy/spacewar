@@ -13,7 +13,7 @@ static void emitParticle(
         particle.pos = pos;
 
         const float angle = baseAngle + settings.angleRange.getRandom();
-        const Vec2 dir = vec2RotationToDir(angle);
+        const Vec2 dir = vec2AngleToDir(angle);
         const float speed = settings.speedRange.getRandom();
 
         particle.velocity = dir * speed;
@@ -51,7 +51,7 @@ static void simulateParticleEmitter(
 std::pair<Vec2, float> getPosBehind(const Vec2& pos, const float rotation, const float offset)
 {
     const float invAngle = rotation + 180.f;
-    const Vec2 backVec = vec2RotationToDir(invAngle);
+    const Vec2 backVec = vec2AngleToDir(invAngle);
     const Vec2 resultPos = pos + backVec * offset;
     return {resultPos, invAngle};
 }
@@ -128,7 +128,7 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
         const Ship ship = logicWorld.ships[shipDeath.shipIndex];
         for (int deadPieceIndex = 0; deadPieceIndex < 8; ++deadPieceIndex)
         {
-            const Vec2 extraVelocityDir = vec2RotationToDir(90.f * 3 + deadPieceIndex * 360.f / 8.f);
+            const Vec2 extraVelocityDir = vec2AngleToDir(90.f * 3 + deadPieceIndex * 360.f / 8.f);
 
             DeadShipPiece shipPiece;
             shipPiece.pos = ship.pos;

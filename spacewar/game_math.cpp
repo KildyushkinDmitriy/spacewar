@@ -59,10 +59,16 @@ float vec2Dist(const Vec2 a, const Vec2 b)
     return std::sqrt(vec2DistSq(a, b));
 }
 
-Vec2 vec2RotationToDir(const float rotation)
+Vec2 vec2AngleToDir(const float angle)
 {
-    const float rad = degToRad(floatWrap(rotation, 360.f));
+    const float rad = degToRad(floatWrap(angle, 360.f));
     return Vec2{cos(rad), sin(rad)};
+}
+
+float vec2DirToAngle(const Vec2 dir)
+{
+    const float rad = std::atan2f(dir.y, dir.x);
+    return floatWrap(radToDeg(rad), 360.f);
 }
 
 bool isPointInsideCircle(const Vec2 point, const Vec2 circleCenter, const float circleRadius)

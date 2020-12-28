@@ -29,12 +29,12 @@ static void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, con
                           sf::RenderWindow& window)
 {
     const Vec2 diff = b - a;
-    const float angleRad = std::atan2f(diff.y, diff.x);
+    const float angle = vec2DirToAngle(diff);
 
     sf::RectangleShape rectShape{Vec2{vec2Length(diff), thickness}};
     rectShape.setPosition(a);
     rectShape.setOrigin(Vec2{0.f, thickness / 2.f});
-    rectShape.rotate(radToDeg(angleRad));
+    rectShape.rotate(angle);
     rectShape.setFillColor(color);
     window.draw(rectShape);
 }
@@ -414,7 +414,7 @@ void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, const sf:
     {
         const int gradationsCount = 20;
         const float radiusIncrement = well.maxRadius / (gradationsCount - 1);
-        const Vec2 dir = vec2RotationToDir(180.f + 45.f);
+        const Vec2 dir = vec2AngleToDir(180.f + 45.f);
 
         struct Measure
         {
@@ -499,7 +499,7 @@ void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, const sf:
         // input acceleration
         if (ship.input.thrust)
         {
-            Vec2 accel = vec2RotationToDir(ship.rotation) * world.settings.shipThrustAcceleration;
+            Vec2 accel = vec2AngleToDir(ship.rotation) * world.settings.shipThrustAcceleration;
             drawThickLine(ship.pos, ship.pos + accel, 5.f, sf::Color::Green, window);
         }
 

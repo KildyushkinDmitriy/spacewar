@@ -64,7 +64,7 @@ GameEvents gameSimulate(GameWorld& world, const float dt)
             ship.velocity += gameGetGravityWellVectorAtPoint(well, ship.pos) * dt;
         }
 
-        const Vec2 forwardDir = vec2RotationToDir(ship.rotation);
+        const Vec2 forwardDir = vec2AngleToDir(ship.rotation);
 
         if (ship.input.thrust)
         {
