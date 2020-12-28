@@ -35,7 +35,7 @@ static void simulateParticleEmitter(
     }
 }
 
-void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const float dt)
+void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents, const float dt)
 {
     // ship thrust emitters
     for (const Ship& ship : logicWorld.ships)
@@ -71,29 +71,23 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
         visualWorld.particles.erase(visualWorld.particles.begin() + particlesToDeleteIndices[i]);
     }
 
-    // dead ship pieces
-    for (size_t shipIndex = 0; shipIndex < logicWorld.ships.size(); ++shipIndex)
+    for (const GameEventShipDeath& shipDeath : gameEvents.shipDeath)
     {
-        const Ship& ship = logicWorld.ships[shipIndex];
-        if (ship.isDead && !visualWorld.shipsDead[shipIndex])
+        const Ship ship = logicWorld.ships[shipDeath.shipIndex];
+        for (int deadPieceIndex = 0; deadPieceIndex < 8; ++deadPieceIndex)
         {
-            visualWorld.shipsDead[shipIndex] = true;
+            const Vec2 extraVelocityDir = vec2RotationToDir(90.f * 3 + deadPieceIndex * 360.f / 8.f);
 
-            for (int deadPieceIndex = 0; deadPieceIndex < 8; ++deadPieceIndex)
-            {
-                const Vec2 extraVelocityDir = vec2RotationToDir(90.f * 3 + deadPieceIndex * 360.f / 8.f);
+            DeadShipPiece shipPiece;
+            shipPiece.pos = ship.pos;
+            shipPiece.velocity = ship.velocity;
+            shipPiece.velocity += extraVelocityDir * randomFloatRange(0.f, 100.f);
+            shipPiece.rotation = ship.rotation;
+            shipPiece.angularSpeed = randomFloatRange(-30.f, 30.f);
+            shipPiece.pieceIndex = deadPieceIndex;
+            shipPiece.shipIndex = shipDeath.shipIndex;
 
-                DeadShipPiece shipPiece;
-                shipPiece.pos = ship.pos;
-                shipPiece.velocity = ship.velocity;
-                shipPiece.velocity += extraVelocityDir * randomFloatRange(0.f, 100.f);
-                shipPiece.rotation = ship.rotation;
-                shipPiece.angularSpeed = randomFloatRange(-30.f, 30.f);
-                shipPiece.pieceIndex = deadPieceIndex;
-                shipPiece.shipIndex = shipIndex;
-
-                visualWorld.deadShipPieces.push_back(shipPiece);
-            }
+            visualWorld.deadShipPieces.push_back(shipPiece);
         }
     }
 

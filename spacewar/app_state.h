@@ -13,7 +13,7 @@ struct AppStateGame
 
 struct AppStateGameOver
 {
-    GameResult gameResult{};
+    GameEventGameResult gameResult{};
     float timeWhenRestart = 0.f;
     float timeInState = 0.f;
 };

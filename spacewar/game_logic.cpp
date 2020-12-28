@@ -1,6 +1,5 @@
 ﻿#include "game_logic.h"
 
-#include <cassert>
 #include <algorithm>
 
 float gameGetGravityWellPowerAtRadius(const GravityWell& well, const float radius)
@@ -25,13 +24,25 @@ Vec2 gameGetGravityWellVectorAtPoint(const GravityWell& well, const Vec2 point)
     return powerDir * power;
 }
 
-std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
+static void killShip(GameWorld& world, const size_t shipIndex, GameEvents& gameEvents)
+{
+    Ship& ship = world.ships[shipIndex];
+    if (!ship.isDead)
+    {
+        ship.isDead = true;
+        gameEvents.shipDeath.push_back(GameEventShipDeath{shipIndex});
+    }
+}
+
+GameEvents gameSimulate(GameWorld& world, const float dt)
 {
     const GameplaySettings& settings = world.settings;
+    GameEvents gameEvents;
 
     // Ships
-    for (Ship& ship : world.ships)
+    for (size_t shipIndex = 0; shipIndex < world.ships.size(); ++shipIndex)
     {
+        Ship& ship = world.ships[shipIndex];
         if (ship.isDead)
         {
             continue;
@@ -67,6 +78,8 @@ std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
             {
                 ship.velocity += forwardDir * settings.shipAccelerationImpulse;
                 ship.accelerateImpulseCooldownLeft = settings.shipAccelerationImpulseCooldown;
+
+                gameEvents.shipThrustBurst.push_back(GameEventShipThrustBurst{shipIndex});
             }
         }
 
@@ -111,8 +124,8 @@ std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
             // note: no continuous collision here yet
             if (isCircleIntersectCircle(ship1.pos, radius, ship2.pos, radius))
             {
-                ship1.isDead = true;
-                ship2.isDead = true;
+                killShip(world, i, gameEvents);
+                killShip(world, j, gameEvents);
             }
         }
     }
@@ -129,7 +142,7 @@ std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
                 const float length = vec2Length(ship.velocity);
                 if (length > 0.001f)
                 {
-                    ship.velocity = ship.velocity / length * 10.f;
+                    ship.velocity = ship.velocity / length * 20.f;
                 }
             }
         }
@@ -151,11 +164,12 @@ std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
         const Vec2 newPos = projectile.pos + projectile.velocity * dt;
 
         // test projectile collision against all ships
-        for (Ship& ship : world.ships)
+        for (size_t shipIndex = 0; shipIndex < world.ships.size(); ++shipIndex)
         {
+            Ship& ship = world.ships[shipIndex];
             if (isSegmentIntersectCircle(projectile.pos, newPos, ship.pos, settings.shipCollisionRadius))
             {
-                ship.isDead = true;
+                killShip(world, shipIndex, gameEvents);
                 projectilesToDeleteIndices.push_back(projectileIndex);
                 break;
             }
@@ -185,16 +199,10 @@ std::optional<GameResult> gameSimulate(GameWorld& world, const float dt)
         }
     }
 
-    if (deadShipsCount == 0)
+    if (deadShipsCount != 0)
     {
-        return {};
+        gameEvents.result = GameEventGameResult{deadShipsCount == world.ships.size() ? -1 : aliveShipIndex};
     }
 
-    if (deadShipsCount == world.ships.size())
-    {
-        return GameResult{-1};
-    }
-
-    assert(aliveShipIndex != -1);
-    return GameResult{aliveShipIndex};
+    return gameEvents;
 }

@@ -56,9 +56,8 @@ struct DeadShipPiece
 struct GameVisualWorld
 {
     std::vector<Particle> particles;
-    std::vector<bool> shipsDead; // used to track that visual sim handled ship death
     std::vector<DeadShipPiece> deadShipPieces;
     ParticleEmitter shipThrustEmitter;
 };
 
-void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, float dt);
+void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents, float dt);

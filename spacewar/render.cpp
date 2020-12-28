@@ -209,7 +209,7 @@ void renderGameOverUi(
 
     if (time > animationTime)
     {
-        const GameResult& gameResult = gameOverState.gameResult;
+        const GameEventGameResult& gameResult = gameOverState.gameResult;
         sf::String gameResultString;
 
         if (gameResult.isTie())

@@ -70,14 +70,31 @@ struct GameWorld
     std::vector<GravityWell> gravityWells{};
 };
 
-struct GameResult
+struct GameEventGameResult
 {
     int victoriousPlayerIndex = -1;
 
     bool isTie() const { return victoriousPlayerIndex == -1; }
 };
 
-std::optional<GameResult> gameSimulate(GameWorld& world, float dt);
+struct GameEventShipDeath
+{
+    size_t shipIndex = -1;
+};
+
+struct GameEventShipThrustBurst
+{
+    size_t shipIndex = -1;
+};
+
+struct GameEvents
+{
+    std::vector<GameEventShipDeath> shipDeath{};
+    std::vector<GameEventShipThrustBurst> shipThrustBurst{};
+    std::optional<GameEventGameResult> result{};
+};
+
+GameEvents gameSimulate(GameWorld& world, float dt);
 
 float gameGetGravityWellPowerAtRadius(const GravityWell& well, float radius);
 Vec2 gameGetGravityWellVectorAtPoint(const GravityWell& well, Vec2 point);

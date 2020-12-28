@@ -45,7 +45,7 @@ GameWorld createWorld(const Vec2 size)
     return world;
 }
 
-GameVisualWorld createVisualWorld(const GameWorld& logicWorld)
+GameVisualWorld createVisualWorld()
 {
     GameVisualWorld visualWorld;
 
@@ -59,8 +59,6 @@ GameVisualWorld createVisualWorld(const GameWorld& logicWorld)
     shipThrustEmitter.startColorRange = ColorRange{sf::Color{255, 0, 0, 150}, sf::Color{255, 150, 0, 150}};
     shipThrustEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
 
-    visualWorld.shipsDead.resize(logicWorld.ships.size(), false);
-    
     return visualWorld;
 }
 
@@ -111,7 +109,7 @@ int main()
     const auto initWorlds = [&world, &visualWorld, &window]()
     {
         world = createWorld(Vec2{window.getSize()});
-        visualWorld = createVisualWorld(world);
+        visualWorld = createVisualWorld();
     };
 
     initWorlds();
@@ -171,17 +169,17 @@ int main()
                 world.ships[i].input = readPlayerInput(players[i].keymap);
             }
 
-            std::optional<GameResult> simResult = gameSimulate(world, dt);
-            gameVisualSimulate(visualWorld, world, dt);
+            const GameEvents gameEvents = gameSimulate(world, dt);
+            gameVisualSimulate(visualWorld, world, gameEvents, dt);
 
-            if (simResult.has_value())
+            if (gameEvents.result.has_value())
             {
-                if (!simResult->isTie())
+                if (!gameEvents.result->isTie())
                 {
-                    players[simResult->victoriousPlayerIndex].score++;
+                    players[gameEvents.result->victoriousPlayerIndex].score++;
                 }
 
-                appState = AppStateGameOver{simResult.value(), 15.f};
+                appState = AppStateGameOver{gameEvents.result.value(), 15.f};
             }
         }
         else if (auto* gameOverState = std::get_if<AppStateGameOver>(&appState))
@@ -197,8 +195,8 @@ int main()
             const float slowMotionMultiplier = floatLerp(0.2f, 1.f,std::clamp(gameOverState->timeInState / timeInSlowMotion, 0.f, 1.f)); 
             const float slowMotionDt = slowMotionMultiplier * dt;
 
-            gameSimulate(world, slowMotionDt);
-            gameVisualSimulate(visualWorld, world, slowMotionDt);
+            const GameEvents gameEvents = gameSimulate(world, slowMotionDt);
+            gameVisualSimulate(visualWorld, world, gameEvents, slowMotionDt);
 
             const bool restartButtonPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
             
