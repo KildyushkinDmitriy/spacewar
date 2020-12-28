@@ -59,7 +59,7 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
     // ship thrust emitters
     for (const Ship& ship : logicWorld.ships)
     {
-        if (ship.input.accelerate)
+        if (ship.input.thrust)
         {
             auto [pos, angle] =  getShipThrustPosAngle(ship);
             simulateParticleEmitter(visualWorld.particles, visualWorld.shipThrustEmitter, pos, angle, dt);

@@ -31,10 +31,10 @@ GameWorld createWorld(const Vec2 size)
     well.dragRadius = 50.f;
     world.gravityWells.push_back(well);
 
-    world.settings.shipAcceleration = 25.f;
-    world.settings.shipAccelerationImpulse = 75.f;
-    world.settings.shipAccelerationImpulseCooldown = 3.f;
-    world.settings.shipSteeringSpeed = 180.f;
+    world.settings.shipThrustAcceleration = 25.f;
+    world.settings.shipThrustBurstImpulse = 75.f;
+    world.settings.shipThrustBurstImpulseCooldown = 3.f;
+    world.settings.shipRotationSpeed = 180.f;
     world.settings.shootCooldown = 1.f;
     world.settings.projectileSpeed = 150.f;
     world.settings.projectileLifetime = 5.f;
@@ -59,7 +59,7 @@ GameVisualWorld createVisualWorld()
     shipThrustEmitter.startColorRange = ColorRange{sf::Color{255, 0, 0, 150}, sf::Color{255, 150, 0, 150}};
     shipThrustEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
 
-    visualWorld.shipThrustBurstEmitSettings.particlesCount = 50.f;
+    visualWorld.shipThrustBurstEmitSettings.particlesCount = 50;
     ParticleEmitSettings& shipThrustBurstEmitter = visualWorld.shipThrustBurstEmitSettings.settings;
     shipThrustBurstEmitter.angleRange = FloatRange{-30.f, 30.f};
     shipThrustBurstEmitter.speedRange = FloatRange{150.f, 300.f};

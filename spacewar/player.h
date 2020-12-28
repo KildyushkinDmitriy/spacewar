@@ -10,8 +10,8 @@ struct PlayerKeymap
     sf::Keyboard::Key left = sf::Keyboard::Unknown;
     sf::Keyboard::Key right = sf::Keyboard::Unknown;
     sf::Keyboard::Key shoot = sf::Keyboard::Unknown;
-    sf::Keyboard::Key accelerate = sf::Keyboard::Unknown;
-    sf::Keyboard::Key accelerateImpulse = sf::Keyboard::Unknown;
+    sf::Keyboard::Key thrust = sf::Keyboard::Unknown;
+    sf::Keyboard::Key thrustBurst = sf::Keyboard::Unknown;
 };
 
 struct Player
@@ -26,8 +26,8 @@ inline void forEachKeyInKeymap(const PlayerKeymap& keymap, const std::function<v
     callback(keymap.left);
     callback(keymap.right);
     callback(keymap.shoot);
-    callback(keymap.accelerate);
-    callback(keymap.accelerateImpulse);
+    callback(keymap.thrust);
+    callback(keymap.thrustBurst);
 }
 
 inline ShipInput readPlayerInput(const PlayerKeymap& keymap)
@@ -36,17 +36,17 @@ inline ShipInput readPlayerInput(const PlayerKeymap& keymap)
 
     if (sf::Keyboard::isKeyPressed(keymap.left))
     {
-        result.steer -= 1.0f;
+        result.rotate -= 1.0f;
     }
 
     if (sf::Keyboard::isKeyPressed(keymap.right))
     {
-        result.steer += 1.0f;
+        result.rotate += 1.0f;
     }
 
     result.shoot = sf::Keyboard::isKeyPressed(keymap.shoot);
-    result.accelerate = sf::Keyboard::isKeyPressed(keymap.accelerate);
-    result.accelerateImpulse = sf::Keyboard::isKeyPressed(keymap.accelerateImpulse);
+    result.thrust = sf::Keyboard::isKeyPressed(keymap.thrust);
+    result.thrustBurst = sf::Keyboard::isKeyPressed(keymap.thrustBurst);
 
     return result;
 }

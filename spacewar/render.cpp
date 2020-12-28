@@ -447,9 +447,9 @@ void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, const sf:
         }
 
         // input acceleration
-        if (ship.input.accelerate)
+        if (ship.input.thrust)
         {
-            Vec2 accel = vec2RotationToDir(ship.rotation) * world.settings.shipAcceleration;
+            Vec2 accel = vec2RotationToDir(ship.rotation) * world.settings.shipThrustAcceleration;
             drawThickLine(ship.pos, ship.pos + accel, 5.f, sf::Color::Green, window);
         }
 

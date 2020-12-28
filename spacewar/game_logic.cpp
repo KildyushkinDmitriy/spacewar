@@ -49,7 +49,7 @@ GameEvents gameSimulate(GameWorld& world, const float dt)
         }
 
         // Move
-        ship.rotation += ship.input.steer * settings.shipSteeringSpeed * dt;
+        ship.rotation += ship.input.rotate * settings.shipRotationSpeed * dt;
         ship.rotation = floatWrap(ship.rotation, 360.f);
 
         // drag + gravity near well
@@ -64,20 +64,20 @@ GameEvents gameSimulate(GameWorld& world, const float dt)
 
         const Vec2 forwardDir = vec2RotationToDir(ship.rotation);
 
-        if (ship.input.accelerate)
+        if (ship.input.thrust)
         {
-            ship.velocity += forwardDir * settings.shipAcceleration * dt;
+            ship.velocity += forwardDir * settings.shipThrustAcceleration * dt;
         }
 
-        ship.accelerateImpulseCooldownLeft -= dt;
-        if (ship.accelerateImpulseCooldownLeft <= 0)
+        ship.thrustBurstCooldownLeft -= dt;
+        if (ship.thrustBurstCooldownLeft <= 0)
         {
-            ship.accelerateImpulseCooldownLeft = 0;
+            ship.thrustBurstCooldownLeft = 0;
 
-            if (ship.input.accelerateImpulse)
+            if (ship.input.thrustBurst)
             {
-                ship.velocity += forwardDir * settings.shipAccelerationImpulse;
-                ship.accelerateImpulseCooldownLeft = settings.shipAccelerationImpulseCooldown;
+                ship.velocity += forwardDir * settings.shipThrustBurstImpulse;
+                ship.thrustBurstCooldownLeft = settings.shipThrustBurstImpulseCooldown;
 
                 gameEvents.shipThrustBurst.push_back(GameEventShipThrustBurst{shipIndex});
             }

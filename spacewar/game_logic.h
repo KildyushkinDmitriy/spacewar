@@ -7,10 +7,10 @@
 
 struct GameplaySettings
 {
-    float shipAcceleration = 0.f;
-    float shipAccelerationImpulse = 0.f;
-    float shipAccelerationImpulseCooldown = 0.f;
-    float shipSteeringSpeed = 0.f;
+    float shipThrustAcceleration = 0.f;
+    float shipThrustBurstImpulse = 0.f;
+    float shipThrustBurstImpulseCooldown = 0.f;
+    float shipRotationSpeed = 0.f;
     float shootCooldown = 0.f;
     float projectileSpeed = 0.f;
     float projectileLifetime = 0.f;
@@ -22,9 +22,9 @@ struct GameplaySettings
 
 struct ShipInput
 {
-    float steer = 0.f;
-    bool accelerate = false;
-    bool accelerateImpulse = false;
+    float rotate = 0.f;
+    bool thrust = false;
+    bool thrustBurst = false;
     bool shoot = false;
 };
 
@@ -38,7 +38,7 @@ struct Ship
     ShipInput input{};
 
     float shootCooldownLeft = 0.f;
-    float accelerateImpulseCooldownLeft = 0.f;
+    float thrustBurstCooldownLeft = 0.f;
 
     bool isDead = false;
 };
