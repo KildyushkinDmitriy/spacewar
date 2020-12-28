@@ -2,46 +2,49 @@
 
 static void emitParticle(
     std::vector<Particle>& particles,
-    const ParticleEmitSettings& emitter,
+    const ParticleEmitterSettings& settings,
     const Vec2 pos,
     const float baseAngle
 )
 {
-    Particle particle;
-    particle.pos = pos;
+    for (int i = 0; i < settings.particlesPerSpawn; ++i)
+    {
+        Particle particle;
+        particle.pos = pos;
 
-    const float angle = baseAngle + emitter.angleRange.getRandom();
-    const Vec2 dir = vec2RotationToDir(angle);
-    const float speed = emitter.speedRange.getRandom();
+        const float angle = baseAngle + settings.angleRange.getRandom();
+        const Vec2 dir = vec2RotationToDir(angle);
+        const float speed = settings.speedRange.getRandom();
 
-    particle.velocity = dir * speed;
-    particle.totalLifetime = emitter.lifetimeRange.getRandom();
+        particle.velocity = dir * speed;
+        particle.totalLifetime = settings.lifetimeRange.getRandom();
 
-    particle.startRadius = emitter.startRadiusRange.getRandom();
-    particle.finishRadius = emitter.finishRadiusRange.getRandom();
+        particle.startRadius = settings.startRadiusRange.getRandom();
+        particle.finishRadius = settings.finishRadiusRange.getRandom();
 
-    particle.startColor = emitter.startColorRange.getRandom();
-    particle.finishColor = emitter.finishColorRange.getRandom();
+        particle.startColor = settings.startColorRange.getRandom();
+        particle.finishColor = settings.finishColorRange.getRandom();
 
-    particles.push_back(particle);
+        particles.push_back(particle);
+    }
 }
 
 static void simulateParticleEmitter(
     std::vector<Particle>& particles,
     ParticleEmitter& emitter,
+    const ParticleEmitterSettings& settings,
     const Vec2 pos,
     const float baseAngle,
     const float dt
 )
 {
-    const float timeBetweenParticles = 1.f / emitter.particlesPerSec;
+    const float timeBetweenParticles = 1.f / settings.particlesPerSec;
     emitter.timer += dt;
 
     while (emitter.timer > timeBetweenParticles)
     {
         emitter.timer -= timeBetweenParticles;
-
-        emitParticle(particles, emitter.settings, pos, baseAngle);
+        emitParticle(particles, settings, pos, baseAngle);
     }
 }
 
@@ -57,32 +60,44 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
                         const float dt)
 {
     // ship thrust emitters
-    for (const Ship& ship : logicWorld.ships)
+    for (int i = 0; i < visualWorld.shipThrustParticleEmitters.size(); ++i)
     {
+        const Ship& ship = logicWorld.ships[i];
+
         if (ship.input.thrust)
         {
+            ParticleEmitter& emitter = visualWorld.shipThrustParticleEmitters[i];
             auto [pos, angle] = getPosBehind(ship.pos, ship.rotation, 20.f);
-            simulateParticleEmitter(visualWorld.particles, visualWorld.shipThrustEmitter, pos, angle, dt);
+            simulateParticleEmitter(visualWorld.particles, emitter, visualWorld.shipThrustEmitterSettings, pos, angle, dt);
         }
     }
 
-    // projectile trail emitters
-    for (const Projectile& projectile : logicWorld.projectiles)
+    // Projectile emitters
+    for (const GameEventProjectileCreated event : gameEvents.projectileCreate)
     {
-        auto [pos, angle] = getPosBehind(projectile.pos, projectile.rotation, 10.f);
-        simulateParticleEmitter(visualWorld.particles, visualWorld.projectileTrailEmitter, pos, angle, dt);
+        visualWorld.projectileParticleEmitters.insert(visualWorld.projectileParticleEmitters.begin() + event.projectileIndex,1, {});
     }
+    
+    for (const GameEventProjectileDestroyed event : gameEvents.projectileDestroyed)
+    {
+        visualWorld.projectileParticleEmitters.erase(visualWorld.projectileParticleEmitters.begin() + event.projectileIndex);
+    }
+    
+    for (int i = 0; i < visualWorld.projectileParticleEmitters.size(); ++i)
+    {
+        ParticleEmitter& emitter = visualWorld.projectileParticleEmitters[i];
+        const Projectile& projectile = logicWorld.projectiles[i];
 
+        auto [pos, angle] = getPosBehind(projectile.pos, projectile.rotation, 10.f);
+        simulateParticleEmitter(visualWorld.particles, emitter, visualWorld.projectileTrailEmitterSettings, pos, angle, dt);
+    }
+        
     // ship thrust burst emit
     for (const GameEventShipThrustBurst& burst : gameEvents.shipThrustBurst)
     {
         const Ship ship = logicWorld.ships[burst.shipIndex];
         auto [pos, angle] = getPosBehind(ship.pos, ship.rotation, 17.f);
-        ParticleBurstEmitter& emitter = visualWorld.shipThrustBurstEmitSettings;
-        for (int i = 0; i < emitter.particlesCount; ++i)
-        {
-            emitParticle(visualWorld.particles, emitter.settings, pos, angle);
-        }
+        emitParticle(visualWorld.particles, visualWorld.shipThrustBurstEmitSettings, pos, angle);
     }
 
     // particles

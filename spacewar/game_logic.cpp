@@ -102,6 +102,7 @@ GameEvents gameSimulate(GameWorld& world, const float dt)
                 projectile.lifetimeLeft = settings.projectileLifetime;
 
                 world.projectiles.push_back(projectile);
+                gameEvents.projectileCreate.push_back({world.projectiles.size() - 1});
 
                 ship.shootCooldownLeft = settings.shootCooldown;
             }
@@ -182,7 +183,9 @@ GameEvents gameSimulate(GameWorld& world, const float dt)
 
     for (int i = projectilesToDeleteIndices.size() - 1; i >= 0; --i)
     {
-        world.projectiles.erase(world.projectiles.begin() + projectilesToDeleteIndices[i]);
+        const size_t projectilesToDeleteIndex = projectilesToDeleteIndices[i];
+        world.projectiles.erase(world.projectiles.begin() + projectilesToDeleteIndex);
+        gameEvents.projectileDestroyed.push_back({projectilesToDeleteIndex});
     }
 
     // Game result

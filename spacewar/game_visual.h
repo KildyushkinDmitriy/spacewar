@@ -22,8 +22,11 @@ struct Particle
     float lifetime = 0;
 };
 
-struct ParticleEmitSettings
+struct ParticleEmitterSettings
 {
+    float particlesPerSec = 0.f;
+    int particlesPerSpawn = 1;
+    
     FloatRange angleRange{};
     FloatRange speedRange{};
     FloatRange lifetimeRange{};
@@ -37,17 +40,7 @@ struct ParticleEmitSettings
 
 struct ParticleEmitter
 {
-    ParticleEmitSettings settings;
-    
-    float particlesPerSec = 0.f;
     float timer = 0.f;
-};
-
-struct ParticleBurstEmitter
-{
-    ParticleEmitSettings settings{};
-    
-    int particlesCount = 0;
 };
 
 struct DeadShipPiece
@@ -73,13 +66,16 @@ struct Star
 
 struct GameVisualWorld
 {
-    std::vector<Particle> particles;
-    std::vector<DeadShipPiece> deadShipPieces;
-    std::vector<Star> stars;
+    ParticleEmitterSettings shipThrustEmitterSettings{};
+    ParticleEmitterSettings projectileTrailEmitterSettings{};
+    ParticleEmitterSettings shipThrustBurstEmitSettings{};
     
-    ParticleEmitter shipThrustEmitter;
-    ParticleEmitter projectileTrailEmitter;
-    ParticleBurstEmitter shipThrustBurstEmitSettings;
+    std::vector<ParticleEmitter> shipThrustParticleEmitters{};
+    std::vector<ParticleEmitter> projectileParticleEmitters{};
+    std::vector<Particle> particles{};
+    
+    std::vector<DeadShipPiece> deadShipPieces{};
+    std::vector<Star> stars{};
 };
 
 void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents, float dt);

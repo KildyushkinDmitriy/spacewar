@@ -45,12 +45,12 @@ GameWorld createWorld(const Vec2 size)
     return world;
 }
 
-GameVisualWorld createVisualWorld(const Vec2 worldSize)
+GameVisualWorld createVisualWorld(const GameWorld& logicWorld)
 {
     GameVisualWorld visualWorld;
 
-    visualWorld.shipThrustEmitter.particlesPerSec = 30.f;
-    ParticleEmitSettings& shipThrustEmitter = visualWorld.shipThrustEmitter.settings;
+    ParticleEmitterSettings& shipThrustEmitter = visualWorld.shipThrustEmitterSettings;
+    shipThrustEmitter.particlesPerSec = 30.f;
     shipThrustEmitter.angleRange = FloatRange{-10.f, 10.f};
     shipThrustEmitter.speedRange = FloatRange{180.f, 220.f};
     shipThrustEmitter.lifetimeRange = FloatRange{0.4f, 0.6f};
@@ -59,8 +59,8 @@ GameVisualWorld createVisualWorld(const Vec2 worldSize)
     shipThrustEmitter.startColorRange = ColorRange{sf::Color{255, 0, 0, 150}, sf::Color{255, 150, 0, 150}};
     shipThrustEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
 
-    visualWorld.shipThrustBurstEmitSettings.particlesCount = 50;
-    ParticleEmitSettings& shipThrustBurstEmitter = visualWorld.shipThrustBurstEmitSettings.settings;
+    ParticleEmitterSettings& shipThrustBurstEmitter = visualWorld.shipThrustBurstEmitSettings;
+    shipThrustBurstEmitter.particlesPerSpawn = 50;
     shipThrustBurstEmitter.angleRange = FloatRange{-30.f, 30.f};
     shipThrustBurstEmitter.speedRange = FloatRange{150.f, 300.f};
     shipThrustBurstEmitter.lifetimeRange = FloatRange{0.2f, 0.4f};
@@ -69,8 +69,8 @@ GameVisualWorld createVisualWorld(const Vec2 worldSize)
     shipThrustBurstEmitter.startColorRange = ColorRange{sf::Color{255, 100, 0, 150}, sf::Color{255, 150, 0, 150}};
     shipThrustBurstEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
 
-    visualWorld.projectileTrailEmitter.particlesPerSec = 30.f;
-    ParticleEmitSettings& projectileTrailEmitter = visualWorld.projectileTrailEmitter.settings;
+    ParticleEmitterSettings& projectileTrailEmitter = visualWorld.projectileTrailEmitterSettings;
+    projectileTrailEmitter.particlesPerSec = 30.f;
     projectileTrailEmitter.angleRange = FloatRange{-5.f, 5.f};
     projectileTrailEmitter.speedRange = FloatRange{15.f, 17.f};
     projectileTrailEmitter.lifetimeRange = FloatRange{0.25f, 0.3f};
@@ -79,10 +79,12 @@ GameVisualWorld createVisualWorld(const Vec2 worldSize)
     projectileTrailEmitter.startColorRange = ColorRange{sf::Color{100, 0, 0, 150}, sf::Color{100, 0, 0, 150}};
     projectileTrailEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{0, 0, 0, 150}};
 
+    visualWorld.shipThrustParticleEmitters.resize(logicWorld.ships.size());
+
     for (int i = 0; i < 50; ++i)
     {
         Star star;
-        star.pos = Vec2{randomFloatRange(0, worldSize.x), randomFloatRange(0, worldSize.y)};
+        star.pos = Vec2{randomFloatRange(0, logicWorld.size.x), randomFloatRange(0, logicWorld.size.y)};
         star.radius = randomFloatRange(0.5f, 2.f);
         star.brightnessRange = FloatRange{randomFloatRange(0.4f, 0.7f), randomFloatRange(0.7f, 1.f)};
         star.periodsPerSec = randomFloatRange(0.1f, 0.5f);
@@ -144,7 +146,7 @@ int main()
     const auto initWorlds = [&world, &visualWorld, &window]()
     {
         world = createWorld(Vec2{window.getSize()});
-        visualWorld = createVisualWorld(world.size);
+        visualWorld = createVisualWorld(world);
     };
 
     initWorlds();

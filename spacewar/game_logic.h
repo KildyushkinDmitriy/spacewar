@@ -80,18 +80,30 @@ struct GameEventGameResult
 
 struct GameEventShipDeath
 {
-    size_t shipIndex = -1;
+    size_t shipIndex = 0;
 };
 
 struct GameEventShipThrustBurst
 {
-    size_t shipIndex = -1;
+    size_t shipIndex = 0;
+};
+
+struct GameEventProjectileCreated
+{
+    size_t projectileIndex = 0;
+};
+
+struct GameEventProjectileDestroyed
+{
+    size_t projectileIndex = 0;
 };
 
 struct GameEvents
 {
     std::vector<GameEventShipDeath> shipDeath{};
     std::vector<GameEventShipThrustBurst> shipThrustBurst{};
+    std::vector<GameEventProjectileCreated> projectileCreate{};
+    std::vector<GameEventProjectileDestroyed> projectileDestroyed{};
     std::optional<GameEventGameResult> result{};
 };
 
