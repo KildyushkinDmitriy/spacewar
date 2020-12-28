@@ -95,7 +95,7 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
         const float brightnessT = std::sin(degToRad(angle)) / 2.f + 0.5f;
 
         const float brightness = floatLerp(star.brightnessRange.min, star.brightnessRange.max, brightnessT);
-        const sf::Uint8 colorMagnitude = brightness * 255.f;
+        const sf::Uint8 colorMagnitude = static_cast<sf::Uint8>(brightness * 255.f);
         const sf::Color color = sf::Color{colorMagnitude, colorMagnitude, colorMagnitude, 255};
 
         starShape.setPosition(star.pos);
