@@ -107,6 +107,7 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
         visualWorld.particles.erase(visualWorld.particles.begin() + particlesToDeleteIndices[i]);
     }
 
+    // dead ship pieces
     for (const GameEventShipDeath& shipDeath : gameEvents.shipDeath)
     {
         const Ship ship = logicWorld.ships[shipDeath.shipIndex];

@@ -245,8 +245,7 @@ int main()
         }
 
         // render
-        window.clear(sf::Color{18, 12, 18, 255});;
-
+        window.clear(sf::Color{5, 10, 30, 255});;
         if (std::holds_alternative<AppStateGame>(appState) || std::holds_alternative<AppStateGameOver>(appState))
         {
             if (isDebugRender)
