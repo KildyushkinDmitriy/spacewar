@@ -126,7 +126,7 @@ int main()
 
     sf::ContextSettings settings;
     settings.antialiasingLevel = 8;
-    sf::RenderWindow window{sf::VideoMode{1000, 1000}, "Spacewars!", sf::Style::Default, settings};
+    sf::RenderWindow window{sf::VideoMode{1000, 1000}, "Spacewar!", sf::Style::Default, settings};
 
     sf::Texture shipTexture;
     if (!shipTexture.loadFromFile("images/ship.png"))
