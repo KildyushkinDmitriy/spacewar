@@ -86,8 +86,8 @@ GameVisualWorld createVisualWorld(const GameWorld& logicWorld)
         Star star;
         star.pos = Vec2{randomFloatRange(0, logicWorld.size.x), randomFloatRange(0, logicWorld.size.y)};
         star.radius = randomFloatRange(0.5f, 2.f);
-        star.brightnessRange = FloatRange{randomFloatRange(0.4f, 0.7f), randomFloatRange(0.7f, 1.f)};
-        star.periodsPerSec = randomFloatRange(0.1f, 0.5f);
+        star.brightnessRange = FloatRange{randomFloatRange(0.2f, 0.6f), randomFloatRange(0.6f, 1.f)};
+        star.periodsPerSec = randomFloatRange(0.2f, 0.5f);
         visualWorld.stars.push_back(star);
     }
 

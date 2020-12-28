@@ -119,7 +119,7 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
 
         for (int i = 0; i < count; ++i)
         {
-            const float angle = floatWrap(time * 2.f + i * 260.f / count, 360.f);
+            const float angle = floatWrap(time * 30.f + i * 260.f / count, 360.f);
             const float radiusMultiplier = std::cos(degToRad(angle)) / 2.f + 0.5f;
             const float radius = 100.f * radiusMultiplier;
 
