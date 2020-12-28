@@ -1,6 +1,6 @@
 ﻿#include "game_visual.h"
 
-static void emitParticle(
+static void emitParticles(
     std::vector<Particle>& particles,
     const ParticleEmitterSettings& settings,
     const Vec2 pos,
@@ -44,11 +44,11 @@ static void simulateParticleEmitter(
     while (emitter.timer > timeBetweenParticles)
     {
         emitter.timer -= timeBetweenParticles;
-        emitParticle(particles, settings, pos, baseAngle);
+        emitParticles(particles, settings, pos, baseAngle);
     }
 }
 
-std::pair<Vec2, float> getPosBehind(const Vec2& pos, const float rotation, const float offset)
+std::pair<Vec2, float> getBackwardPosAndAngle(const Vec2& pos, const float rotation, const float offset)
 {
     const float invAngle = rotation + 180.f;
     const Vec2 backVec = vec2AngleToDir(invAngle);
@@ -60,14 +60,14 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
                         const float dt)
 {
     // ship thrust emitters
-    for (int i = 0; i < visualWorld.shipThrustParticleEmitters.size(); ++i)
+    for (size_t i = 0; i < visualWorld.shipThrustParticleEmitters.size(); ++i)
     {
         const Ship& ship = logicWorld.ships[i];
 
         if (ship.input.thrust)
         {
             ParticleEmitter& emitter = visualWorld.shipThrustParticleEmitters[i];
-            auto [pos, angle] = getPosBehind(ship.pos, ship.rotation, 20.f);
+            auto [pos, angle] = getBackwardPosAndAngle(ship.pos, ship.rotation, 20.f);
             simulateParticleEmitter(visualWorld.particles, emitter, visualWorld.shipThrustEmitterSettings, pos, angle, dt);
         }
     }
@@ -83,12 +83,12 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
         visualWorld.projectileParticleEmitters.erase(visualWorld.projectileParticleEmitters.begin() + event.projectileIndex);
     }
     
-    for (int i = 0; i < visualWorld.projectileParticleEmitters.size(); ++i)
+    for (size_t i = 0; i < visualWorld.projectileParticleEmitters.size(); ++i)
     {
         ParticleEmitter& emitter = visualWorld.projectileParticleEmitters[i];
         const Projectile& projectile = logicWorld.projectiles[i];
 
-        auto [pos, angle] = getPosBehind(projectile.pos, projectile.rotation, 10.f);
+        auto [pos, angle] = getBackwardPosAndAngle(projectile.pos, projectile.rotation, 10.f);
         simulateParticleEmitter(visualWorld.particles, emitter, visualWorld.projectileTrailEmitterSettings, pos, angle, dt);
     }
         
@@ -96,8 +96,8 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
     for (const GameEventShipThrustBurst& burst : gameEvents.shipThrustBurst)
     {
         const Ship ship = logicWorld.ships[burst.shipIndex];
-        auto [pos, angle] = getPosBehind(ship.pos, ship.rotation, 17.f);
-        emitParticle(visualWorld.particles, visualWorld.shipThrustBurstEmitSettings, pos, angle);
+        auto [pos, angle] = getBackwardPosAndAngle(ship.pos, ship.rotation, 17.f);
+        emitParticles(visualWorld.particles, visualWorld.shipThrustBurstEmitSettings, pos, angle);
     }
 
     // particles

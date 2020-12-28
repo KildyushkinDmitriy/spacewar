@@ -42,16 +42,17 @@ ShipInput aiGenerateInput(const GameWorld& world, const int selfShipIndex, const
     ShipInput result;
 
     const float angleDiff = angleToEnemy - selfShip.rotation;
+    const float angleDiffAbs = std::abs(angleDiff);
 
     result.rotate = angleDiff > 0 ? 1.f : -1.f;
 
-    if (std::abs(angleDiff) < 40.f)
+    if (angleDiffAbs < 40.f)
     {
         result.thrust = distToEnemy > 150.f;
         result.thrustBurst = distToEnemy > 600.f;
     }
 
-    result.shoot = std::abs(angleDiff) < 10.f;
+    result.shoot = angleDiffAbs < 10.f;
 
     return result;
 }

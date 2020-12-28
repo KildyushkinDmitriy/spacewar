@@ -206,7 +206,6 @@ int main()
             for (size_t i = 0; i < players.size(); ++i)
             {
                 const Player& player = players[i];
-
                 world.ships[i].input = player.isAi
                                            ? aiGenerateInput(world, i, (i + 1) % players.size())
                                            : readPlayerInput(player.keymap);
@@ -243,7 +242,6 @@ int main()
             gameVisualSimulate(visualWorld, world, gameEvents, slowMotionDt);
 
             const bool restartButtonPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
-
             if (restartButtonPressed || gameOverState->timeInState > gameOverState->timeWhenRestart)
             {
                 initWorlds();
@@ -253,15 +251,12 @@ int main()
         else if (auto* startingState = std::get_if<AppStateStarting>(&appState))
         {
             startingState->timeInState += dt;
-
             std::vector<bool>& readyVec = startingState->playersReady;
-
-            const bool allReady = std::all_of(readyVec.begin(), readyVec.end(), [](const bool ready)
+            const bool everyoneReady = std::all_of(readyVec.begin(), readyVec.end(), [](const bool ready)
             {
                 return ready;
             });
-
-            if (allReady)
+            if (everyoneReady)
             {
                 initWorlds();
                 appState = AppStateGame{};
@@ -269,7 +264,7 @@ int main()
         }
 
         // render
-        window.clear(sf::Color{5, 10, 30, 255});;
+        window.clear(sf::Color{5, 10, 30, 255});
         if (std::holds_alternative<AppStateGame>(appState) || std::holds_alternative<AppStateGameOver>(appState))
         {
             if (isDebugRender)
