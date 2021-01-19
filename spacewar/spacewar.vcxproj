@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app_state.h" />
+    <ClInclude Include="entt.hpp" />
     <ClInclude Include="game_logic.h" />
     <ClInclude Include="game_math.h" />
     <ClInclude Include="game_visual.h" />
