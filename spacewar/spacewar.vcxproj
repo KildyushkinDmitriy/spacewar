@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="game_entities.cpp" />
+    <ClCompile Include="game_frame.cpp" />
     <ClCompile Include="game_logic.cpp" />
     <ClCompile Include="game_math.cpp" />
     <ClCompile Include="game_visual.cpp" />
@@ -153,6 +154,7 @@
     <ClInclude Include="app_state.h" />
     <ClInclude Include="entt.hpp" />
     <ClInclude Include="game_entities.h" />
+    <ClInclude Include="game_frame.h" />
     <ClInclude Include="game_logic.h" />
     <ClInclude Include="game_math.h" />
     <ClInclude Include="game_visual.h" />

@@ -1,5 +1,7 @@
 ﻿#include <assert.h>
 
+#include "game_entities.h"
+#include "game_frame.h"
 #include "game_logic.h"
 
 static void testFloatWrap()
@@ -62,37 +64,25 @@ static void testColorLerp()
 
 static void testProjectileKillsShip()
 {
-    GameWorld world{};
-    world.size = Vec2{100.f, 100.f};
-    world.settings.shipCollisionRadius = 5.f;
+    const Vec2 worldSize{100.f, 100.f};
 
-    {
-        Ship ship{};
-        ship.pos = Vec2{10.f, 10.f};
-        world.ships.push_back(ship);
-    }
+    entt::registry registry;
 
-    {
-        Projectile projectile{};
-        projectile.lifetimeLeft = 100.f;
-        projectile.pos = Vec2{20.f, 14.f};
-        projectile.velocity = Vec2{-10.f, 0.f};
-        world.projectiles.push_back(projectile);
-    }
+    const auto shipEnt = createShipEntity(registry, Vec2{10.f, 10.f}, 0.f, sf::Color::White, -1);
 
-    assert(!world.ships[0].isDead);
-    assert(world.projectiles.size() == 1);
+    const auto pjlEnt = createProjectileEntity(registry);
+    registry.emplace<PositionComponent>(pjlEnt, Vec2{20.f, 14.f});
+    registry.emplace<VelocityComponent>(pjlEnt, Vec2{-10.f, 0.f});
 
-    const GameEvents gameEvents = gameSimulate(world, 10.f);
+    gameFrameUpdate(registry, 10.f, worldSize);
 
-    assert(gameEvents.result.has_value());
-    assert(gameEvents.result->isTie());
+    const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, 1);
 
-    assert(gameEvents.shipDeath.size() == 1);
-    assert(gameEvents.shipDeath[0].shipIndex == 0);
+    assert(optGameResult.has_value());
+    assert(optGameResult->isTie());
 
-    assert(world.ships[0].isDead);
-    assert(world.projectiles.size() == 0);
+    assert(!registry.valid(shipEnt));
+    assert(!registry.valid(pjlEnt));
 }
 
 static void testShipsKillEachOtherWithProjectiles()
