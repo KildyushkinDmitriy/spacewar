@@ -17937,7 +17937,9 @@ template<typename Entity>
 class basic_organizer final {
     using callback_type = void(const void *, entt::basic_registry<Entity> &);
     using prepare_type = void(entt::basic_registry<Entity> &);
-    using dependency_type = std::size_t(const bool, type_info *, const std::size_t);
+    // "using" does not compile while typedef does
+    // using dependency_type = std::size_t(const bool, type_info *, const std::size_t);
+    typedef std::size_t dependency_type(const bool, type_info *, const std::size_t);
 
     struct vertex_data final {
         std::size_t ro_count{};
