@@ -28,7 +28,7 @@ void drawGameOverUi(
 
     if (time > animationTime)
     {
-        const GameEventGameResult& gameResult = gameOverState.gameResult;
+        const GameResult& gameResult = gameOverState.gameResult;
         sf::String gameResultString;
 
         if (gameResult.isTie())

@@ -77,7 +77,7 @@ static void testProjectileKillsShip()
 
     gameFrameUpdate(registry, 10.f, worldSize);
 
-    const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, playersCount);
+    const std::optional<GameResult> optGameResult = tryGetGameResult(registry, playersCount);
 
     assert(optGameResult.has_value());
     assert(optGameResult->isTie());
@@ -101,13 +101,13 @@ static void testShipsKillEachOtherWithProjectiles()
 
     {
         gameFrameUpdate(registry, 0.f, worldSize);
-        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, playersCount);
+        const std::optional<GameResult> optGameResult = tryGetGameResult(registry, playersCount);
         assert(!optGameResult.has_value());
     }
 
     {
         gameFrameUpdate(registry, 3.f, worldSize);
-        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, playersCount);
+        const std::optional<GameResult> optGameResult = tryGetGameResult(registry, playersCount);
         assert(optGameResult.has_value());
         assert(optGameResult->isTie());
     }
@@ -128,11 +128,11 @@ static void testShipShipCollisionKillsBoth()
 
     {
         gameFrameUpdate(registry, 0.f, worldSize);
-        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, playersCount);
+        const std::optional<GameResult> optGameResult = tryGetGameResult(registry, playersCount);
         assert(!optGameResult.has_value());
     }
 
-    std::optional<GameEventGameResult> optGameResult;
+    std::optional<GameResult> optGameResult;
 
     for (int i = 0; i < 20; ++i)
     {
@@ -164,11 +164,11 @@ static void testPlayerWinsGameWithKill()
 
     {
         gameFrameUpdate(registry, 0.f, worldSize);
-        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, playersCount);
+        const std::optional<GameResult> optGameResult = tryGetGameResult(registry, playersCount);
         assert(!optGameResult.has_value());
     }
 
-    std::optional<GameEventGameResult> optGameResult;
+    std::optional<GameResult> optGameResult;
 
     for (int i = 0; i < 20; ++i)
     {

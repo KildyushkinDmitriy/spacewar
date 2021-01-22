@@ -14,17 +14,25 @@ struct PlayerKeymap
     sf::Keyboard::Key thrustBurst = sf::Keyboard::Unknown;
 };
 
+struct ShipInput
+{
+    float rotate = 0.f;
+    bool thrust = false;
+    bool thrustBurst = false;
+    bool shoot = false;
+};
+
 struct Player
 {
     PlayerKeymap keymap{};
     std::string name{};
     sf::Keyboard::Key makeAiKey = sf::Keyboard::Unknown;
-    
-    int score = 0;
     bool isAi = false;
+
+    int score = 0;
     entt::registry::entity_type shipEntity{};
 };
 
 void forEachKeyInKeymap(const PlayerKeymap& keymap, const std::function<void(sf::Keyboard::Key)>& callback);
 ShipInput readPlayerInput(const PlayerKeymap& keymap);
-ShipInput aiGenerateInput(const GameWorld& world, int selfShipIndex, int enemyShipIndex);
+// ShipInput aiGenerateInput(const GameWorld& world, int selfShipIndex, int enemyShipIndex);

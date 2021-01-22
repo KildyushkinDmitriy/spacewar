@@ -136,7 +136,7 @@ int main()
 
             gameFrameUpdate(registry, dt, worldSize);
 
-            std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, players.size());
+            std::optional<GameResult> optGameResult = tryGetGameResult(registry, players.size());
 
             if (optGameResult.has_value())
             {
