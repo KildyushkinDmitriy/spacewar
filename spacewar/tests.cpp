@@ -65,6 +65,7 @@ static void testColorLerp()
 static void testProjectileKillsShip()
 {
     const Vec2 worldSize{100.f, 100.f};
+    const int playersCount = 1;
 
     entt::registry registry;
 
@@ -76,7 +77,7 @@ static void testProjectileKillsShip()
 
     gameFrameUpdate(registry, 10.f, worldSize);
 
-    const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, 1);
+    const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, playersCount);
 
     assert(optGameResult.has_value());
     assert(optGameResult->isTie());
@@ -88,24 +89,25 @@ static void testProjectileKillsShip()
 static void testShipsKillEachOtherWithProjectiles()
 {
     const Vec2 worldSize{100.f, 100.f};
+    const int playersCount = 2;
 
     entt::registry registry;
 
     const auto ship1 = createShipEntity(registry, Vec2{10.f, 0.f}, 0.f, sf::Color::White, 0);
     registry.get<ShootingComponent>(ship1).input = true;
-    
+
     const auto ship2 = createShipEntity(registry, Vec2{90.f, 0.f}, 180.f, sf::Color::White, 0);
     registry.get<ShootingComponent>(ship2).input = true;
-    
+
     {
         gameFrameUpdate(registry, 0.f, worldSize);
-        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, 1);
+        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, playersCount);
         assert(!optGameResult.has_value());
     }
 
     {
         gameFrameUpdate(registry, 3.f, worldSize);
-        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, 1);
+        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, playersCount);
         assert(optGameResult.has_value());
         assert(optGameResult->isTie());
     }
@@ -114,72 +116,76 @@ static void testShipsKillEachOtherWithProjectiles()
 static void testShipShipCollisionKillsBoth()
 {
     const Vec2 worldSize{100.f, 100.f};
+    const int playersCount = 2;
 
     entt::registry registry;
 
     const auto ship1 = createShipEntity(registry, Vec2{10.f, 0.f}, 0.f, sf::Color::White, 0);
     registry.get<AccelerateByInputComponent>(ship1).input = true;
-    
+
     const auto ship2 = createShipEntity(registry, Vec2{90.f, 0.f}, 180.f, sf::Color::White, 0);
     registry.get<AccelerateByInputComponent>(ship2).input = true;
-    
+
     {
         gameFrameUpdate(registry, 0.f, worldSize);
-        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, 1);
+        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, playersCount);
         assert(!optGameResult.has_value());
     }
-    
+
     std::optional<GameEventGameResult> optGameResult;
-    
+
     for (int i = 0; i < 20; ++i)
     {
         gameFrameUpdate(registry, 0.1f, worldSize);
-        optGameResult = tryGetGameResult(registry, 1);
+        optGameResult = tryGetGameResult(registry, playersCount);
 
         if (optGameResult)
         {
             break;
         }
     }
-    
+
     assert(optGameResult.has_value());
-    assert(optGameResult->isTie());   
+    assert(optGameResult->isTie());
 }
 
 static void testPlayerWinsGameWithKill()
 {
-    GameWorld world{};
-    world.size = Vec2{100.f, 100.f};
-    world.settings.shipCollisionRadius = 0.5f;
-    world.settings.projectileLifetime = 10000.f;
-    world.settings.projectileSpeed = 10.f;
-    world.settings.shootCooldown = 100.0f;
-    world.settings.muzzleExtraOffset = 0.1f;
+    const Vec2 worldSize{100.f, 100.f};
+    const int playersCount = 2;
+
+    entt::registry registry;
+
+    const auto ship1 = createShipEntity(registry, Vec2{10.f, 0.f}, 0.f, sf::Color::White, 0);
+    registry.get<ShootingComponent>(ship1).input = true;
+    registry.remove<CircleColliderComponent>(ship1);
+
+    const auto ship2 = createShipEntity(registry, Vec2{90.f, 0.f}, 180.f, sf::Color::White, 1);
 
     {
-        Ship ship{};
-        ship.pos = Vec2{10.f, 10.f};
-        ship.input.shoot = true;
-        world.ships.push_back(ship);
+        gameFrameUpdate(registry, 0.f, worldSize);
+        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, playersCount);
+        assert(!optGameResult.has_value());
     }
 
+    std::optional<GameEventGameResult> optGameResult;
+
+    for (int i = 0; i < 20; ++i)
     {
-        Ship ship{};
-        ship.pos = Vec2{20.f, 10.f};
-        world.ships.push_back(ship);
+        gameFrameUpdate(registry, 0.1f, worldSize);
+        optGameResult = tryGetGameResult(registry, playersCount);
+
+        if (optGameResult)
+        {
+            break;
+        }
     }
 
-    assert(!world.ships[0].isDead);
-    assert(!world.ships[1].isDead);
-
-    const GameEvents gameEvents = gameSimulate(world, 1.f);
-
-    assert(gameEvents.shipDeath.size() == 1);
-    assert(gameEvents.shipDeath[0].shipIndex == 1);
-    assert(world.ships[1].isDead);
-    assert(gameEvents.result.has_value());
-    assert(!gameEvents.result->isTie());
-    assert(gameEvents.result->victoriousPlayerIndex == 0);
+    assert(optGameResult.has_value());
+    assert(!optGameResult->isTie());
+    assert(optGameResult->victoriousPlayerIndex == 0);
+    assert(registry.valid(ship1));
+    assert(!registry.valid(ship2));
 }
 
 void runTests()
