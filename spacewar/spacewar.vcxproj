@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="app_state.cpp" />
     <ClCompile Include="game_entities.cpp" />
     <ClCompile Include="game_frame.cpp" />
     <ClCompile Include="game_logic.cpp" />

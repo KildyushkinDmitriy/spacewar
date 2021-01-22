@@ -5,5 +5,5 @@
 
 #include <SFML/Graphics.hpp>
 
-void drawGameOverUi(const AppStateGameOver& gameOverState, const std::vector<Player>& players, sf::RenderWindow& window, const sf::Font& font);
-void drawStartingUi(const AppStateStarting& startingState, const std::vector<Player>& players, sf::RenderWindow& window, const sf::Font& font);
+void drawGameOverUi(GameResult gameResult, float timeWhenRestart, float timeInState, const std::vector<Player>& players, sf::RenderWindow& window, const sf::Font& font);
+void drawStartingUi(const std::vector<bool>& playersReady, const std::vector<Player>& players, sf::RenderWindow& window, const sf::Font& font, float timeInState);

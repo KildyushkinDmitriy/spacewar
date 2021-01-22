@@ -6,14 +6,9 @@ static void positionTextWithCenterAlignment(sf::Text& textRender, const Vec2 pos
     textRender.setPosition(pos - Vec2{localBounds.width / 2.f, localBounds.height / 2.f});
 }
 
-void drawGameOverUi(
-    const AppStateGameOver& gameOverState,
-    const std::vector<Player>& players,
-    sf::RenderWindow& window,
-    const sf::Font& font
-)
+void drawGameOverUi(const GameResult gameResult, const float timeWhenRestart, const float timeInState, const std::vector<Player>& players, sf::RenderWindow& window, const sf::Font& font)
 {
-    const float time = gameOverState.timeInState;
+    const float time = timeInState;
     const Vec2 windowCenter = Vec2{window.getSize()} / 2.f;
 
     sf::Text textRender;
@@ -28,7 +23,6 @@ void drawGameOverUi(
 
     if (time > animationTime)
     {
-        const GameResult& gameResult = gameOverState.gameResult;
         sf::String gameResultString;
 
         if (gameResult.isTie())
@@ -75,8 +69,7 @@ void drawGameOverUi(
 
     if (time > animationTime)
     {
-        const int restartTimeLeftInt = static_cast<int>(gameOverState.timeWhenRestart - gameOverState.timeInState + 1.f
-        );
+        const int restartTimeLeftInt = static_cast<int>(timeWhenRestart - timeInState + 1.f);
         textRender.setString("Next round in " + std::to_string(restartTimeLeftInt));
         positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 200.f});
         window.draw(textRender);
@@ -86,11 +79,9 @@ void drawGameOverUi(
     }
 }
 
-
-void drawStartingUi(const AppStateStarting& startingState, const std::vector<Player>& players,
-                    sf::RenderWindow& window, const sf::Font& font)
+void drawStartingUi(const std::vector<bool>& playersReady, const std::vector<Player>& players, sf::RenderWindow& window, const sf::Font& font, const float timeInState)
 {
-    const float time = startingState.timeInState;
+    const float time = timeInState;
     const Vec2 windowCenter = Vec2{window.getSize()} / 2.f;
 
     sf::Text textRender;
@@ -148,11 +139,11 @@ void drawStartingUi(const AppStateStarting& startingState, const std::vector<Pla
 
         if (time > animationTime)
         {
-            textRender.setString(startingState.playersReady[0] ? players[0].isAi ? "AI" : "Ready" : "Press any key");
+            textRender.setString(playersReady[0] ? players[0].isAi ? "AI" : "Ready" : "Press any key");
             textRender.setPosition(windowCenter + Vec2{-400.f, 300.f});
             window.draw(textRender);
 
-            if (!startingState.playersReady[0])
+            if (!playersReady[0])
             {
                 textRender.setString("or Q for AI");
                 textRender.setPosition(windowCenter + Vec2{-400.f, 350.f});
@@ -176,11 +167,11 @@ void drawStartingUi(const AppStateStarting& startingState, const std::vector<Pla
 
         if (time > animationTime)
         {
-            textRender.setString(startingState.playersReady[1] ? players[0].isAi ? "AI" : "Ready" : "Press any key");
+            textRender.setString(playersReady[1] ? players[0].isAi ? "AI" : "Ready" : "Press any key");
             textRender.setPosition(windowCenter + Vec2{100.f, 300.f});
             window.draw(textRender);
 
-            if (!startingState.playersReady[1])
+            if (!playersReady[1])
             {
                 textRender.setString("or O for AI");
                 textRender.setPosition(windowCenter + Vec2{100.f, 350.f});
