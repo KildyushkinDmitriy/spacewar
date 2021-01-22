@@ -224,6 +224,7 @@ struct TeleportableComponent
 
 struct ShipComponent
 {
+    int playerIndex = -1;
 };
 
 void applyVelocitySystem(entt::registry& registry, float dt);
@@ -240,3 +241,5 @@ void destroyByCollisionSystem(entt::registry& registry);
 void destroyTimerSystem(entt::registry& registry, float dt);
 void gravityWellSystem(entt::registry& registry, float dt);
 void teleportSystem(entt::registry& registry);
+
+std::optional<GameEventGameResult> tryGetGameResult(const entt::registry& registry, int playersCount);

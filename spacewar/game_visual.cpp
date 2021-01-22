@@ -86,7 +86,7 @@ void spawnDeadShipPiecesOnCollisionSystem(entt::registry& registry)
         const ShipComponent,
         const CollisionHappenedOneshotComponent>();
 
-    for (auto [_, position, rotation, velocity, drawIn] : view.each())
+    for (auto [_, position, rotation, velocity, drawIn, ship] : view.each())
     {
         // Copy the data from view references. Because emplacing new components of the same types will invalidate the references  
         const Vec2 pos = position.vec;

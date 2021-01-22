@@ -127,10 +127,10 @@ entt::registry::entity_type createProjectileEntity(entt::registry& registry)
     return entity;
 }
 
-entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position, sf::Color color)
+entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position, sf::Color color, int playerIndex)
 {
     const auto entity = registry.create();
-    registry.emplace<ShipComponent>(entity);
+    registry.emplace<ShipComponent>(entity, playerIndex);
     registry.emplace<PositionComponent>(entity, position);
     registry.emplace<DrawUsingShipTextureComponent>(entity, Vec2{35.f, 35.f}, color);
     registry.emplace<VelocityComponent>(entity);
@@ -252,8 +252,8 @@ int main()
 
     entt::registry registry;
 
-    const auto shipEntity = createShipEntity(registry, world.size / 2.f, sf::Color::Cyan);
-    createShipEntity(registry, world.size / 3.f, sf::Color::White);
+    const auto shipEntity1 = createShipEntity(registry, world.size / 2.f - world.size / 4.f, sf::Color::Cyan, 0);
+    const auto shipEntity2 = createShipEntity(registry, world.size / 2.f + world.size / 4.f, sf::Color::White, 1);
 
     createGravityWellEntity(registry, world.size);
     createStarEntities(registry, world.size);
@@ -264,7 +264,7 @@ int main()
                 sf::Keyboard::A, sf::Keyboard::D, sf::Keyboard::W, sf::Keyboard::S, sf::Keyboard::LShift
             },
             "WASD",
-            sf::Keyboard::Q
+            sf::Keyboard::Q,
         },
         {
             PlayerKeymap{
@@ -274,6 +274,9 @@ int main()
             sf::Keyboard::O
         }
     };
+
+    players[0].shipEntity = shipEntity1;
+    players[1].shipEntity = shipEntity2;
 
     AppState appState = AppStateGame{};
     // std::get<AppStateStarting>(appState).playersReady.resize(players.size(), false);
@@ -319,25 +322,20 @@ int main()
                 world.ships[i].input = player.isAi
                                            ? aiGenerateInput(world, i, (i + 1) % players.size())
                                            : readPlayerInput(player.keymap);
-            }
 
-            {
-                auto playerInputForEcs = readPlayerInput(players[0].keymap);
-
-                if (registry.valid(shipEntity))
+                if (registry.valid(player.shipEntity))
                 {
-                    registry.get<AccelerateByInputComponent>(shipEntity).accelerateInput = playerInputForEcs.thrust;
-                    registry.get<AccelerateByInputComponent>(shipEntity).accelerateInput = playerInputForEcs.thrust;
-                    registry.get<RotateByInputComponent>(shipEntity).input = playerInputForEcs.rotate;
-                    registry.get<ShootingComponent>(shipEntity).input = playerInputForEcs.shoot;
-                    registry.get<AccelerateImpulseByInputComponent>(shipEntity).input = playerInputForEcs.thrustBurst;
+                    auto input = readPlayerInput(player.keymap);
+                    registry.get<AccelerateByInputComponent>(player.shipEntity).accelerateInput = input.thrust;
+                    registry.get<RotateByInputComponent>(player.shipEntity).input = input.rotate;
+                    registry.get<ShootingComponent>(player.shipEntity).input = input.shoot;
+                    registry.get<AccelerateImpulseByInputComponent>(player.shipEntity).input = input.thrustBurst;
                 }
             }
 
             update(registry, dt, world.size);
 
             // const GameEvents gameEvents = gameSimulate(world, dt);
-            // gameVisualSimulate(visualWorld, world, gameEvents, dt);
 
             const GameEvents gameEvents{};
 

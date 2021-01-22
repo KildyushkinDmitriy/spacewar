@@ -22,6 +22,7 @@ struct Player
     
     int score = 0;
     bool isAi = false;
+    entt::registry::entity_type shipEntity{};
 };
 
 void forEachKeyInKeymap(const PlayerKeymap& keymap, const std::function<void(sf::Keyboard::Key)>& callback);

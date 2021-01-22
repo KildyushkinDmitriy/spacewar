@@ -447,3 +447,31 @@ void teleportSystem(entt::registry& registry)
         }
     }
 }
+
+std::optional<GameEventGameResult> tryGetGameResult(const entt::registry& registry, const int playersCount)
+{
+    int anyAliveShipPlayerIndex = -1;
+    int aliveShipsCount = 0;
+
+    const auto view = registry.view<const ShipComponent>();
+    for (auto [_, ship] : view.each())
+    {
+        ++aliveShipsCount;
+        anyAliveShipPlayerIndex = ship.playerIndex;
+    }
+
+    // tie
+    if (aliveShipsCount == 0)
+    {
+        return GameEventGameResult{};
+    }
+
+    // win
+    if (aliveShipsCount < playersCount)
+    {
+        assert(anyAliveShipPlayerIndex != -1);
+        return GameEventGameResult{anyAliveShipPlayerIndex};
+    }
+
+    return {};
+}
