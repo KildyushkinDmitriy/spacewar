@@ -126,6 +126,9 @@ struct GameResult
     }
 };
 
+float gameGetGravityWellPowerAtRadius(const GravityWellComponent& well, float radius);
+Vec2 gameGetGravityWellVectorAtPoint(const GravityWellComponent& well, Vec2 wellPos, Vec2 point);
+
 void applyVelocitySystem(entt::registry& registry, float dt);
 void applyRotationSpeedSystem(entt::registry& registry, float dt);
 void rotateByInputSystem(entt::registry& registry);

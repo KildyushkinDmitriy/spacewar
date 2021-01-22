@@ -182,7 +182,7 @@ int main()
         {
             if (isDebugRender)
             {
-                // drawGameDebug(world, window, font);
+                drawGameDebug(registry, window, font);
             }
             else
             {
