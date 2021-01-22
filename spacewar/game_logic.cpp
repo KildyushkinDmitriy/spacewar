@@ -349,8 +349,8 @@ void projectileMoveSystem(entt::registry& registry, const float dt)
         {
             if (isSegmentIntersectCircle(pjlPos.vec, newPos, colliderPos.vec, circleCollider.radius))
             {
-                registry.emplace<CollisionHappenedOneshotComponent>(pjlEnt);
-                registry.emplace<CollisionHappenedOneshotComponent>(colliderEnt);
+                registry.emplace_or_replace<CollisionHappenedOneshotComponent>(pjlEnt);
+                registry.emplace_or_replace<CollisionHappenedOneshotComponent>(colliderEnt);
                 break;
             }
         }

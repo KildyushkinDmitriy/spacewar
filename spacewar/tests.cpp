@@ -87,52 +87,28 @@ static void testProjectileKillsShip()
 
 static void testShipsKillEachOtherWithProjectiles()
 {
-    GameWorld world{};
-    world.size = Vec2{100.f, 100.f};
-    world.settings.shipCollisionRadius = 0.5f;
-    world.settings.projectileLifetime = 10000.f;
-    world.settings.projectileSpeed = 10.f;
-    world.settings.shootCooldown = 2.0f;
-    world.settings.muzzleExtraOffset = 0.1f;
+    const Vec2 worldSize{100.f, 100.f};
 
+    entt::registry registry;
+
+    const auto ship1 = createShipEntity(registry, Vec2{10.f, 0.f}, 0.f, sf::Color::White, 0);
+    registry.get<ShootingComponent>(ship1).input = true;
+    
+    const auto ship2 = createShipEntity(registry, Vec2{90.f, 0.f}, 180.f, sf::Color::White, 0);
+    registry.get<ShootingComponent>(ship2).input = true;
+    
     {
-        Ship ship{};
-        ship.pos = Vec2{10.f, 10.f};
-        ship.input.shoot = true;
-        world.ships.push_back(ship);
+        gameFrameUpdate(registry, 0.f, worldSize);
+        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, 1);
+        assert(!optGameResult.has_value());
     }
 
     {
-        Ship ship{};
-        ship.pos = Vec2{20.f, 10.f};
-        ship.rotation = 180.f;
-        ship.input.shoot = true;
-        world.ships.push_back(ship);
+        gameFrameUpdate(registry, 3.f, worldSize);
+        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, 1);
+        assert(optGameResult.has_value());
+        assert(optGameResult->isTie());
     }
-
-    assert(!world.ships[0].isDead);
-    assert(!world.ships[1].isDead);
-
-    {
-        const GameEvents gameEvents = gameSimulate(world, 0.5f);
-        assert(!gameEvents.result.has_value());
-        assert(gameEvents.shipDeath.empty());
-    }
-
-    assert(!world.ships[0].isDead);
-    assert(!world.ships[1].isDead);
-
-    {
-        GameEvents gameEvents = gameSimulate(world, 0.5f);
-        assert(gameEvents.result.has_value());
-        assert(gameEvents.result->isTie());
-        assert(gameEvents.shipDeath.size() == 2);
-        assert(gameEvents.shipDeath[0].shipIndex == 1);
-        assert(gameEvents.shipDeath[1].shipIndex == 0);
-    }
-
-    assert(world.ships[0].isDead);
-    assert(world.ships[1].isDead);
 }
 
 void testProjectileLifetime()
