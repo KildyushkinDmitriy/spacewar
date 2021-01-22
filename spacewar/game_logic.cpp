@@ -332,7 +332,19 @@ void accelerateImpulseSystem(entt::registry& registry, const float dt)
         {
             const Vec2 forwardDir = vec2AngleToDir(rotation.angle);
             velocity.vec += forwardDir * accelerateImpulse.shipThrustBurstImpulse;
+
+            registry.emplace<AccelerateImpulseAppliedOneshotComponent>(entity);
         }
+    }
+}
+
+void accelerateImpulseAppliedOneshotComponentClearSystem(entt::registry& registry)
+{
+    const auto view = registry.view<const AccelerateImpulseAppliedOneshotComponent>();
+
+    for (auto [entity] : view.each())
+    {
+        registry.remove<AccelerateImpulseAppliedOneshotComponent>(entity);
     }
 }
 

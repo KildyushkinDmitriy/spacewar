@@ -110,8 +110,15 @@ struct EnableParticleEmitterByAccelerateInputComponent
 {
 };
 
+struct ParticleEmitterOnAccelerateImpulseAppliedComponent
+{
+    ParticleEmitterSettings settings{};
+};
+
 void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents,
                         float dt);
 
 void particleEmitterSystem(entt::registry& registry, float dt);
 void enableParticleEmitterByAccelerateInputSystem(entt::registry& registry);
+
+void particleEmitterOnAccelerateImpulseAppliedSystem(entt::registry& registry);

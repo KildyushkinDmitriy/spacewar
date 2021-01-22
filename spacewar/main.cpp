@@ -137,7 +137,10 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
     destroyTimerSystem(registry, dt);
 
     enableParticleEmitterByAccelerateInputSystem(registry);
+    particleEmitterOnAccelerateImpulseAppliedSystem(registry);
     particleEmitterSystem(registry, dt);
+    
+    accelerateImpulseAppliedOneshotComponentClearSystem(registry);
 }
 
 entt::registry::entity_type createProjectileEntity(entt::registry& registry)
@@ -183,20 +186,37 @@ entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 posi
     registry.emplace<AffectedByGravityWellComponent>(entity);
     registry.emplace<TeleportableComponent>(entity);
     
-    ParticleEmitterComponent& emitterComponent = registry.emplace<ParticleEmitterComponent>(entity);
-    ParticleEmitterSettings& emitterSettings = emitterComponent.settings;
-    emitterSettings.particlesPerSec = 30.f;
-    emitterSettings.angleRange = FloatRange{-10.f, 10.f};
-    emitterSettings.speedRange = FloatRange{180.f, 220.f};
-    emitterSettings.lifetimeRange = FloatRange{0.4f, 0.6f};
-    emitterSettings.startRadiusRange = FloatRange{7.f, 12.f};
-    emitterSettings.finishRadiusRange = FloatRange{1.f, 2.f};
-    emitterSettings.startColorRange = ColorRange{sf::Color{255, 0, 0, 150}, sf::Color{255, 150, 0, 150}};
-    emitterSettings.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
-    emitterSettings.emitOffset = 20.f;
-    emitterSettings.emitAngleOffset = 180.f;
+    {
+        ParticleEmitterComponent& emitterComponent = registry.emplace<ParticleEmitterComponent>(entity);
+        ParticleEmitterSettings& emitterSettings = emitterComponent.settings;
+        emitterSettings.particlesPerSec = 30.f;
+        emitterSettings.angleRange = FloatRange{-10.f, 10.f};
+        emitterSettings.speedRange = FloatRange{180.f, 220.f};
+        emitterSettings.lifetimeRange = FloatRange{0.4f, 0.6f};
+        emitterSettings.startRadiusRange = FloatRange{7.f, 12.f};
+        emitterSettings.finishRadiusRange = FloatRange{1.f, 2.f};
+        emitterSettings.startColorRange = ColorRange{sf::Color{255, 0, 0, 150}, sf::Color{255, 150, 0, 150}};
+        emitterSettings.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
+        emitterSettings.emitOffset = 20.f;
+        emitterSettings.emitAngleOffset = 180.f;
 
-    registry.emplace<EnableParticleEmitterByAccelerateInputComponent>(entity);
+        registry.emplace<EnableParticleEmitterByAccelerateInputComponent>(entity);
+    }
+
+    {
+        ParticleEmitterOnAccelerateImpulseAppliedComponent& emitterComponent = registry.emplace<ParticleEmitterOnAccelerateImpulseAppliedComponent>(entity);
+        ParticleEmitterSettings& emitterSettings = emitterComponent.settings;
+        emitterSettings.emitOffset = 17.f;
+        emitterSettings.emitAngleOffset = 180.f;
+        emitterSettings.particlesPerSpawn = 50;
+        emitterSettings.angleRange = FloatRange{-30.f, 30.f};
+        emitterSettings.speedRange = FloatRange{150.f, 300.f};
+        emitterSettings.lifetimeRange = FloatRange{0.2f, 0.4f};
+        emitterSettings.startRadiusRange = FloatRange{9.f, 15.f};
+        emitterSettings.finishRadiusRange = FloatRange{2.f, 3.f};
+        emitterSettings.startColorRange = ColorRange{sf::Color{255, 100, 0, 150}, sf::Color{255, 150, 0, 150}};
+        emitterSettings.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
+    }
     
     return entity;
 }

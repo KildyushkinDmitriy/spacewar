@@ -157,10 +157,14 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
 static void emitParticles(
     entt::registry& registry,
     const ParticleEmitterSettings& settings,
-    const Vec2 pos,
-    const float baseAngle
+    const PositionComponent position,
+    const RotationComponent rotationComponent
 )
 {
+    const float baseAngle = rotationComponent.angle + settings.emitAngleOffset;
+    const Vec2 emitDir = vec2AngleToDir(baseAngle);
+    const Vec2 pos = position.vec + emitDir * settings.emitOffset;
+
     for (int i = 0; i < settings.particlesPerSpawn; ++i)
     {
         const float angle = baseAngle + settings.angleRange.getRandom();
@@ -197,17 +201,13 @@ void particleEmitterSystem(entt::registry& registry, float dt)
             continue;
         }
 
-        const float emitAngle = rotation.angle + emitter.settings.emitAngleOffset;
-        const Vec2 emitDir = vec2AngleToDir(emitAngle);
-        const Vec2 emitPoint = position.vec + emitDir * emitter.settings.emitOffset;
-
         const float timeBetweenParticles = 1.f / emitter.settings.particlesPerSec;
         emitter.timer += dt;
 
         while (emitter.timer > timeBetweenParticles)
         {
             emitter.timer -= timeBetweenParticles;
-            emitParticles(registry, emitter.settings, emitPoint, emitAngle);
+            emitParticles(registry, emitter.settings, position, rotation);
         }
     }
 }
@@ -215,9 +215,23 @@ void particleEmitterSystem(entt::registry& registry, float dt)
 void enableParticleEmitterByAccelerateInputSystem(entt::registry& registry)
 {
     const auto view = registry.view<ParticleEmitterComponent, const AccelerateByInputComponent>();
-    
+
     for (auto [_, emitter, accelerate] : view.each())
     {
-        emitter.isEnabled = accelerate.accelerateInput;        
+        emitter.isEnabled = accelerate.accelerateInput;
+    }
+}
+
+void particleEmitterOnAccelerateImpulseAppliedSystem(entt::registry& registry)
+{
+    const auto view = registry.view<
+        ParticleEmitterOnAccelerateImpulseAppliedComponent,
+        const PositionComponent,
+        const RotationComponent,
+        const AccelerateImpulseAppliedOneshotComponent>();
+
+    for (auto [_, emitter, position, rotation] : view.each())
+    {
+        emitParticles(registry, emitter.settings, position, rotation);
     }
 }

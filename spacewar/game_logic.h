@@ -146,6 +146,10 @@ struct AccelerateImpulseByInputComponent
     float shipThrustBurstImpulse = 0.f;
 };
 
+struct AccelerateImpulseAppliedOneshotComponent
+{
+};
+
 struct RotateByInputComponent
 {
     float input = 0.f; // [-1, 1] 
@@ -220,6 +224,7 @@ void integrateVelocitySystem(entt::registry& registry, float dt);
 void rotateByInputSystem(entt::registry& registry, float dt);
 void accelerateByInputSystem(entt::registry& registry, float dt);
 void accelerateImpulseSystem(entt::registry& registry, float dt);
+void accelerateImpulseAppliedOneshotComponentClearSystem(entt::registry& registry);
 void shootingSystem(entt::registry& registry, float dt);
 void wrapPositionAroundWorldSystem(entt::registry& registry, Vec2 worldSize);
 void projectileMoveSystem(entt::registry& registry, float dt);
