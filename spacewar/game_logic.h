@@ -116,33 +116,33 @@ GameEvents gameSimulate(GameWorld& world, float dt);
 float gameGetGravityWellPowerAtRadius(const GravityWell& well, float radius);
 Vec2 gameGetGravityWellVectorAtPoint(const GravityWell& well, Vec2 point);
 
-struct Position
+struct PositionComponent
 {
     Vec2 vec{};
 };
 
-struct Velocity
+struct VelocityComponent
 {
     Vec2 vec{};
 };
 
-struct Rotation
+struct RotationComponent
 {
     float angle = 0.f;
 };
 
-struct DrawUsingShipTexture
+struct DrawUsingShipTextureComponent
 {
     sf::Color color{};
 };
 
-struct AccelerateByInput
+struct AccelerateByInputComponent
 {
     bool accelerateInput = false;
     float acceleration = 0.f;
 };
 
-struct AccelerateImpulseByInput
+struct AccelerateImpulseByInputComponent
 {
     bool input = false;
 
@@ -151,13 +151,13 @@ struct AccelerateImpulseByInput
     float shipThrustBurstImpulse = 0.f;
 };
 
-struct RotateByInput
+struct RotateByInputComponent
 {
     float input = 0.f; // [-1, 1] 
     float rotationSpeed = 0.f;
 };
 
-struct Shooting
+struct ShootingComponent
 {
     bool input = false;
 
@@ -167,11 +167,11 @@ struct Shooting
     float projectileSpeed = 0.f;
 };
 
-struct WrapPositionAroundWorld
+struct WrapPositionAroundWorldComponent
 {
 };
 
-struct CircleCollider
+struct CircleColliderComponent
 {
     float radius = 0.f;
 };
@@ -185,11 +185,11 @@ struct CollisionHappenedComponent
 {
 };
 
-struct DestroyByCollision
+struct DestroyByCollisionComponent
 {
 };
 
-struct DestroyTimer
+struct DestroyTimerComponent
 {
     float timeLeft = 0.f;
 };
@@ -198,26 +198,25 @@ struct GravityWellComponent
 {
     float maxRadius = 0.f;
     float maxPower = 0.f;
-    
+
     float dragRadius = 0.f;
     float dragCoefficient = 0.f;
 };
 
-struct AffectedByGravityWell
+struct AffectedByGravityWellComponent
 {
 };
 
-struct Teleport
+struct TeleportComponent
 {
     float radius = 0.f;
     Vec2 destination{};
     float speedAfterTeleport = 0.f;
 };
 
-struct Teleportable
+struct TeleportableComponent
 {
 };
-
 
 void integrateVelocitySystem(entt::registry& registry, float dt);
 void rotateByInputSystem(entt::registry& registry, float dt);
@@ -231,4 +230,3 @@ void destroyByCollisionSystem(entt::registry& registry);
 void destroyTimerSystem(entt::registry& registry, float dt);
 void gravityWellSystem(entt::registry& registry, float dt);
 void teleportSystem(entt::registry& registry);
-

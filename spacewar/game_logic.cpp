@@ -259,7 +259,7 @@ GameEvents gameSimulate(GameWorld& world, const float dt)
 
 void integrateVelocitySystem(entt::registry& registry, const float dt)
 {
-    const auto view = registry.view<Position, const Velocity>(entt::exclude<ProjectileComponent>);
+    const auto view = registry.view<PositionComponent, const VelocityComponent>(entt::exclude<ProjectileComponent>);
 
     for (auto [entity, position, velocity] : view.each())
     {
@@ -269,7 +269,7 @@ void integrateVelocitySystem(entt::registry& registry, const float dt)
 
 void rotateByInputSystem(entt::registry& registry, const float dt)
 {
-    const auto view = registry.view<Rotation, const RotateByInput>();
+    const auto view = registry.view<RotationComponent, const RotateByInputComponent>();
 
     for (auto [entity, rotation, rotateByInput] : view.each())
     {
@@ -280,7 +280,7 @@ void rotateByInputSystem(entt::registry& registry, const float dt)
 
 auto accelerateByInputSystem(entt::registry& registry, const float dt) -> void
 {
-    const auto view = registry.view<Velocity, const AccelerateByInput, const Rotation>();
+    const auto view = registry.view<VelocityComponent, const AccelerateByInputComponent, const RotationComponent>();
 
     for (auto [entity, velocity, accelerateByInput, rotation] : view.each())
     {
@@ -294,7 +294,7 @@ auto accelerateByInputSystem(entt::registry& registry, const float dt) -> void
 
 void shootingSystem(entt::registry& registry, const float dt)
 {
-    const auto view = registry.view<Shooting, const Position, const Rotation>();
+    const auto view = registry.view<ShootingComponent, const PositionComponent, const RotationComponent>();
 
     for (auto [entity, shooting, position, rotation] : view.each())
     {
@@ -305,20 +305,20 @@ void shootingSystem(entt::registry& registry, const float dt)
 
             const auto projectileEntity = registry.create();
 
-            registry.emplace<Position>(projectileEntity, projectilePos);
-            registry.emplace<Rotation>(projectileEntity, rotation);
-            registry.emplace<Velocity>(projectileEntity, forwardDir * shooting.projectileSpeed);
-            registry.emplace<DrawUsingShipTexture>(projectileEntity, sf::Color::Yellow);
-            registry.emplace<WrapPositionAroundWorld>(projectileEntity);
+            registry.emplace<PositionComponent>(projectileEntity, projectilePos);
+            registry.emplace<RotationComponent>(projectileEntity, rotation);
+            registry.emplace<VelocityComponent>(projectileEntity, forwardDir * shooting.projectileSpeed);
+            registry.emplace<DrawUsingShipTextureComponent>(projectileEntity, sf::Color::Yellow);
+            registry.emplace<WrapPositionAroundWorldComponent>(projectileEntity);
             registry.emplace<ProjectileComponent>(projectileEntity);
-            registry.emplace<DestroyTimer>(projectileEntity, 5.f);
+            registry.emplace<DestroyTimerComponent>(projectileEntity, 5.f);
         }
     }
 }
 
 void wrapPositionAroundWorldSystem(entt::registry& registry, const Vec2 worldSize)
 {
-    const auto view = registry.view<Position, WrapPositionAroundWorld>();
+    const auto view = registry.view<PositionComponent, WrapPositionAroundWorldComponent>();
 
     for (auto [entity, position] : view.each())
     {
@@ -328,7 +328,7 @@ void wrapPositionAroundWorldSystem(entt::registry& registry, const Vec2 worldSiz
 
 void accelerateImpulseSystem(entt::registry& registry, const float dt)
 {
-    const auto view = registry.view<AccelerateImpulseByInput, Velocity, const Rotation>();
+    const auto view = registry.view<AccelerateImpulseByInputComponent, VelocityComponent, const RotationComponent>();
 
     for (auto [entity, accelerateImpulse, velocity, rotation] : view.each())
     {
@@ -342,8 +342,8 @@ void accelerateImpulseSystem(entt::registry& registry, const float dt)
 
 void projectileMoveSystem(entt::registry& registry, const float dt)
 {
-    const auto projectilesView = registry.view<Position, const Velocity, const ProjectileComponent>();
-    const auto collidersView = registry.view<const Position, const CircleCollider>();
+    const auto projectilesView = registry.view<PositionComponent, const VelocityComponent, const ProjectileComponent>();
+    const auto collidersView = registry.view<const PositionComponent, const CircleColliderComponent>();
 
     for (auto [pjlEnt, pjlPos, velocity] : projectilesView.each())
     {
@@ -365,7 +365,7 @@ void projectileMoveSystem(entt::registry& registry, const float dt)
 
 void circleVsCircleCollisionSystem(entt::registry& registry)
 {
-    const auto view = registry.view<const Position, const CircleCollider>();
+    const auto view = registry.view<const PositionComponent, const CircleColliderComponent>();
 
     for (auto i = view.begin(); i != view.end(); ++i)
     {
@@ -398,7 +398,7 @@ void destroyByCollisionSystem(entt::registry& registry)
 
 void destroyTimerSystem(entt::registry& registry, float dt)
 {
-    const auto view = registry.view<DestroyTimer>();
+    const auto view = registry.view<DestroyTimerComponent>();
 
     for (auto [entity, timer] : view.each())
     {
@@ -412,8 +412,9 @@ void destroyTimerSystem(entt::registry& registry, float dt)
 
 void gravityWellSystem(entt::registry& registry, float dt)
 {
-    const auto gravityWellsView = registry.view<const GravityWellComponent, const Position>();
-    const auto affectedEntitiesView = registry.view<Velocity, const Position, const AffectedByGravityWell>();
+    const auto gravityWellsView = registry.view<const GravityWellComponent, const PositionComponent>();
+    const auto affectedEntitiesView = registry.view<
+        VelocityComponent, const PositionComponent, const AffectedByGravityWellComponent>();
 
     for (auto [wellEnt, well, wellPos] : gravityWellsView.each())
     {
@@ -430,8 +431,8 @@ void gravityWellSystem(entt::registry& registry, float dt)
 
 void teleportSystem(entt::registry& registry)
 {
-    const auto teleportsView = registry.view<const Teleport, const Position>();
-    const auto teleportablesView = registry.view<Position, Velocity, Teleportable>();
+    const auto teleportsView = registry.view<const TeleportComponent, const PositionComponent>();
+    const auto teleportablesView = registry.view<PositionComponent, VelocityComponent, TeleportableComponent>();
 
     for (auto [_, teleport, teleportPos] : teleportsView.each())
     {

@@ -140,19 +140,19 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
 entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position)
 {
     const auto shipEntity = registry.create();
-    registry.emplace<Position>(shipEntity, position);
-    registry.emplace<DrawUsingShipTexture>(shipEntity, sf::Color::Green);
-    registry.emplace<Velocity>(shipEntity);
-    registry.emplace<Rotation>(shipEntity, 45.f);
-    registry.emplace<AccelerateByInput>(shipEntity, false, 25.f);
-    registry.emplace<RotateByInput>(shipEntity, 0.f, 180.f);
-    registry.emplace<Shooting>(shipEntity, false, CooldownTimer{1.f}, 40.f, 200.f);
-    registry.emplace<WrapPositionAroundWorld>(shipEntity);
-    registry.emplace<AccelerateImpulseByInput>(shipEntity, false, CooldownTimer{3.f}, 75.f);
-    registry.emplace<CircleCollider>(shipEntity, 15.f);
-    registry.emplace<DestroyByCollision>(shipEntity);
-    registry.emplace<AffectedByGravityWell>(shipEntity);
-    registry.emplace<Teleportable>(shipEntity);
+    registry.emplace<PositionComponent>(shipEntity, position);
+    registry.emplace<DrawUsingShipTextureComponent>(shipEntity, sf::Color::Green);
+    registry.emplace<VelocityComponent>(shipEntity);
+    registry.emplace<RotationComponent>(shipEntity, 45.f);
+    registry.emplace<AccelerateByInputComponent>(shipEntity, false, 25.f);
+    registry.emplace<RotateByInputComponent>(shipEntity, 0.f, 180.f);
+    registry.emplace<ShootingComponent>(shipEntity, false, CooldownTimer{1.f}, 40.f, 200.f);
+    registry.emplace<WrapPositionAroundWorldComponent>(shipEntity);
+    registry.emplace<AccelerateImpulseByInputComponent>(shipEntity, false, CooldownTimer{3.f}, 75.f);
+    registry.emplace<CircleColliderComponent>(shipEntity, 15.f);
+    registry.emplace<DestroyByCollisionComponent>(shipEntity);
+    registry.emplace<AffectedByGravityWellComponent>(shipEntity);
+    registry.emplace<TeleportableComponent>(shipEntity);
 
     return shipEntity;
 }
@@ -163,7 +163,7 @@ entt::registry::entity_type createGravityWellEntity(entt::registry& registry, co
     const float maxRadius = vec2Length(pos);
     
     const auto entity = registry.create();
-    registry.emplace<Position>(entity, pos);
+    registry.emplace<PositionComponent>(entity, pos);
 
     GravityWellComponent wellComp;
     wellComp.maxRadius = maxRadius;
@@ -172,11 +172,11 @@ entt::registry::entity_type createGravityWellEntity(entt::registry& registry, co
     wellComp.dragRadius = 50.f;
     registry.emplace<GravityWellComponent>(entity, wellComp);
 
-    Teleport teleport;
+    TeleportComponent teleport;
     teleport.destination = worldSize;
     teleport.radius = 10.f;
     teleport.speedAfterTeleport = 20.f;
-    registry.emplace<Teleport>(entity, teleport);
+    registry.emplace<TeleportComponent>(entity, teleport);
 
     return entity;
 }
@@ -284,11 +284,11 @@ int main()
 
                 if (registry.valid(shipEntity))
                 {
-                    registry.get<AccelerateByInput>(shipEntity).accelerateInput = playerInputForEcs.thrust;
-                    registry.get<AccelerateByInput>(shipEntity).accelerateInput = playerInputForEcs.thrust;
-                    registry.get<RotateByInput>(shipEntity).input = playerInputForEcs.rotate;
-                    registry.get<Shooting>(shipEntity).input = playerInputForEcs.shoot;
-                    registry.get<AccelerateImpulseByInput>(shipEntity).input = playerInputForEcs.thrustBurst;
+                    registry.get<AccelerateByInputComponent>(shipEntity).accelerateInput = playerInputForEcs.thrust;
+                    registry.get<AccelerateByInputComponent>(shipEntity).accelerateInput = playerInputForEcs.thrust;
+                    registry.get<RotateByInputComponent>(shipEntity).input = playerInputForEcs.rotate;
+                    registry.get<ShootingComponent>(shipEntity).input = playerInputForEcs.shoot;
+                    registry.get<AccelerateImpulseByInputComponent>(shipEntity).input = playerInputForEcs.thrustBurst;
                 }
             }
 

@@ -221,7 +221,7 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
     }
 
     {
-        auto view = registry.view<const Position, const Rotation, const DrawUsingShipTexture>();
+        auto view = registry.view<const PositionComponent, const RotationComponent, const DrawUsingShipTextureComponent>();
 
         for (auto [entity, pos, rotation, draw] : view.each())
         {
