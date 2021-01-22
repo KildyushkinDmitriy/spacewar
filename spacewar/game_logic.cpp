@@ -237,7 +237,7 @@ GameEvents gameSimulate(GameWorld& world, const float dt)
 
 void integrateVelocitySystem(entt::registry& registry, const float dt)
 {
-    const auto view = registry.view<Position, const Velocity>();
+    const auto view = registry.view<Position, const Velocity>(entt::exclude<ProjectileComponent>);
 
     for (auto [entity, position, velocity] : view.each())
     {
@@ -288,13 +288,14 @@ void shootingSystem(entt::registry& registry, const float dt)
             registry.emplace<Velocity>(projectileEntity, forwardDir * shooting.projectileSpeed);
             registry.emplace<DrawUsingShipTexture>(projectileEntity, sf::Color::Yellow);
             registry.emplace<WrapPositionAroundWorld>(projectileEntity);
+            registry.emplace<ProjectileComponent>(projectileEntity);
         }
     }
 }
 
 void wrapPositionAroundWorldSystem(entt::registry& registry, const Vec2 worldSize)
 {
-    const auto view = registry.view<Position>();
+    const auto view = registry.view<Position, WrapPositionAroundWorld>();
 
     for (auto [entity, position] : view.each())
     {
@@ -313,5 +314,38 @@ void accelerateImpulseSystem(entt::registry& registry, const float dt)
             const Vec2 forwardDir = vec2AngleToDir(rotation.angle);
             velocity.vec += forwardDir * accelerateImpulse.shipThrustBurstImpulse;
         }
+    }
+}
+
+void projectileMoveSystem(entt::registry& registry, const float dt)
+{
+    const auto projectilesView = registry.view<Position, const Velocity, const ProjectileComponent>();
+    const auto collidersView = registry.view<const Position, const CircleCollider>();
+
+    for (auto [pjlEnt, pjlPos, velocity] : projectilesView.each())
+    {
+        const Vec2 newPos = pjlPos.vec + velocity.vec * dt;
+
+        for (auto [colliderEnt, colliderPos, circleCollider] : collidersView.each())
+        {
+            if (isSegmentIntersectCircle(pjlPos.vec, newPos, colliderPos.vec, circleCollider.radius))
+            {
+                registry.emplace<CollisionHappenedComponent>(pjlEnt);
+                registry.emplace<CollisionHappenedComponent>(colliderEnt);
+                break;
+            }
+        }
+
+        pjlPos.vec = newPos;
+    }
+}
+
+void destroyByCollisionSystem(entt::registry& registry)
+{
+    const auto view = registry.view<const CollisionHappenedComponent>();
+
+    for (auto [entity] : view.each())
+    {
+        registry.destroy(entity);
     }
 }

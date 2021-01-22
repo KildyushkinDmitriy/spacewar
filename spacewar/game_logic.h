@@ -171,11 +171,23 @@ struct WrapPositionAroundWorld
 {
 };
 
-struct GameWorldSize
+struct CircleCollider
 {
-    Vec2 size{};
+    float radius = 0.f;
 };
 
+// projectile moves with collision check against colliders
+struct ProjectileComponent
+{
+};
+
+struct CollisionHappenedComponent
+{
+};
+
+struct DestroyByCollision
+{
+};
 
 void integrateVelocitySystem(entt::registry& registry, float dt);
 void rotateByInputSystem(entt::registry& registry, float dt);
@@ -183,3 +195,5 @@ void accelerateByInputSystem(entt::registry& registry, float dt);
 void accelerateImpulseSystem(entt::registry& registry, float dt);
 void shootingSystem(entt::registry& registry, float dt);
 void wrapPositionAroundWorldSystem(entt::registry& registry, Vec2 worldSize);
+void projectileMoveSystem(entt::registry& registry, float dt);
+void destroyByCollisionSystem(entt::registry& registry);

@@ -129,6 +129,8 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
     integrateVelocitySystem(registry, dt);
     wrapPositionAroundWorldSystem(registry, worldSize);
     shootingSystem(registry, dt);
+    projectileMoveSystem(registry, dt);
+    destroyByCollisionSystem(registry);
 }
 
 int main()
@@ -174,6 +176,8 @@ int main()
     registry.emplace<Shooting>(shipEntity, false, CooldownTimer{1.f}, 40.f, 200.f);
     registry.emplace<WrapPositionAroundWorld>(shipEntity);
     registry.emplace<AccelerateImpulseByInput>(shipEntity, false, CooldownTimer{3.f}, 75.f);
+    registry.emplace<CircleCollider>(shipEntity, 15.f);
+    registry.emplace<DestroyByCollision>(shipEntity);
 
     std::vector<Player> players{
         {
@@ -238,11 +242,14 @@ int main()
             {
                 auto playerInputForEcs = readPlayerInput(players[0].keymap);
 
-                registry.get<AccelerateByInput>(shipEntity).accelerateInput = playerInputForEcs.thrust;
-                registry.get<AccelerateByInput>(shipEntity).accelerateInput = playerInputForEcs.thrust;
-                registry.get<RotateByInput>(shipEntity).input = playerInputForEcs.rotate;
-                registry.get<Shooting>(shipEntity).input = playerInputForEcs.shoot;
-                registry.get<AccelerateImpulseByInput>(shipEntity).input = playerInputForEcs.thrustBurst;
+                if (registry.valid(shipEntity))
+                {
+                    registry.get<AccelerateByInput>(shipEntity).accelerateInput = playerInputForEcs.thrust;
+                    registry.get<AccelerateByInput>(shipEntity).accelerateInput = playerInputForEcs.thrust;
+                    registry.get<RotateByInput>(shipEntity).input = playerInputForEcs.rotate;
+                    registry.get<Shooting>(shipEntity).input = playerInputForEcs.shoot;
+                    registry.get<AccelerateImpulseByInput>(shipEntity).input = playerInputForEcs.thrustBurst;    
+                }
             }
 
             update(registry, dt, world.size);
