@@ -145,6 +145,23 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
         window.draw(particleShape);
     }
 
+    {
+        auto view = registry.view<const PositionComponent, const ParticleComponent, const DestroyTimerComponent>();
+
+        for (auto [_, position, particle, destroyTimer] : view.each())
+        {
+            const float t = (particle.totalLifetime - destroyTimer.timeLeft) / particle.totalLifetime;
+            const float radius = floatLerp(particle.startRadius, particle.finishRadius, t);
+            const sf::Color color = colorLerp(particle.startColor, particle.finishColor, t);
+
+            particleShape.setRadius(radius);
+            particleShape.setOrigin(Vec2{particleShape.getRadius(), particleShape.getRadius()});
+            particleShape.setPosition(position.vec);
+            particleShape.setFillColor(color);
+            window.draw(particleShape);
+        }
+    }
+
     const Vec2 shipTextureSize = Vec2{shipTexture.getSize()};
 
     // Dead ship pieces
@@ -225,6 +242,8 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
 
         for (auto [entity, pos, rotation, draw] : view.each())
         {
+            shipShape.setSize(draw.size);
+            shipShape.setOrigin(draw.size / 2.f);
             shipShape.setFillColor(draw.color);
             renderShipTexture9times(pos.vec, rotation.angle, world.size, shipShape, shipShape, window);
         }

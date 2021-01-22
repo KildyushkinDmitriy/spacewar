@@ -131,11 +131,6 @@ struct RotationComponent
     float angle = 0.f;
 };
 
-struct DrawUsingShipTextureComponent
-{
-    sf::Color color{};
-};
-
 struct AccelerateByInputComponent
 {
     bool accelerateInput = false;
@@ -165,6 +160,9 @@ struct ShootingComponent
 
     float projectileBirthOffset = 0.f;
     float projectileSpeed = 0.f;
+
+    // not really a good solution. if entt supported entity cloning, it could be just a prototype entity
+    std::function<entt::registry::entity_type(entt::registry&)> createProjectileFunc;
 };
 
 struct WrapPositionAroundWorldComponent

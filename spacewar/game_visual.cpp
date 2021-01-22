@@ -68,30 +68,34 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
         {
             ParticleEmitter& emitter = visualWorld.shipThrustParticleEmitters[i];
             auto [pos, angle] = getBackwardPosAndAngle(ship.pos, ship.rotation, 20.f);
-            simulateParticleEmitter(visualWorld.particles, emitter, visualWorld.shipThrustEmitterSettings, pos, angle, dt);
+            simulateParticleEmitter(visualWorld.particles, emitter, visualWorld.shipThrustEmitterSettings, pos, angle,
+                                    dt);
         }
     }
 
     // Projectile emitters
     for (const GameEventProjectileCreated event : gameEvents.projectileCreate)
     {
-        visualWorld.projectileParticleEmitters.insert(visualWorld.projectileParticleEmitters.begin() + event.projectileIndex,1, {});
+        visualWorld.projectileParticleEmitters.insert(
+            visualWorld.projectileParticleEmitters.begin() + event.projectileIndex, 1, {});
     }
-    
+
     for (const GameEventProjectileDestroyed event : gameEvents.projectileDestroyed)
     {
-        visualWorld.projectileParticleEmitters.erase(visualWorld.projectileParticleEmitters.begin() + event.projectileIndex);
+        visualWorld.projectileParticleEmitters.erase(
+            visualWorld.projectileParticleEmitters.begin() + event.projectileIndex);
     }
-    
+
     for (size_t i = 0; i < visualWorld.projectileParticleEmitters.size(); ++i)
     {
         ParticleEmitter& emitter = visualWorld.projectileParticleEmitters[i];
         const Projectile& projectile = logicWorld.projectiles[i];
 
         auto [pos, angle] = getBackwardPosAndAngle(projectile.pos, projectile.rotation, 10.f);
-        simulateParticleEmitter(visualWorld.particles, emitter, visualWorld.projectileTrailEmitterSettings, pos, angle, dt);
+        simulateParticleEmitter(visualWorld.particles, emitter, visualWorld.projectileTrailEmitterSettings, pos, angle,
+                                dt);
     }
-        
+
     // ship thrust burst emit
     for (const GameEventShipThrustBurst& burst : gameEvents.shipThrustBurst)
     {
@@ -147,5 +151,63 @@ void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorl
     {
         shipPiece.pos += shipPiece.velocity * dt;
         shipPiece.rotation += shipPiece.angularSpeed * dt;
+    }
+}
+
+static void emitParticles(
+    entt::registry& registry,
+    const ParticleEmitterSettings& settings,
+    const Vec2 pos,
+    const float baseAngle
+)
+{
+    for (int i = 0; i < settings.particlesPerSpawn; ++i)
+    {
+        const float angle = baseAngle + settings.angleRange.getRandom();
+        const Vec2 dir = vec2AngleToDir(angle);
+        const float speed = settings.speedRange.getRandom();
+        const float lifetime = settings.lifetimeRange.getRandom();
+
+        const auto entity = registry.create();
+
+        registry.emplace<PositionComponent>(entity, pos);
+        registry.emplace<VelocityComponent>(entity, dir * speed);
+
+        ParticleComponent particleComponent;
+        particleComponent.totalLifetime = lifetime;
+        particleComponent.startRadius = settings.startRadiusRange.getRandom();
+        particleComponent.finishRadius = settings.finishRadiusRange.getRandom();
+        particleComponent.startColor = settings.startColorRange.getRandom();
+        particleComponent.finishColor = settings.finishColorRange.getRandom();
+
+        registry.emplace<ParticleComponent>(entity, particleComponent);
+
+        registry.emplace<DestroyTimerComponent>(entity, lifetime);
+    }
+}
+
+void particleEmitterSystem(entt::registry& registry, float dt)
+{
+    const auto view = registry.view<ParticleEmitterComponent, const PositionComponent, const RotationComponent>();
+
+    for (auto [_, emitter, position, rotation] : view.each())
+    {
+        if (!emitter.isEnabled)
+        {
+            continue;
+        }
+
+        const float emitAngle = rotation.angle + emitter.emitAngleOffset;
+        const Vec2 emitDir = vec2AngleToDir(emitAngle);
+        const Vec2 emitPoint = position.vec + emitDir * emitter.emitOffset;
+
+        const float timeBetweenParticles = 1.f / emitter.settings.particlesPerSec;
+        emitter.timer += dt;
+
+        while (emitter.timer > timeBetweenParticles)
+        {
+            emitter.timer -= timeBetweenParticles;
+            emitParticles(registry, emitter.settings, emitPoint, emitAngle);
+        }
     }
 }

@@ -135,18 +135,47 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
     teleportSystem(registry);
     destroyByCollisionSystem(registry);
     destroyTimerSystem(registry, dt);
+
+    particleEmitterSystem(registry, dt);
+}
+
+entt::registry::entity_type createProjectileEntity(entt::registry& registry)
+{
+    const auto entity = registry.create();
+    registry.emplace<DrawUsingShipTextureComponent>(entity, Vec2{10, 15}, sf::Color{255, 100, 100, 255});
+    registry.emplace<WrapPositionAroundWorldComponent>(entity);
+    registry.emplace<ProjectileComponent>(entity);
+    registry.emplace<DestroyTimerComponent>(entity, 5.f);
+
+    ParticleEmitterComponent& emitterComponent = registry.emplace<ParticleEmitterComponent>(entity);
+    
+    ParticleEmitterSettings& projectileTrailEmitter = emitterComponent.settings;
+    projectileTrailEmitter.particlesPerSec = 30.f;
+    projectileTrailEmitter.angleRange = FloatRange{-5.f, 5.f};
+    projectileTrailEmitter.speedRange = FloatRange{15.f, 17.f};
+    projectileTrailEmitter.lifetimeRange = FloatRange{0.25f, 0.3f};
+    projectileTrailEmitter.startRadiusRange = FloatRange{4.f, 5.f};
+    projectileTrailEmitter.finishRadiusRange = FloatRange{1.f, 1.3f};
+    projectileTrailEmitter.startColorRange = ColorRange{sf::Color{100, 0, 0, 150}, sf::Color{100, 0, 0, 150}};
+    projectileTrailEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{0, 0, 0, 150}};
+
+    emitterComponent.emitOffset = 10.f;
+    emitterComponent.emitAngleOffset = 180.f;
+    emitterComponent.isEnabled = true;
+    
+    return entity;
 }
 
 entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position)
 {
     const auto shipEntity = registry.create();
     registry.emplace<PositionComponent>(shipEntity, position);
-    registry.emplace<DrawUsingShipTextureComponent>(shipEntity, sf::Color::Green);
+    registry.emplace<DrawUsingShipTextureComponent>(shipEntity, Vec2{35.f, 35.f}, sf::Color::Green);
     registry.emplace<VelocityComponent>(shipEntity);
     registry.emplace<RotationComponent>(shipEntity, 45.f);
     registry.emplace<AccelerateByInputComponent>(shipEntity, false, 25.f);
     registry.emplace<RotateByInputComponent>(shipEntity, 0.f, 180.f);
-    registry.emplace<ShootingComponent>(shipEntity, false, CooldownTimer{1.f}, 40.f, 200.f);
+    registry.emplace<ShootingComponent>(shipEntity, false, CooldownTimer{1.f}, 40.f, 200.f, createProjectileEntity);
     registry.emplace<WrapPositionAroundWorldComponent>(shipEntity);
     registry.emplace<AccelerateImpulseByInputComponent>(shipEntity, false, CooldownTimer{3.f}, 75.f);
     registry.emplace<CircleColliderComponent>(shipEntity, 15.f);

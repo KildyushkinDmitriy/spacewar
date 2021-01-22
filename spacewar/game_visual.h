@@ -78,5 +78,34 @@ struct GameVisualWorld
     std::vector<Star> stars{};
 };
 
+struct ParticleComponent
+{
+    float totalLifetime = 0;
+
+    sf::Color startColor{};
+    sf::Color finishColor{};
+
+    float startRadius = 0.f;
+    float finishRadius = 0.f;
+};
+
+struct ParticleEmitterComponent
+{
+    ParticleEmitterSettings settings{};
+    float emitOffset = 0.f;
+    float emitAngleOffset = 0.f;
+
+    bool isEnabled = false;
+    float timer = 0.f;
+};
+
+struct DrawUsingShipTextureComponent
+{
+    Vec2 size{};
+    sf::Color color{};
+};
+
 void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents,
                         float dt);
+
+void particleEmitterSystem(entt::registry& registry, float dt);

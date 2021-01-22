@@ -303,15 +303,11 @@ void shootingSystem(entt::registry& registry, const float dt)
             const Vec2 forwardDir = vec2AngleToDir(rotation.angle);
             const Vec2 projectilePos = position.vec + forwardDir * shooting.projectileBirthOffset;
 
-            const auto projectileEntity = registry.create();
+            const auto projectileEntity = shooting.createProjectileFunc(registry);
 
             registry.emplace<PositionComponent>(projectileEntity, projectilePos);
             registry.emplace<RotationComponent>(projectileEntity, rotation);
             registry.emplace<VelocityComponent>(projectileEntity, forwardDir * shooting.projectileSpeed);
-            registry.emplace<DrawUsingShipTextureComponent>(projectileEntity, sf::Color::Yellow);
-            registry.emplace<WrapPositionAroundWorldComponent>(projectileEntity);
-            registry.emplace<ProjectileComponent>(projectileEntity);
-            registry.emplace<DestroyTimerComponent>(projectileEntity, 5.f);
         }
     }
 }
