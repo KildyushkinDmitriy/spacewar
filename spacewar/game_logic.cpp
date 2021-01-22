@@ -274,17 +274,17 @@ void angularSpeedIntegrateSystem(entt::registry& registry, const float dt)
     for (auto [entity, rotation, angular] : view.each())
     {
         rotation.angle += angular.speed * dt;
+        rotation.angle = floatWrap(rotation.angle, 360.f);
     }
 }
 
-void rotateByInputSystem(entt::registry& registry, const float dt)
+void rotateByInputSystem(entt::registry& registry)
 {
-    const auto view = registry.view<RotationComponent, const RotateByInputComponent>();
+    const auto view = registry.view<RotationComponent, AngularSpeedComponent, const RotateByInputComponent>();
 
-    for (auto [entity, rotation, rotateByInput] : view.each())
+    for (auto [entity, rotation, angularSpeedComponent, rotateByInput] : view.each())
     {
-        rotation.angle += rotateByInput.input * rotateByInput.rotationSpeed * dt;
-        rotation.angle = floatWrap(rotation.angle, 360.f);
+        angularSpeedComponent.speed = rotateByInput.input * rotateByInput.rotationSpeed;
     }
 }
 

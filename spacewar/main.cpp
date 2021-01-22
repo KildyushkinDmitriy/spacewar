@@ -124,9 +124,10 @@ void startingStateSfEventHandler(AppStateStarting& startingState, std::vector<Pl
 void update(entt::registry& registry, const float dt, const Vec2 worldSize)
 {
     gravityWellSystem(registry, dt);
-    rotateByInputSystem(registry, dt);
+    rotateByInputSystem(registry);
     accelerateByInputSystem(registry, dt);
     accelerateImpulseSystem(registry, dt);
+    angularSpeedIntegrateSystem(registry, dt);
     integrateVelocitySystem(registry, dt);
     wrapPositionAroundWorldSystem(registry, worldSize);
     shootingSystem(registry, dt);
@@ -179,6 +180,7 @@ entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 posi
     registry.emplace<DrawUsingShipTextureComponent>(entity, Vec2{35.f, 35.f}, sf::Color::Green);
     registry.emplace<VelocityComponent>(entity);
     registry.emplace<RotationComponent>(entity, 45.f);
+    registry.emplace<AngularSpeedComponent>(entity, 45.f);
     registry.emplace<AccelerateByInputComponent>(entity, false, 25.f);
     registry.emplace<RotateByInputComponent>(entity, 0.f, 180.f);
     registry.emplace<ShootingComponent>(entity, false, CooldownTimer{1.f}, 40.f, 200.f, createProjectileEntity);

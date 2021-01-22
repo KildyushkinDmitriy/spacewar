@@ -271,6 +271,8 @@ void spawnDeadShipPiecesOnCollisionSystem(entt::registry& registry)
 
             registry.emplace<DeadShipPieceComponent>(pieceEntity, deadPieceIndex);
             registry.emplace<DrawUsingShipTextureComponent>(pieceEntity, draw);
+
+            registry.emplace<WrapPositionAroundWorldComponent>(pieceEntity);
         }
     }
 }

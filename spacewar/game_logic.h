@@ -232,7 +232,7 @@ struct ShipComponent
 
 void integrateVelocitySystem(entt::registry& registry, float dt);
 void angularSpeedIntegrateSystem(entt::registry& registry, float dt);
-void rotateByInputSystem(entt::registry& registry, float dt);
+void rotateByInputSystem(entt::registry& registry);
 void accelerateByInputSystem(entt::registry& registry, float dt);
 void accelerateImpulseSystem(entt::registry& registry, float dt);
 void accelerateImpulseAppliedOneshotComponentClearSystem(entt::registry& registry);
