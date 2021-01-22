@@ -130,7 +130,26 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
     wrapPositionAroundWorldSystem(registry, worldSize);
     shootingSystem(registry, dt);
     projectileMoveSystem(registry, dt);
+    circleVsCircleCollisionSystem(registry);
     destroyByCollisionSystem(registry);
+}
+
+entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position)
+{
+    const auto shipEntity = registry.create();
+    registry.emplace<Position>(shipEntity, position);
+    registry.emplace<DrawUsingShipTexture>(shipEntity, sf::Color::Green);
+    registry.emplace<Velocity>(shipEntity);
+    registry.emplace<Rotation>(shipEntity, 45.f);
+    registry.emplace<AccelerateByInput>(shipEntity, false, 25.f);
+    registry.emplace<RotateByInput>(shipEntity, 0.f, 180.f);
+    registry.emplace<Shooting>(shipEntity, false, CooldownTimer{1.f}, 40.f, 200.f);
+    registry.emplace<WrapPositionAroundWorld>(shipEntity);
+    registry.emplace<AccelerateImpulseByInput>(shipEntity, false, CooldownTimer{3.f}, 75.f);
+    registry.emplace<CircleCollider>(shipEntity, 15.f);
+    registry.emplace<DestroyByCollision>(shipEntity);
+
+    return shipEntity;
 }
 
 int main()
@@ -166,18 +185,8 @@ int main()
 
     entt::registry registry;
 
-    const auto shipEntity = registry.create();
-    registry.emplace<Position>(shipEntity, world.size / 2.f);
-    registry.emplace<DrawUsingShipTexture>(shipEntity, sf::Color::Green);
-    registry.emplace<Velocity>(shipEntity);
-    registry.emplace<Rotation>(shipEntity, 45.f);
-    registry.emplace<AccelerateByInput>(shipEntity, false, 25.f);
-    registry.emplace<RotateByInput>(shipEntity, 0.f, 180.f);
-    registry.emplace<Shooting>(shipEntity, false, CooldownTimer{1.f}, 40.f, 200.f);
-    registry.emplace<WrapPositionAroundWorld>(shipEntity);
-    registry.emplace<AccelerateImpulseByInput>(shipEntity, false, CooldownTimer{3.f}, 75.f);
-    registry.emplace<CircleCollider>(shipEntity, 15.f);
-    registry.emplace<DestroyByCollision>(shipEntity);
+    const auto shipEntity = createShipEntity(registry, world.size / 2.f);
+    const auto shipEntity2 = createShipEntity(registry, world.size / 3.f);
 
     std::vector<Player> players{
         {
@@ -248,7 +257,7 @@ int main()
                     registry.get<AccelerateByInput>(shipEntity).accelerateInput = playerInputForEcs.thrust;
                     registry.get<RotateByInput>(shipEntity).input = playerInputForEcs.rotate;
                     registry.get<Shooting>(shipEntity).input = playerInputForEcs.shoot;
-                    registry.get<AccelerateImpulseByInput>(shipEntity).input = playerInputForEcs.thrustBurst;    
+                    registry.get<AccelerateImpulseByInput>(shipEntity).input = playerInputForEcs.thrustBurst;
                 }
             }
 

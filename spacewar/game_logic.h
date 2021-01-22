@@ -196,4 +196,5 @@ void accelerateImpulseSystem(entt::registry& registry, float dt);
 void shootingSystem(entt::registry& registry, float dt);
 void wrapPositionAroundWorldSystem(entt::registry& registry, Vec2 worldSize);
 void projectileMoveSystem(entt::registry& registry, float dt);
+void circleVsCircleCollisionSystem(entt::registry& registry);
 void destroyByCollisionSystem(entt::registry& registry);

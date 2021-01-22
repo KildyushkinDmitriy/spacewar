@@ -340,6 +340,29 @@ void projectileMoveSystem(entt::registry& registry, const float dt)
     }
 }
 
+void circleVsCircleCollisionSystem(entt::registry& registry)
+{
+    const auto view = registry.view<const Position, const CircleCollider>();
+
+    for (auto i = view.begin(); i != view.end(); ++i)
+    {
+        auto j = i;
+        ++j;
+        for (; j != view.end(); ++j)
+        {
+            auto [pos1, coll1] = view.get(*i);
+            auto [pos2, coll2] = view.get(*j);
+
+            // note: no continuous collision here yet
+            if (isCircleIntersectCircle(pos1.vec, coll1.radius, pos2.vec, coll2.radius))
+            {
+                registry.emplace<CollisionHappenedComponent>(*i);
+                registry.emplace<CollisionHappenedComponent>(*j);
+            }
+        }
+    }
+}
+
 void destroyByCollisionSystem(entt::registry& registry)
 {
     const auto view = registry.view<const CollisionHappenedComponent>();
