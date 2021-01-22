@@ -117,16 +117,11 @@ int main()
         if (std::holds_alternative<AppStateGame>(appState))
         {
             // player input
-            for (size_t i = 0; i < players.size(); ++i)
+            for (const Player& player : players)
             {
-                const Player& player = players[i];
-                // world.ships[i].input = player.isAi
-                // ? aiGenerateInput(world, i, (i + 1) % players.size())
-                // : readPlayerInput(player.keymap);
-
                 if (registry.valid(player.shipEntity))
                 {
-                    auto input = readPlayerInput(player.keymap);
+                    ShipInput input = player.isAi ? aiGenerateInput(registry, player.shipEntity) : readPlayerInput(player.keymap);
                     registry.get<AccelerateByInputComponent>(player.shipEntity).input = input.thrust;
                     registry.get<RotateByInputComponent>(player.shipEntity).input = input.rotate;
                     registry.get<ShootingComponent>(player.shipEntity).input = input.shoot;

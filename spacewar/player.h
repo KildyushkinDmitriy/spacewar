@@ -30,9 +30,9 @@ struct Player
     bool isAi = false;
 
     int score = 0;
-    entt::registry::entity_type shipEntity{};
+    entt::registry::entity_type shipEntity = entt::null;
 };
 
 void forEachKeyInKeymap(const PlayerKeymap& keymap, const std::function<void(sf::Keyboard::Key)>& callback);
 ShipInput readPlayerInput(const PlayerKeymap& keymap);
-// ShipInput aiGenerateInput(const GameWorld& world, int selfShipIndex, int enemyShipIndex);
+ShipInput aiGenerateInput(const entt::registry& registry, entt::registry::entity_type selfShip);
