@@ -127,14 +127,14 @@ entt::registry::entity_type createProjectileEntity(entt::registry& registry)
     return entity;
 }
 
-entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position, sf::Color color, int playerIndex)
+entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position, float rotation, sf::Color color, int playerIndex)
 {
     const auto entity = registry.create();
     registry.emplace<ShipComponent>(entity, playerIndex);
     registry.emplace<PositionComponent>(entity, position);
     registry.emplace<DrawUsingShipTextureComponent>(entity, Vec2{35.f, 35.f}, color);
     registry.emplace<VelocityComponent>(entity);
-    registry.emplace<RotationComponent>(entity, 45.f);
+    registry.emplace<RotationComponent>(entity, rotation);
     registry.emplace<RotationSpeedComponent>(entity, 45.f);
     registry.emplace<AccelerateByInputComponent>(entity, false, 25.f);
     registry.emplace<RotateByInputComponent>(entity, 0.f, 180.f);
@@ -252,8 +252,8 @@ int main()
 
     entt::registry registry;
 
-    const auto shipEntity1 = createShipEntity(registry, world.size / 2.f - world.size / 4.f, sf::Color::Cyan, 0);
-    const auto shipEntity2 = createShipEntity(registry, world.size / 2.f + world.size / 4.f, sf::Color::White, 1);
+    const auto shipEntity1 = createShipEntity(registry, world.size / 2.f - world.size / 4.f, 180.f + 45.f, sf::Color::Cyan, 0);
+    const auto shipEntity2 = createShipEntity(registry, world.size / 2.f + world.size / 4.f, 45.f, sf::Color::White, 1);
 
     createGravityWellEntity(registry, world.size);
     createStarEntities(registry, world.size);
