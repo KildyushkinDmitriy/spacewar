@@ -57,6 +57,8 @@ struct ParticleEmitterOnAccelerateImpulseComponent
     ParticleEmitterSettings settings{};
 };
 
+constexpr int DEAD_SHIP_PIECES_COUNT = 8; 
+
 struct DeadShipPieceComponent
 {
     int pieceIndex = 0;

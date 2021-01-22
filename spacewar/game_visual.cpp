@@ -93,8 +93,7 @@ void spawnDeadShipPiecesOnCollisionSystem(entt::registry& registry)
         const float angle = rotation.angle;
         DrawUsingShipTextureComponent draw = drawIn;
 
-        // TODO: 8 is magic number
-        for (int deadPieceIndex = 0; deadPieceIndex < 8; ++deadPieceIndex)
+        for (int deadPieceIndex = 0; deadPieceIndex < DEAD_SHIP_PIECES_COUNT; ++deadPieceIndex)
         {
             const Vec2 extraVelocityDir = vec2AngleToDir(90.f * 3 + deadPieceIndex * 360.f / 8.f);
             const Vec2 velocityVec = velocity.vec + extraVelocityDir * randomFloatRange(0.f, 100.f);

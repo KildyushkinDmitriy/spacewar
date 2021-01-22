@@ -720,6 +720,8 @@ template<typename Type>
     return value;
 }
 
+#pragma warning(push)
+#pragma warning(disable:4307)
 
 template<typename Type, auto = stripped_type_name<Type>().find_first_of('.')>
 [[nodiscard]] static constexpr id_type type_hash(int) ENTT_NOEXCEPT {
@@ -727,6 +729,8 @@ template<typename Type, auto = stripped_type_name<Type>().find_first_of('.')>
     constexpr auto value = hashed_string::value(stripped.data(), stripped.size());
     return value;
 }
+    
+#pragma warning(pop)
 
 
 template<typename Type>

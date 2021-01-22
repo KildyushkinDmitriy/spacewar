@@ -93,7 +93,7 @@ entt::registry::entity_type createGravityWellEntity(entt::registry& registry, co
     GravityWellComponent wellComp;
     wellComp.maxRadius = maxRadius;
     wellComp.maxPower = 1500.f;
-    wellComp.dragCoefficient = 0.3;
+    wellComp.dragCoefficient = 0.3f;
     wellComp.dragRadius = 50.f;
     registry.emplace<GravityWellComponent>(entity, wellComp);
 

@@ -151,7 +151,7 @@ void drawUsingShipTextureSystem(const entt::registry& registry, sf::RenderWindow
 
 void drawDeadShipPiecesSystem(const entt::registry& registry, sf::RenderWindow& window, const sf::Texture& shipTexture, const Vec2 worldSize)
 {
-    std::array<sf::Vertex, 9> shipPiecesVertices;
+    std::array<sf::Vertex, DEAD_SHIP_PIECES_COUNT + 1> shipPiecesVertices;
     shipPiecesVertices[0].position = Vec2{0.5f, 0.5f};
     shipPiecesVertices[1].position = Vec2{0.0f, 0.0f};
     shipPiecesVertices[2].position = Vec2{0.5f, 0.0f};
