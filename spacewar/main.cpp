@@ -136,6 +136,7 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
     destroyByCollisionSystem(registry);
     destroyTimerSystem(registry, dt);
 
+    enableParticleEmitterByAccelerateInputSystem(registry);
     particleEmitterSystem(registry, dt);
 }
 
@@ -148,42 +149,56 @@ entt::registry::entity_type createProjectileEntity(entt::registry& registry)
     registry.emplace<DestroyTimerComponent>(entity, 5.f);
 
     ParticleEmitterComponent& emitterComponent = registry.emplace<ParticleEmitterComponent>(entity);
-    
-    ParticleEmitterSettings& projectileTrailEmitter = emitterComponent.settings;
-    projectileTrailEmitter.particlesPerSec = 30.f;
-    projectileTrailEmitter.angleRange = FloatRange{-5.f, 5.f};
-    projectileTrailEmitter.speedRange = FloatRange{15.f, 17.f};
-    projectileTrailEmitter.lifetimeRange = FloatRange{0.25f, 0.3f};
-    projectileTrailEmitter.startRadiusRange = FloatRange{4.f, 5.f};
-    projectileTrailEmitter.finishRadiusRange = FloatRange{1.f, 1.3f};
-    projectileTrailEmitter.startColorRange = ColorRange{sf::Color{100, 0, 0, 150}, sf::Color{100, 0, 0, 150}};
-    projectileTrailEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{0, 0, 0, 150}};
-
-    emitterComponent.emitOffset = 10.f;
-    emitterComponent.emitAngleOffset = 180.f;
     emitterComponent.isEnabled = true;
+    
+    ParticleEmitterSettings& emitterSettings = emitterComponent.settings;
+    emitterSettings.particlesPerSec = 30.f;
+    emitterSettings.angleRange = FloatRange{-5.f, 5.f};
+    emitterSettings.speedRange = FloatRange{15.f, 17.f};
+    emitterSettings.lifetimeRange = FloatRange{0.25f, 0.3f};
+    emitterSettings.startRadiusRange = FloatRange{4.f, 5.f};
+    emitterSettings.finishRadiusRange = FloatRange{1.f, 1.3f};
+    emitterSettings.startColorRange = ColorRange{sf::Color{100, 0, 0, 150}, sf::Color{100, 0, 0, 150}};
+    emitterSettings.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{0, 0, 0, 150}};
+    emitterSettings.emitOffset = 10.f;
+    emitterSettings.emitAngleOffset = 180.f;
     
     return entity;
 }
 
 entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position)
 {
-    const auto shipEntity = registry.create();
-    registry.emplace<PositionComponent>(shipEntity, position);
-    registry.emplace<DrawUsingShipTextureComponent>(shipEntity, Vec2{35.f, 35.f}, sf::Color::Green);
-    registry.emplace<VelocityComponent>(shipEntity);
-    registry.emplace<RotationComponent>(shipEntity, 45.f);
-    registry.emplace<AccelerateByInputComponent>(shipEntity, false, 25.f);
-    registry.emplace<RotateByInputComponent>(shipEntity, 0.f, 180.f);
-    registry.emplace<ShootingComponent>(shipEntity, false, CooldownTimer{1.f}, 40.f, 200.f, createProjectileEntity);
-    registry.emplace<WrapPositionAroundWorldComponent>(shipEntity);
-    registry.emplace<AccelerateImpulseByInputComponent>(shipEntity, false, CooldownTimer{3.f}, 75.f);
-    registry.emplace<CircleColliderComponent>(shipEntity, 15.f);
-    registry.emplace<DestroyByCollisionComponent>(shipEntity);
-    registry.emplace<AffectedByGravityWellComponent>(shipEntity);
-    registry.emplace<TeleportableComponent>(shipEntity);
+    const auto entity = registry.create();
+    registry.emplace<PositionComponent>(entity, position);
+    registry.emplace<DrawUsingShipTextureComponent>(entity, Vec2{35.f, 35.f}, sf::Color::Green);
+    registry.emplace<VelocityComponent>(entity);
+    registry.emplace<RotationComponent>(entity, 45.f);
+    registry.emplace<AccelerateByInputComponent>(entity, false, 25.f);
+    registry.emplace<RotateByInputComponent>(entity, 0.f, 180.f);
+    registry.emplace<ShootingComponent>(entity, false, CooldownTimer{1.f}, 40.f, 200.f, createProjectileEntity);
+    registry.emplace<WrapPositionAroundWorldComponent>(entity);
+    registry.emplace<AccelerateImpulseByInputComponent>(entity, false, CooldownTimer{3.f}, 75.f);
+    registry.emplace<CircleColliderComponent>(entity, 15.f);
+    registry.emplace<DestroyByCollisionComponent>(entity);
+    registry.emplace<AffectedByGravityWellComponent>(entity);
+    registry.emplace<TeleportableComponent>(entity);
+    
+    ParticleEmitterComponent& emitterComponent = registry.emplace<ParticleEmitterComponent>(entity);
+    ParticleEmitterSettings& emitterSettings = emitterComponent.settings;
+    emitterSettings.particlesPerSec = 30.f;
+    emitterSettings.angleRange = FloatRange{-10.f, 10.f};
+    emitterSettings.speedRange = FloatRange{180.f, 220.f};
+    emitterSettings.lifetimeRange = FloatRange{0.4f, 0.6f};
+    emitterSettings.startRadiusRange = FloatRange{7.f, 12.f};
+    emitterSettings.finishRadiusRange = FloatRange{1.f, 2.f};
+    emitterSettings.startColorRange = ColorRange{sf::Color{255, 0, 0, 150}, sf::Color{255, 150, 0, 150}};
+    emitterSettings.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
+    emitterSettings.emitOffset = 20.f;
+    emitterSettings.emitAngleOffset = 180.f;
 
-    return shipEntity;
+    registry.emplace<EnableParticleEmitterByAccelerateInputComponent>(entity);
+    
+    return entity;
 }
 
 entt::registry::entity_type createGravityWellEntity(entt::registry& registry, const Vec2 worldSize)

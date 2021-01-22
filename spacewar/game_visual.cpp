@@ -197,9 +197,9 @@ void particleEmitterSystem(entt::registry& registry, float dt)
             continue;
         }
 
-        const float emitAngle = rotation.angle + emitter.emitAngleOffset;
+        const float emitAngle = rotation.angle + emitter.settings.emitAngleOffset;
         const Vec2 emitDir = vec2AngleToDir(emitAngle);
-        const Vec2 emitPoint = position.vec + emitDir * emitter.emitOffset;
+        const Vec2 emitPoint = position.vec + emitDir * emitter.settings.emitOffset;
 
         const float timeBetweenParticles = 1.f / emitter.settings.particlesPerSec;
         emitter.timer += dt;
@@ -209,5 +209,15 @@ void particleEmitterSystem(entt::registry& registry, float dt)
             emitter.timer -= timeBetweenParticles;
             emitParticles(registry, emitter.settings, emitPoint, emitAngle);
         }
+    }
+}
+
+void enableParticleEmitterByAccelerateInputSystem(entt::registry& registry)
+{
+    const auto view = registry.view<ParticleEmitterComponent, const AccelerateByInputComponent>();
+    
+    for (auto [_, emitter, accelerate] : view.each())
+    {
+        emitter.isEnabled = accelerate.accelerateInput;        
     }
 }
