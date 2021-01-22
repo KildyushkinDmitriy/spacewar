@@ -5,6 +5,6 @@
 
 #include <SFML/Graphics.hpp>
 
-void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::RenderWindow& window, const sf::Texture& shipTexture, const entt::registry& registry);
-void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, const sf::Font& font);
+void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::RenderWindow& window, const sf::Texture& shipTexture, const entt::registry& registry, float time);
+// void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, const sf::Font& font);
 

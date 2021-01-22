@@ -1,11 +1,6 @@
 ﻿#include "game_visual.h"
 
-static void emitParticles(
-    std::vector<Particle>& particles,
-    const ParticleEmitterSettings& settings,
-    const Vec2 pos,
-    const float baseAngle
-)
+static void emitParticles(std::vector<Particle>& particles, const ParticleEmitterSettings& settings, const Vec2 pos, const float baseAngle)
 {
     for (int i = 0; i < settings.particlesPerSpawn; ++i)
     {
@@ -29,14 +24,7 @@ static void emitParticles(
     }
 }
 
-static void simulateParticleEmitter(
-    std::vector<Particle>& particles,
-    ParticleEmitter& emitter,
-    const ParticleEmitterSettings& settings,
-    const Vec2 pos,
-    const float baseAngle,
-    const float dt
-)
+static void simulateParticleEmitter(std::vector<Particle>& particles, ParticleEmitter& emitter, const ParticleEmitterSettings& settings, const Vec2 pos, const float baseAngle, const float dt)
 {
     const float timeBetweenParticles = 1.f / settings.particlesPerSec;
     emitter.timer += dt;
@@ -56,8 +44,7 @@ std::pair<Vec2, float> getBackwardPosAndAngle(const Vec2& pos, const float rotat
     return {resultPos, invAngle};
 }
 
-void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents,
-                        const float dt)
+void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents, const float dt)
 {
     // ship thrust emitters
     for (size_t i = 0; i < visualWorld.shipThrustParticleEmitters.size(); ++i)
@@ -253,14 +240,14 @@ void spawnDeadShipPiecesOnCollisionSystem(entt::registry& registry)
         const Vec2 pos = position.vec;
         const float angle = rotation.angle;
         DrawUsingShipTextureComponent draw = drawIn;
-        
+
         // TODO: 8 is magic number
         for (int deadPieceIndex = 0; deadPieceIndex < 8; ++deadPieceIndex)
         {
             const Vec2 extraVelocityDir = vec2AngleToDir(90.f * 3 + deadPieceIndex * 360.f / 8.f);
             const Vec2 velocityVec = velocity.vec + extraVelocityDir * randomFloatRange(0.f, 100.f);
             const float angularSpeed = randomFloatRange(-30.f, 30.f);
-            
+
             const auto pieceEntity = registry.create();
 
             registry.emplace<PositionComponent>(pieceEntity, pos);

@@ -142,9 +142,9 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
     enableParticleEmitterByAccelerateInputSystem(registry);
     particleEmitterOnAccelerateImpulseAppliedSystem(registry);
     particleEmitterSystem(registry, dt);
-        
+
     accelerateImpulseAppliedOneshotComponentClearSystem(registry);
-    
+
     destroyByCollisionSystem(registry);
     destroyTimerSystem(registry, dt);
 }
@@ -159,7 +159,7 @@ entt::registry::entity_type createProjectileEntity(entt::registry& registry)
 
     ParticleEmitterComponent& emitterComponent = registry.emplace<ParticleEmitterComponent>(entity);
     emitterComponent.isEnabled = true;
-    
+
     ParticleEmitterSettings& emitterSettings = emitterComponent.settings;
     emitterSettings.particlesPerSec = 30.f;
     emitterSettings.angleRange = FloatRange{-5.f, 5.f};
@@ -171,16 +171,16 @@ entt::registry::entity_type createProjectileEntity(entt::registry& registry)
     emitterSettings.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{0, 0, 0, 150}};
     emitterSettings.emitOffset = 10.f;
     emitterSettings.emitAngleOffset = 180.f;
-    
+
     return entity;
 }
 
-entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position)
+entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position, sf::Color color)
 {
     const auto entity = registry.create();
     registry.emplace<ShipComponent>(entity);
     registry.emplace<PositionComponent>(entity, position);
-    registry.emplace<DrawUsingShipTextureComponent>(entity, Vec2{35.f, 35.f}, sf::Color::Green);
+    registry.emplace<DrawUsingShipTextureComponent>(entity, Vec2{35.f, 35.f}, color);
     registry.emplace<VelocityComponent>(entity);
     registry.emplace<RotationComponent>(entity, 45.f);
     registry.emplace<AngularSpeedComponent>(entity, 45.f);
@@ -193,7 +193,7 @@ entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 posi
     registry.emplace<DestroyByCollisionComponent>(entity);
     registry.emplace<AffectedByGravityWellComponent>(entity);
     registry.emplace<TeleportableComponent>(entity);
-    
+
     {
         ParticleEmitterComponent& emitterComponent = registry.emplace<ParticleEmitterComponent>(entity);
         ParticleEmitterSettings& emitterSettings = emitterComponent.settings;
@@ -225,7 +225,7 @@ entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 posi
         emitterSettings.startColorRange = ColorRange{sf::Color{255, 100, 0, 150}, sf::Color{255, 150, 0, 150}};
         emitterSettings.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
     }
-    
+
     return entity;
 }
 
@@ -233,7 +233,7 @@ entt::registry::entity_type createGravityWellEntity(entt::registry& registry, co
 {
     const Vec2 pos = worldSize / 2.f;
     const float maxRadius = vec2Length(pos);
-    
+
     const auto entity = registry.create();
     registry.emplace<PositionComponent>(entity, pos);
 
@@ -251,6 +251,22 @@ entt::registry::entity_type createGravityWellEntity(entt::registry& registry, co
     registry.emplace<TeleportComponent>(entity, teleport);
 
     return entity;
+}
+
+void createStarEntities(entt::registry& registry, const Vec2 worldSize)
+{
+    for (int i = 0; i < 50; ++i)
+    {
+        const auto entity = registry.create();
+
+        const Vec2 pos{randomFloatRange(0, worldSize.x), randomFloatRange(0, worldSize.y)};
+        registry.emplace<PositionComponent>(entity, pos);
+
+        StarComponent& starComponent = registry.emplace<StarComponent>(entity);
+        starComponent.radius = randomFloatRange(0.5f, 2.f);
+        starComponent.brightnessRange = FloatRange{randomFloatRange(0.2f, 0.6f), randomFloatRange(0.6f, 1.f)};
+        starComponent.brightnessPeriodsPerSec = randomFloatRange(0.2f, 0.5f);
+    }
 }
 
 int main()
@@ -286,10 +302,11 @@ int main()
 
     entt::registry registry;
 
-    const auto shipEntity = createShipEntity(registry, world.size / 2.f);
-    createShipEntity(registry, world.size / 3.f);
+    const auto shipEntity = createShipEntity(registry, world.size / 2.f, sf::Color::Cyan);
+    createShipEntity(registry, world.size / 3.f, sf::Color::White);
 
     createGravityWellEntity(registry, world.size);
+    createStarEntities(registry, world.size);
 
     std::vector<Player> players{
         {
@@ -313,10 +330,13 @@ int main()
 
     bool isDebugRender = false;
 
+    float time = 0.f;
+
     sf::Clock timer;
     while (window.isOpen())
     {
         const float dt = std::clamp(timer.restart().asSeconds(), 0.f, 0.1f);
+        time += dt;
 
         sf::Event event;
         while (window.pollEvent(event))
@@ -370,7 +390,7 @@ int main()
             // gameVisualSimulate(visualWorld, world, gameEvents, dt);
 
             const GameEvents gameEvents{};
-            
+
             if (gameEvents.result.has_value())
             {
                 if (!gameEvents.result->isTie())
@@ -426,11 +446,11 @@ int main()
         {
             if (isDebugRender)
             {
-                renderGameDebug(world, window, font);
+                // renderGameDebug(world, window, font);
             }
             else
             {
-                renderGame(world, visualWorld, window, shipTexture, registry);
+                renderGame(world, visualWorld, window, shipTexture, registry, time);
             }
         }
 

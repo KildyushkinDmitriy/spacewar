@@ -120,6 +120,13 @@ struct DeadShipPieceComponent
     int pieceIndex = 0;
 };
 
+struct StarComponent
+{
+    float radius = 0.f;
+    FloatRange brightnessRange{};
+    float brightnessPeriodsPerSec = 0.f;
+};
+
 void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents,
                         float dt);
 
