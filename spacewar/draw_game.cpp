@@ -1,4 +1,4 @@
-﻿#include "render.h"
+﻿#include "draw_game.h"
 #include "game_visual.h"
 
 #include <array>
@@ -222,7 +222,7 @@ void drawGame(sf::RenderWindow& window, const sf::Texture& shipTexture, const en
 // }
 //
 //
-// void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, const sf::Font& font)
+// void drawGameDebug(const GameWorld& world, sf::RenderWindow& window, const sf::Font& font)
 // {
 //     // gravitation field visualize
 //     for (const GravityWell& well : world.gravityWells)

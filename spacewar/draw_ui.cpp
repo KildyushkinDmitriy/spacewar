@@ -1,4 +1,4 @@
-﻿#include "render_ui.h"
+﻿#include "draw_ui.h"
 
 static void positionTextWithCenterAlignment(sf::Text& textRender, const Vec2 pos)
 {
@@ -6,7 +6,7 @@ static void positionTextWithCenterAlignment(sf::Text& textRender, const Vec2 pos
     textRender.setPosition(pos - Vec2{localBounds.width / 2.f, localBounds.height / 2.f});
 }
 
-void renderGameOverUi(
+void drawGameOverUi(
     const AppStateGameOver& gameOverState,
     const std::vector<Player>& players,
     sf::RenderWindow& window,
@@ -87,8 +87,8 @@ void renderGameOverUi(
 }
 
 
-void renderStartingUi(const AppStateStarting& startingState, const std::vector<Player>& players,
-                      sf::RenderWindow& window, const sf::Font& font)
+void drawStartingUi(const AppStateStarting& startingState, const std::vector<Player>& players,
+                    sf::RenderWindow& window, const sf::Font& font)
 {
     const float time = startingState.timeInState;
     const Vec2 windowCenter = Vec2{window.getSize()} / 2.f;

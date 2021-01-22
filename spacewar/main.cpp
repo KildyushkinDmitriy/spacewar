@@ -1,8 +1,8 @@
 #include "game_logic.h"
 #include "game_visual.h"
 #include "player.h"
-#include "render.h"
-#include "render_ui.h"
+#include "draw_game.h"
+#include "draw_ui.h"
 #include "app_state.h"
 
 #include "entt.hpp"
@@ -440,13 +440,13 @@ int main()
             }
         }
 
-        // render
+        // draw
         window.clear(sf::Color{5, 10, 30, 255});
         if (std::holds_alternative<AppStateGame>(appState) || std::holds_alternative<AppStateGameOver>(appState))
         {
             if (isDebugRender)
             {
-                // renderGameDebug(world, window, font);
+                // drawGameDebug(world, window, font);
             }
             else
             {
@@ -456,11 +456,11 @@ int main()
 
         if (const auto* gameOverState = std::get_if<AppStateGameOver>(&appState))
         {
-            renderGameOverUi(*gameOverState, players, window, font);
+            drawGameOverUi(*gameOverState, players, window, font);
         }
         else if (const auto* startingState = std::get_if<AppStateStarting>(&appState))
         {
-            renderStartingUi(*startingState, players, window, font);
+            drawStartingUi(*startingState, players, window, font);
         }
 
         window.display();

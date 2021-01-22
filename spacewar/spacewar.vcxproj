@@ -144,8 +144,8 @@
     <ClCompile Include="game_visual.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="player.cpp" />
-    <ClCompile Include="render.cpp" />
-    <ClCompile Include="render_ui.cpp" />
+    <ClCompile Include="draw_game.cpp" />
+    <ClCompile Include="draw_ui.cpp" />
     <ClCompile Include="tests.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -155,8 +155,8 @@
     <ClInclude Include="game_math.h" />
     <ClInclude Include="game_visual.h" />
     <ClInclude Include="player.h" />
-    <ClInclude Include="render.h" />
-    <ClInclude Include="render_ui.h" />
+    <ClInclude Include="draw_game.h" />
+    <ClInclude Include="draw_ui.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
