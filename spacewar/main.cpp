@@ -123,6 +123,7 @@ void startingStateSfEventHandler(AppStateStarting& startingState, std::vector<Pl
 
 void update(entt::registry& registry, const float dt, const Vec2 worldSize)
 {
+    gravityWellSystem(registry, dt);
     rotateByInputSystem(registry, dt);
     accelerateByInputSystem(registry, dt);
     accelerateImpulseSystem(registry, dt);
@@ -131,6 +132,7 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
     shootingSystem(registry, dt);
     projectileMoveSystem(registry, dt);
     circleVsCircleCollisionSystem(registry);
+    teleportSystem(registry);
     destroyByCollisionSystem(registry);
     destroyTimerSystem(registry, dt);
 }
@@ -149,8 +151,34 @@ entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 posi
     registry.emplace<AccelerateImpulseByInput>(shipEntity, false, CooldownTimer{3.f}, 75.f);
     registry.emplace<CircleCollider>(shipEntity, 15.f);
     registry.emplace<DestroyByCollision>(shipEntity);
+    registry.emplace<AffectedByGravityWell>(shipEntity);
+    registry.emplace<Teleportable>(shipEntity);
 
     return shipEntity;
+}
+
+entt::registry::entity_type createGravityWellEntity(entt::registry& registry, const Vec2 worldSize)
+{
+    const Vec2 pos = worldSize / 2.f;
+    const float maxRadius = vec2Length(pos);
+    
+    const auto entity = registry.create();
+    registry.emplace<Position>(entity, pos);
+
+    GravityWellComponent wellComp;
+    wellComp.maxRadius = maxRadius;
+    wellComp.maxPower = 1500.f;
+    wellComp.dragCoefficient = 0.3;
+    wellComp.dragRadius = 50.f;
+    registry.emplace<GravityWellComponent>(entity, wellComp);
+
+    Teleport teleport;
+    teleport.destination = worldSize;
+    teleport.radius = 10.f;
+    teleport.speedAfterTeleport = 20.f;
+    registry.emplace<Teleport>(entity, teleport);
+
+    return entity;
 }
 
 int main()
@@ -187,7 +215,9 @@ int main()
     entt::registry registry;
 
     const auto shipEntity = createShipEntity(registry, world.size / 2.f);
-    const auto shipEntity2 = createShipEntity(registry, world.size / 3.f);
+    createShipEntity(registry, world.size / 3.f);
+
+    createGravityWellEntity(registry, world.size);
 
     std::vector<Player> players{
         {

@@ -24,6 +24,28 @@ Vec2 gameGetGravityWellVectorAtPoint(const GravityWell& well, const Vec2 point)
     return powerDir * power;
 }
 
+float gameGetGravityWellPowerAtRadius(const GravityWellComponent& well, const float radius)
+{
+    const float normalized = std::clamp(radius / well.maxRadius, 0.f, 1.f);
+    const float powerFactor = 0.0025f / std::pow(normalized + 0.045f, 2.f);
+    return powerFactor * well.maxPower;
+}
+
+Vec2 gameGetGravityWellVectorAtPoint(const GravityWellComponent& well, Vec2 wellPos, const Vec2 point)
+{
+    const Vec2 diffVec = wellPos - point;
+    const float diffLength = vec2Length(diffVec);
+
+    if (diffLength <= 0.001f)
+    {
+        return Vec2{0.f, 0.f};
+    }
+
+    const Vec2 powerDir = diffVec / diffLength;
+    const float power = gameGetGravityWellPowerAtRadius(well, diffLength);
+    return powerDir * power;
+}
+
 static void killShip(GameWorld& world, const size_t shipIndex, GameEvents& gameEvents)
 {
     Ship& ship = world.ships[shipIndex];
@@ -384,6 +406,47 @@ void destroyTimerSystem(entt::registry& registry, float dt)
         if (timer.timeLeft <= 0)
         {
             registry.destroy(entity);
+        }
+    }
+}
+
+void gravityWellSystem(entt::registry& registry, float dt)
+{
+    const auto gravityWellsView = registry.view<const GravityWellComponent, const Position>();
+    const auto affectedEntitiesView = registry.view<Velocity, const Position, const AffectedByGravityWell>();
+
+    for (auto [wellEnt, well, wellPos] : gravityWellsView.each())
+    {
+        for (auto [affectedEnt, velocity, affectedPos] : affectedEntitiesView.each())
+        {
+            if (vec2Dist(wellPos.vec, affectedPos.vec) < well.dragRadius)
+            {
+                velocity.vec -= velocity.vec * dt * well.dragCoefficient;
+            }
+            velocity.vec += gameGetGravityWellVectorAtPoint(well, wellPos.vec, affectedPos.vec) * dt;
+        }
+    }
+}
+
+void teleportSystem(entt::registry& registry)
+{
+    const auto teleportsView = registry.view<const Teleport, const Position>();
+    const auto teleportablesView = registry.view<Position, Velocity, Teleportable>();
+
+    for (auto [_, teleport, teleportPos] : teleportsView.each())
+    {
+        for (auto [_, position, velocity] : teleportablesView.each())
+        {
+            if (isPointInsideCircle(position.vec, teleportPos.vec, teleport.radius))
+            {
+                position.vec = teleport.destination;
+
+                const float length = vec2Length(velocity.vec);
+                if (length > 0.001f)
+                {
+                    velocity.vec = velocity.vec / length * teleport.speedAfterTeleport;
+                }
+            }
         }
     }
 }

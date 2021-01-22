@@ -194,6 +194,31 @@ struct DestroyTimer
     float timeLeft = 0.f;
 };
 
+struct GravityWellComponent
+{
+    float maxRadius = 0.f;
+    float maxPower = 0.f;
+    
+    float dragRadius = 0.f;
+    float dragCoefficient = 0.f;
+};
+
+struct AffectedByGravityWell
+{
+};
+
+struct Teleport
+{
+    float radius = 0.f;
+    Vec2 destination{};
+    float speedAfterTeleport = 0.f;
+};
+
+struct Teleportable
+{
+};
+
+
 void integrateVelocitySystem(entt::registry& registry, float dt);
 void rotateByInputSystem(entt::registry& registry, float dt);
 void accelerateByInputSystem(entt::registry& registry, float dt);
@@ -204,3 +229,6 @@ void projectileMoveSystem(entt::registry& registry, float dt);
 void circleVsCircleCollisionSystem(entt::registry& registry);
 void destroyByCollisionSystem(entt::registry& registry);
 void destroyTimerSystem(entt::registry& registry, float dt);
+void gravityWellSystem(entt::registry& registry, float dt);
+void teleportSystem(entt::registry& registry);
+
