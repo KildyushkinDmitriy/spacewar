@@ -2,6 +2,9 @@
 #include "game_visual.h"
 #include "player.h"
 #include "render.h"
+#include "render_ui.h"
+#include "app_state.h"
+
 #include "entt.hpp"
 
 #include <SFML/Graphics.hpp>

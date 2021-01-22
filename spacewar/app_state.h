@@ -1,5 +1,9 @@
 ﻿#pragma once
+
+#include "game_logic.h"
+
 #include <variant>
+#include <vector>
 
 struct AppStateStarting
 {
