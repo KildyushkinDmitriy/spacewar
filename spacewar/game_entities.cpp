@@ -121,3 +121,17 @@ void createStarEntities(entt::registry& registry, const Vec2 worldSize)
         starComponent.brightnessPeriodsPerSec = randomFloatRange(0.2f, 0.5f);
     }
 }
+
+void recreateGameWorld(entt::registry& registry, std::vector<Player>& players, const Vec2 worldSize)
+{
+    registry.clear();
+
+    const auto shipEntity1 = createShipEntity(registry, worldSize / 2.f - worldSize / 4.f, 180.f + 45.f, sf::Color::Cyan, 0);
+    const auto shipEntity2 = createShipEntity(registry, worldSize / 2.f + worldSize / 4.f, 45.f, sf::Color::White, 1);
+
+    createGravityWellEntity(registry, worldSize);
+    createStarEntities(registry, worldSize);
+
+    players[0].shipEntity = shipEntity1;
+    players[1].shipEntity = shipEntity2;
+}
