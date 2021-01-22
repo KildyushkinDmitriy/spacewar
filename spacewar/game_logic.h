@@ -121,6 +121,10 @@ struct PositionComponent
     Vec2 vec{};
 };
 
+struct WrapPositionAroundWorldComponent
+{
+};
+
 struct VelocityComponent
 {
     Vec2 vec{};
@@ -131,7 +135,7 @@ struct RotationComponent
     float angle = 0.f;
 };
 
-struct AngularSpeedComponent
+struct RotationSpeedComponent
 {
     float speed = 0.f;
 };
@@ -145,10 +149,8 @@ struct AccelerateByInputComponent
 struct AccelerateImpulseByInputComponent
 {
     bool input = false;
-
     CooldownTimer cooldownTimer;
-
-    float shipThrustBurstImpulse = 0.f;
+    float power = 0.f;
 };
 
 struct AccelerateImpulseAppliedOneshotComponent
@@ -164,18 +166,13 @@ struct RotateByInputComponent
 struct ShootingComponent
 {
     bool input = false;
-
     CooldownTimer cooldownTimer;
 
     float projectileBirthOffset = 0.f;
     float projectileSpeed = 0.f;
 
-    // not really a good solution. if entt supported entity cloning, it could be just a prototype entity
+    // Not really a good solution. If entt supported entity cloning, it could be just a prototype entity
     std::function<entt::registry::entity_type(entt::registry&)> createProjectileFunc;
-};
-
-struct WrapPositionAroundWorldComponent
-{
 };
 
 struct CircleColliderComponent
@@ -188,8 +185,7 @@ struct ProjectileComponent
 {
 };
 
-// TODO: rename to oneshot component?
-struct CollisionHappenedComponent
+struct CollisionHappenedOneshotComponent
 {
 };
 
@@ -211,7 +207,7 @@ struct GravityWellComponent
     float dragCoefficient = 0.f;
 };
 
-struct AffectedByGravityWellComponent
+struct SusceptibleToGravityWellComponent
 {
 };
 
@@ -230,8 +226,8 @@ struct ShipComponent
 {
 };
 
-void integrateVelocitySystem(entt::registry& registry, float dt);
-void angularSpeedIntegrateSystem(entt::registry& registry, float dt);
+void applyVelocitySystem(entt::registry& registry, float dt);
+void applyRotationSpeedSystem(entt::registry& registry, float dt);
 void rotateByInputSystem(entt::registry& registry);
 void accelerateByInputSystem(entt::registry& registry, float dt);
 void accelerateImpulseSystem(entt::registry& registry, float dt);

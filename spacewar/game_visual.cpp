@@ -84,7 +84,7 @@ void spawnDeadShipPiecesOnCollisionSystem(entt::registry& registry)
         const VelocityComponent,
         const DrawUsingShipTextureComponent,
         const ShipComponent,
-        const CollisionHappenedComponent>();
+        const CollisionHappenedOneshotComponent>();
 
     for (auto [_, position, rotation, velocity, drawIn] : view.each())
     {
@@ -106,7 +106,7 @@ void spawnDeadShipPiecesOnCollisionSystem(entt::registry& registry)
             registry.emplace<VelocityComponent>(pieceEntity, velocityVec);
 
             registry.emplace<RotationComponent>(pieceEntity, angle);
-            registry.emplace<AngularSpeedComponent>(pieceEntity, angularSpeed);
+            registry.emplace<RotationSpeedComponent>(pieceEntity, angularSpeed);
 
             registry.emplace<DeadShipPieceComponent>(pieceEntity, deadPieceIndex);
             registry.emplace<DrawUsingShipTextureComponent>(pieceEntity, draw);

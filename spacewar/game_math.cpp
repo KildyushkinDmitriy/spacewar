@@ -155,3 +155,21 @@ sf::Color ColorRange::getRandom() const
 {
     return colorLerp(min, max, randomFloatRange(0.f, 1.f));
 }
+
+bool CooldownTimer::updateAndGetWasUsed(const float dt, const bool useInput)
+{
+    timeLeft -= dt;
+    if (timeLeft > 0)
+    {
+        return false;
+    }
+    timeLeft = 0.f;
+
+    if (useInput)
+    {
+        timeLeft = cooldownTotalTime;
+        return true;
+    }
+
+    return false;
+}

@@ -57,21 +57,5 @@ struct CooldownTimer
     {
     }
 
-    bool updateAndGetIsUsed(const float dt, const bool useInput)
-    {
-        timeLeft -= dt;
-        if (timeLeft > 0)
-        {
-            return false;
-        }
-        timeLeft = 0.f;
-
-        if (useInput)
-        {
-            timeLeft = cooldownTotalTime;
-            return true;
-        }
-
-        return false;
-    }
+    bool updateAndGetWasUsed(float dt, bool useInput);
 };

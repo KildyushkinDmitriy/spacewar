@@ -31,7 +31,7 @@ float gameGetGravityWellPowerAtRadius(const GravityWellComponent& well, const fl
     return powerFactor * well.maxPower;
 }
 
-Vec2 gameGetGravityWellVectorAtPoint(const GravityWellComponent& well, Vec2 wellPos, const Vec2 point)
+Vec2 gameGetGravityWellVectorAtPoint(const GravityWellComponent& well, const Vec2 wellPos, const Vec2 point)
 {
     const Vec2 diffVec = wellPos - point;
     const float diffLength = vec2Length(diffVec);
@@ -234,31 +234,19 @@ GameEvents gameSimulate(GameWorld& world, const float dt)
     return gameEvents;
 }
 
-
-// void update(entt::registry &registry) {
-//     auto view = registry.view<const position, velocity>();
-//
-//     // use a callback
-//     view.each([](const auto &pos, auto &vel) { /* ... */ });
-//
-//     // use an extended callback
-//     view.each([](const auto entity, const auto &pos, auto &vel) { /* ... */ });
-//
-//     // use a range-for
-//     for(auto [entity, pos, vel]: view.each()) {
-//         // ...
-//     }
-//
-//     // use forward iterators and get only the components of interest
-//     for(auto entity: view) {
-//         auto &vel = view.get<velocity>(entity);
-//         // ...
-//     }
-// }
-
-
-void integrateVelocitySystem(entt::registry& registry, const float dt)
+void wrapPositionAroundWorldSystem(entt::registry& registry, const Vec2 worldSize)
 {
+    const auto view = registry.view<PositionComponent, WrapPositionAroundWorldComponent>();
+
+    for (auto [entity, position] : view.each())
+    {
+        position.vec = vec2Wrap(position.vec, worldSize);
+    }
+}
+
+void applyVelocitySystem(entt::registry& registry, const float dt)
+{
+    // projectile has it's own move system with collision check
     const auto view = registry.view<PositionComponent, const VelocityComponent>(entt::exclude<ProjectileComponent>);
 
     for (auto [entity, position, velocity] : view.each())
@@ -267,9 +255,9 @@ void integrateVelocitySystem(entt::registry& registry, const float dt)
     }
 }
 
-void angularSpeedIntegrateSystem(entt::registry& registry, const float dt)
+void applyRotationSpeedSystem(entt::registry& registry, const float dt)
 {
-    const auto view = registry.view<RotationComponent, const AngularSpeedComponent>();
+    const auto view = registry.view<RotationComponent, const RotationSpeedComponent>();
 
     for (auto [entity, rotation, angular] : view.each())
     {
@@ -280,7 +268,7 @@ void angularSpeedIntegrateSystem(entt::registry& registry, const float dt)
 
 void rotateByInputSystem(entt::registry& registry)
 {
-    const auto view = registry.view<RotationComponent, AngularSpeedComponent, const RotateByInputComponent>();
+    const auto view = registry.view<RotationComponent, RotationSpeedComponent, const RotateByInputComponent>();
 
     for (auto [entity, rotation, angularSpeedComponent, rotateByInput] : view.each())
     {
@@ -288,7 +276,7 @@ void rotateByInputSystem(entt::registry& registry)
     }
 }
 
-auto accelerateByInputSystem(entt::registry& registry, const float dt) -> void
+void accelerateByInputSystem(entt::registry& registry, const float dt)
 {
     const auto view = registry.view<VelocityComponent, const AccelerateByInputComponent, const RotationComponent>();
 
@@ -308,7 +296,7 @@ void shootingSystem(entt::registry& registry, const float dt)
 
     for (auto [entity, shooting, position, rotation] : view.each())
     {
-        if (shooting.cooldownTimer.updateAndGetIsUsed(dt, shooting.input))
+        if (shooting.cooldownTimer.updateAndGetWasUsed(dt, shooting.input))
         {
             const Vec2 forwardDir = vec2AngleToDir(rotation.angle);
             const Vec2 projectilePos = position.vec + forwardDir * shooting.projectileBirthOffset;
@@ -322,26 +310,16 @@ void shootingSystem(entt::registry& registry, const float dt)
     }
 }
 
-void wrapPositionAroundWorldSystem(entt::registry& registry, const Vec2 worldSize)
-{
-    const auto view = registry.view<PositionComponent, WrapPositionAroundWorldComponent>();
-
-    for (auto [entity, position] : view.each())
-    {
-        position.vec = vec2Wrap(position.vec, worldSize);
-    }
-}
-
 void accelerateImpulseSystem(entt::registry& registry, const float dt)
 {
     const auto view = registry.view<AccelerateImpulseByInputComponent, VelocityComponent, const RotationComponent>();
 
     for (auto [entity, accelerateImpulse, velocity, rotation] : view.each())
     {
-        if (accelerateImpulse.cooldownTimer.updateAndGetIsUsed(dt, accelerateImpulse.input))
+        if (accelerateImpulse.cooldownTimer.updateAndGetWasUsed(dt, accelerateImpulse.input))
         {
             const Vec2 forwardDir = vec2AngleToDir(rotation.angle);
-            velocity.vec += forwardDir * accelerateImpulse.shipThrustBurstImpulse;
+            velocity.vec += forwardDir * accelerateImpulse.power;
 
             registry.emplace<AccelerateImpulseAppliedOneshotComponent>(entity);
         }
@@ -371,8 +349,8 @@ void projectileMoveSystem(entt::registry& registry, const float dt)
         {
             if (isSegmentIntersectCircle(pjlPos.vec, newPos, colliderPos.vec, circleCollider.radius))
             {
-                registry.emplace<CollisionHappenedComponent>(pjlEnt);
-                registry.emplace<CollisionHappenedComponent>(colliderEnt);
+                registry.emplace<CollisionHappenedOneshotComponent>(pjlEnt);
+                registry.emplace<CollisionHappenedOneshotComponent>(colliderEnt);
                 break;
             }
         }
@@ -397,8 +375,8 @@ void circleVsCircleCollisionSystem(entt::registry& registry)
             // note: no continuous collision here yet
             if (isCircleIntersectCircle(pos1.vec, coll1.radius, pos2.vec, coll2.radius))
             {
-                registry.emplace<CollisionHappenedComponent>(*i);
-                registry.emplace<CollisionHappenedComponent>(*j);
+                registry.emplace<CollisionHappenedOneshotComponent>(*i);
+                registry.emplace<CollisionHappenedOneshotComponent>(*j);
             }
         }
     }
@@ -406,7 +384,7 @@ void circleVsCircleCollisionSystem(entt::registry& registry)
 
 void destroyByCollisionSystem(entt::registry& registry)
 {
-    const auto view = registry.view<const CollisionHappenedComponent>();
+    const auto view = registry.view<const CollisionHappenedOneshotComponent, const DestroyByCollisionComponent>();
 
     for (auto [entity] : view.each())
     {
@@ -414,7 +392,7 @@ void destroyByCollisionSystem(entt::registry& registry)
     }
 }
 
-void destroyTimerSystem(entt::registry& registry, float dt)
+void destroyTimerSystem(entt::registry& registry, const float dt)
 {
     const auto view = registry.view<DestroyTimerComponent>();
 
@@ -428,11 +406,11 @@ void destroyTimerSystem(entt::registry& registry, float dt)
     }
 }
 
-void gravityWellSystem(entt::registry& registry, float dt)
+void gravityWellSystem(entt::registry& registry, const float dt)
 {
     const auto gravityWellsView = registry.view<const GravityWellComponent, const PositionComponent>();
     const auto affectedEntitiesView = registry.view<
-        VelocityComponent, const PositionComponent, const AffectedByGravityWellComponent>();
+        VelocityComponent, const PositionComponent, const SusceptibleToGravityWellComponent>();
 
     for (auto [wellEnt, well, wellPos] : gravityWellsView.each())
     {
