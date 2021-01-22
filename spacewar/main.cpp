@@ -2,6 +2,7 @@
 #include "game_visual.h"
 #include "player.h"
 #include "render.h"
+#include "entt.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <variant>
@@ -120,52 +121,18 @@ void startingStateSfEventHandler(AppStateStarting& startingState, std::vector<Pl
     }
 }
 
-#include "entt.hpp"
-
-struct position {
-    float x;
-    float y;
-};
-
-struct velocity {
-    float dx;
-    float dy;
-};
-
-
-void update(entt::registry &registry) {
-    auto view = registry.view<const position, velocity>();
-
-    // use a callback
-    view.each([](const auto &pos, auto &vel) { /* ... */ });
-
-    // use an extended callback
-    view.each([](const auto entity, const auto &pos, auto &vel) { /* ... */ });
-
-    // use a range-for
-    for(auto [entity, pos, vel]: view.each()) {
-        // ...
-    }
-
-    // use forward iterators and get only the components of interest
-    for(auto entity: view) {
-        auto &vel = view.get<velocity>(entity);
-        // ...
-    }
+void update(entt::registry& registry, const float dt, const Vec2 worldSize)
+{
+    rotateByInputSystem(registry, dt);
+    accelerateByInputSystem(registry, dt);
+    accelerateImpulseSystem(registry, dt);
+    integrateVelocitySystem(registry, dt);
+    wrapPositionAroundWorldSystem(registry, worldSize);
+    shootingSystem(registry, dt);
 }
 
 int main()
 {
-    entt::registry registry;
-
-    for(auto i = 0u; i < 10u; ++i) {
-        const auto entity = registry.create();
-        registry.emplace<position>(entity, i * 1.f, i * 1.f);
-        if(i % 2 == 0) { registry.emplace<velocity>(entity, i * .1f, i * .1f); }
-    }
-
-    update(registry);
-    
     runTests();
 
     sf::ContextSettings settings;
@@ -195,6 +162,19 @@ int main()
 
     initWorlds();
 
+    entt::registry registry;
+
+    const auto shipEntity = registry.create();
+    registry.emplace<Position>(shipEntity, world.size / 2.f);
+    registry.emplace<DrawUsingShipTexture>(shipEntity, sf::Color::Green);
+    registry.emplace<Velocity>(shipEntity);
+    registry.emplace<Rotation>(shipEntity, 45.f);
+    registry.emplace<AccelerateByInput>(shipEntity, false, 25.f);
+    registry.emplace<RotateByInput>(shipEntity, 0.f, 180.f);
+    registry.emplace<Shooting>(shipEntity, false, 0.f, 1.f, 40.f, 200.f);
+    registry.emplace<WrapPositionAroundWorld>(shipEntity);
+    registry.emplace<AccelerateImpulseByInput>(shipEntity, false, 0.f, 75.f, 3.f);
+
     std::vector<Player> players{
         {
             PlayerKeymap{
@@ -212,8 +192,8 @@ int main()
         }
     };
 
-    AppState appState = AppStateStarting{};
-    std::get<AppStateStarting>(appState).playersReady.resize(players.size(), false);
+    AppState appState = AppStateGame{};
+    // std::get<AppStateStarting>(appState).playersReady.resize(players.size(), false);
 
     bool isDebugRender = false;
 
@@ -254,6 +234,18 @@ int main()
                                            ? aiGenerateInput(world, i, (i + 1) % players.size())
                                            : readPlayerInput(player.keymap);
             }
+
+            {
+                auto playerInputForEcs = readPlayerInput(players[0].keymap);
+
+                registry.get<AccelerateByInput>(shipEntity).accelerateInput = playerInputForEcs.thrust;
+                registry.get<AccelerateByInput>(shipEntity).accelerateInput = playerInputForEcs.thrust;
+                registry.get<RotateByInput>(shipEntity).rotateInput = playerInputForEcs.rotate;
+                registry.get<Shooting>(shipEntity).shootInput = playerInputForEcs.shoot;
+                registry.get<AccelerateImpulseByInput>(shipEntity).input = playerInputForEcs.thrustBurst;
+            }
+
+            update(registry, dt, world.size);
 
             const GameEvents gameEvents = gameSimulate(world, dt);
             gameVisualSimulate(visualWorld, world, gameEvents, dt);
@@ -317,7 +309,7 @@ int main()
             }
             else
             {
-                renderGame(world, visualWorld, window, shipTexture);
+                renderGame(world, visualWorld, window, shipTexture, registry);
             }
         }
 

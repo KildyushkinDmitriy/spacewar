@@ -37,7 +37,7 @@ static void killShip(GameWorld& world, const size_t shipIndex, GameEvents& gameE
 GameEvents gameSimulate(GameWorld& world, const float dt)
 {
     world.time += dt;
-    
+
     const GameplaySettings& settings = world.settings;
     GameEvents gameEvents;
 
@@ -210,4 +210,126 @@ GameEvents gameSimulate(GameWorld& world, const float dt)
     }
 
     return gameEvents;
+}
+
+
+// void update(entt::registry &registry) {
+//     auto view = registry.view<const position, velocity>();
+//
+//     // use a callback
+//     view.each([](const auto &pos, auto &vel) { /* ... */ });
+//
+//     // use an extended callback
+//     view.each([](const auto entity, const auto &pos, auto &vel) { /* ... */ });
+//
+//     // use a range-for
+//     for(auto [entity, pos, vel]: view.each()) {
+//         // ...
+//     }
+//
+//     // use forward iterators and get only the components of interest
+//     for(auto entity: view) {
+//         auto &vel = view.get<velocity>(entity);
+//         // ...
+//     }
+// }
+
+
+void integrateVelocitySystem(entt::registry& registry, float dt)
+{
+    const auto view = registry.view<Position, const Velocity>();
+
+    for (auto [entity, position, velocity] : view.each())
+    {
+        position.vec += velocity.vec * dt;
+    }
+}
+
+void rotateByInputSystem(entt::registry& registry, float dt)
+{
+    const auto view = registry.view<Rotation, const RotateByInput>();
+
+    for (auto [entity, rotation, rotateByInput] : view.each())
+    {
+        rotation.angle += rotateByInput.rotateInput * rotateByInput.rotationSpeed * dt;
+        rotation.angle = floatWrap(rotation.angle, 360.f);
+    }
+}
+
+void accelerateByInputSystem(entt::registry& registry, float dt)
+{
+    const auto view = registry.view<Velocity, const AccelerateByInput, const Rotation>();
+
+    for (auto [entity, velocity, accelerateByInput, rotation] : view.each())
+    {
+        if (accelerateByInput.accelerateInput)
+        {
+            const Vec2 forwardDir = vec2AngleToDir(rotation.angle);
+            velocity.vec += forwardDir * accelerateByInput.acceleration * dt;
+        }
+    }
+}
+
+void shootingSystem(entt::registry& registry, float dt)
+{
+    const auto view = registry.view<Shooting, const Position, const Rotation>();
+
+    for (auto [entity, shooting, position, rotation] : view.each())
+    {
+        shooting.shootCooldownLeft -= dt;
+        if (shooting.shootCooldownLeft > 0)
+        {
+            continue;;
+        }
+        shooting.shootCooldownLeft = 0;
+
+        if (shooting.shootInput)
+        {
+            shooting.shootCooldownLeft = shooting.shootCooldown;
+
+            const Vec2 forwardDir = vec2AngleToDir(rotation.angle);
+            const Vec2 projectilePos = position.vec + forwardDir * shooting.projectileBirthOffset;
+
+            const auto projectileEntity = registry.create();
+
+            registry.emplace<Position>(projectileEntity, projectilePos);
+            registry.emplace<Rotation>(projectileEntity, rotation);
+            registry.emplace<Velocity>(projectileEntity, forwardDir * shooting.projectileSpeed);
+            registry.emplace<DrawUsingShipTexture>(projectileEntity, sf::Color::Yellow);
+            registry.emplace<WrapPositionAroundWorld>(projectileEntity);
+        }
+    }
+}
+
+void wrapPositionAroundWorldSystem(entt::registry& registry, Vec2 worldSize)
+{
+    const auto view = registry.view<Position>();
+
+    for (auto [entity, position] : view.each())
+    {
+        position.vec = vec2Wrap(position.vec, worldSize);
+    }
+}
+
+void accelerateImpulseSystem(entt::registry& registry, float dt)
+{
+    const auto view = registry.view<AccelerateImpulseByInput, Velocity, const Rotation>();
+
+    for (auto [entity, accelerateImpulse, velocity, rotation] : view.each())
+    {
+        accelerateImpulse.cooldownLeft -= dt;
+        if (accelerateImpulse.cooldownLeft > 0)
+        {
+            continue;
+        }
+        accelerateImpulse.cooldownLeft = 0;
+
+        if (accelerateImpulse.input)
+        {
+            accelerateImpulse.cooldownLeft = accelerateImpulse.shipThrustBurstImpulseCooldown;
+
+            const Vec2 forwardDir = vec2AngleToDir(rotation.angle);
+            velocity.vec += forwardDir * accelerateImpulse.shipThrustBurstImpulse;
+        }
+    }
 }

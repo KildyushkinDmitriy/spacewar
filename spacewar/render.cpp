@@ -83,7 +83,7 @@ static void positionTextWithCenterAlignment(sf::Text& textRender, const Vec2 pos
 }
 
 void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::RenderWindow& window,
-                const sf::Texture& shipTexture)
+                const sf::Texture& shipTexture, const entt::registry& registry)
 {
     const float time = world.time;
 
@@ -218,6 +218,16 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
     {
         renderShipTexture9times(projectile.pos, projectile.rotation, world.size, projectileShape, projectileShape,
                                 window);
+    }
+
+    {
+        auto view = registry.view<const Position, const Rotation, const DrawUsingShipTexture>();
+
+        for (auto [entity, pos, rotation, draw] : view.each())
+        {
+            shipShape.setFillColor(draw.color);
+            renderShipTexture9times(pos.vec, rotation.angle, world.size, shipShape, shipShape, window);
+        }
     }
 }
 
@@ -411,7 +421,7 @@ void renderStartingUi(const AppStateStarting& startingState, const std::vector<P
         textRender.setCharacterSize(30);
         textRender.setString("press ~ in game for debug view");
         positionTextWithCenterAlignment(textRender, windowCenter + Vec2{0.f, 475.f});
-        window.draw(textRender);    
+        window.draw(textRender);
     }
 }
 

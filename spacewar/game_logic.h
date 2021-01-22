@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "game_math.h"
+#include "entt.hpp"
 
 #include <optional>
 #include <vector>
@@ -75,7 +76,10 @@ struct GameEventGameResult
 {
     int victoriousPlayerIndex = -1;
 
-    bool isTie() const { return victoriousPlayerIndex == -1; }
+    bool isTie() const
+    {
+        return victoriousPlayerIndex == -1;
+    }
 };
 
 struct GameEventShipDeath
@@ -111,3 +115,69 @@ GameEvents gameSimulate(GameWorld& world, float dt);
 
 float gameGetGravityWellPowerAtRadius(const GravityWell& well, float radius);
 Vec2 gameGetGravityWellVectorAtPoint(const GravityWell& well, Vec2 point);
+
+struct Position
+{
+    Vec2 vec{};
+};
+
+struct Velocity
+{
+    Vec2 vec{};
+};
+
+struct Rotation
+{
+    float angle = 0.f;
+};
+
+struct DrawUsingShipTexture
+{
+    sf::Color color{};
+};
+
+struct AccelerateByInput
+{
+    bool accelerateInput = false;
+    float acceleration = 0.f;
+};
+
+struct AccelerateImpulseByInput
+{
+    bool input = false;
+    float cooldownLeft = 0.f;
+
+    float shipThrustBurstImpulse = 0.f;
+    float shipThrustBurstImpulseCooldown = 0.f;
+};
+
+struct RotateByInput
+{
+    float rotateInput = 0.f; // [-1, 1] 
+    float rotationSpeed = 0.f;
+};
+
+struct Shooting
+{
+    bool shootInput = false;
+    float shootCooldownLeft = 0.f;
+    float shootCooldown = 0.f;
+    float projectileBirthOffset = 0.f;
+    float projectileSpeed = 0.f;
+};
+
+struct WrapPositionAroundWorld
+{
+};
+
+struct GameWorldSize
+{
+    Vec2 size{};
+};
+
+void integrateVelocitySystem(entt::registry& registry, float dt);
+void rotateByInputSystem(entt::registry& registry, float dt);
+void accelerateByInputSystem(entt::registry& registry, float dt);
+void accelerateImpulseSystem(entt::registry& registry, float dt);
+void shootingSystem(entt::registry& registry, float dt);
+void wrapPositionAroundWorldSystem(entt::registry& registry, Vec2 worldSize);
