@@ -99,6 +99,20 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
     destroyTimerSystem(registry, dt);
 }
 
+void recreateWorld(entt::registry& registry, std::vector<Player>& players, const Vec2 worldSize)
+{
+    registry.clear();
+
+    const auto shipEntity1 = createShipEntity(registry, worldSize / 2.f - worldSize / 4.f, 180.f + 45.f, sf::Color::Cyan, 0);
+    const auto shipEntity2 = createShipEntity(registry, worldSize / 2.f + worldSize / 4.f, 45.f, sf::Color::White, 1);
+
+    createGravityWellEntity(registry, worldSize);
+    createStarEntities(registry, worldSize);
+
+    players[0].shipEntity = shipEntity1;
+    players[1].shipEntity = shipEntity2;
+}
+
 
 int main()
 {
@@ -120,23 +134,6 @@ int main()
         return EXIT_FAILURE;
     }
 
-    GameWorld world;
-
-    const auto initWorlds = [&world, &window]()
-    {
-        world = createWorld(Vec2{window.getSize()});
-    };
-
-    initWorlds();
-
-    entt::registry registry;
-
-    const auto shipEntity1 = createShipEntity(registry, world.size / 2.f - world.size / 4.f, 180.f + 45.f, sf::Color::Cyan, 0);
-    const auto shipEntity2 = createShipEntity(registry, world.size / 2.f + world.size / 4.f, 45.f, sf::Color::White, 1);
-
-    createGravityWellEntity(registry, world.size);
-    createStarEntities(registry, world.size);
-
     std::vector<Player> players{
         {
             PlayerKeymap{
@@ -154,8 +151,11 @@ int main()
         }
     };
 
-    players[0].shipEntity = shipEntity1;
-    players[1].shipEntity = shipEntity2;
+    const Vec2 worldSize = Vec2{window.getSize()};
+    
+    entt::registry registry;
+
+    recreateWorld(registry, players, worldSize);
 
     AppState appState = AppStateGame{};
     // std::get<AppStateStarting>(appState).playersReady.resize(players.size(), false);
@@ -189,8 +189,6 @@ int main()
             }
         }
 
-        assert(world.ships.size() == players.size());
-
         // update
         if (std::holds_alternative<AppStateGame>(appState))
         {
@@ -198,9 +196,9 @@ int main()
             for (size_t i = 0; i < players.size(); ++i)
             {
                 const Player& player = players[i];
-                world.ships[i].input = player.isAi
-                                           ? aiGenerateInput(world, i, (i + 1) % players.size())
-                                           : readPlayerInput(player.keymap);
+                // world.ships[i].input = player.isAi
+                                           // ? aiGenerateInput(world, i, (i + 1) % players.size())
+                                           // : readPlayerInput(player.keymap);
 
                 if (registry.valid(player.shipEntity))
                 {
@@ -212,42 +210,40 @@ int main()
                 }
             }
 
-            update(registry, dt, world.size);
+            update(registry, dt, worldSize);
 
-            // const GameEvents gameEvents = gameSimulate(world, dt);
+            std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, players.size());
 
-            const GameEvents gameEvents{};
-
-            if (gameEvents.result.has_value())
+            if (optGameResult.has_value())
             {
-                if (!gameEvents.result->isTie())
+                if (!optGameResult->isTie())
                 {
-                    players[gameEvents.result->victoriousPlayerIndex].score++;
+                    players[optGameResult->victoriousPlayerIndex].score++;
                 }
 
-                appState = AppStateGameOver{gameEvents.result.value(), 15.f};
+                appState = AppStateGameOver{optGameResult.value(), 15.f};
             }
         }
         else if (auto* gameOverState = std::get_if<AppStateGameOver>(&appState))
         {
             gameOverState->timeInState += dt;
 
-            for (Ship& ship : world.ships)
-            {
-                ship.input = {};
-            }
+            // for (Ship& ship : world.ships)
+            // {
+            //     ship.input = {};
+            // }
 
             constexpr float timeInSlowMotion = 2.f;
             const float t = std::clamp(gameOverState->timeInState / timeInSlowMotion, 0.f, 1.f);
             const float slowMotionMultiplier = floatLerp(0.2f, 1.f, t);
             const float slowMotionDt = slowMotionMultiplier * dt;
 
-            const GameEvents gameEvents = gameSimulate(world, slowMotionDt);
+            update(registry, slowMotionDt, worldSize);
 
             const bool restartButtonPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
             if (restartButtonPressed || gameOverState->timeInState > gameOverState->timeWhenRestart)
             {
-                initWorlds();
+                recreateWorld(registry, players, worldSize);
                 appState = AppStateGame{};
             }
         }
@@ -261,7 +257,7 @@ int main()
             });
             if (everyoneReady)
             {
-                initWorlds();
+                recreateWorld(registry, players, worldSize);
                 appState = AppStateGame{};
             }
         }
@@ -276,7 +272,7 @@ int main()
             }
             else
             {
-                drawGame(window, shipTexture, registry, world.size, time);
+                drawGame(window, shipTexture, registry, worldSize, time);
             }
         }
 
