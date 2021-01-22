@@ -282,7 +282,7 @@ void accelerateByInputSystem(entt::registry& registry, const float dt)
 
     for (auto [entity, velocity, accelerateByInput, rotation] : view.each())
     {
-        if (accelerateByInput.accelerateInput)
+        if (accelerateByInput.input)
         {
             const Vec2 forwardDir = vec2AngleToDir(rotation.angle);
             velocity.vec += forwardDir * accelerateByInput.acceleration * dt;

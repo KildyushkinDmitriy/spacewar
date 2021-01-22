@@ -111,66 +111,39 @@ static void testShipsKillEachOtherWithProjectiles()
     }
 }
 
-void testProjectileLifetime()
-{
-    GameWorld world{};
-    world.size = Vec2{100.f, 100.f};
-    {
-        Projectile projectile{};
-        projectile.lifetimeLeft = 1.f;
-        world.projectiles.push_back(projectile);
-    }
-
-    assert(world.projectiles.size() == 1);
-    gameSimulate(world, 0.9f);
-    assert(world.projectiles.size() == 1);
-    gameSimulate(world, 0.2f);
-    assert(world.projectiles.size() == 0);
-}
-
 static void testShipShipCollisionKillsBoth()
 {
-    GameWorld world{};
-    world.size = Vec2{100.f, 100.f};
-    world.settings.shipCollisionRadius = 0.5f;
+    const Vec2 worldSize{100.f, 100.f};
 
+    entt::registry registry;
+
+    const auto ship1 = createShipEntity(registry, Vec2{10.f, 0.f}, 0.f, sf::Color::White, 0);
+    registry.get<AccelerateByInputComponent>(ship1).input = true;
+    
+    const auto ship2 = createShipEntity(registry, Vec2{90.f, 0.f}, 180.f, sf::Color::White, 0);
+    registry.get<AccelerateByInputComponent>(ship2).input = true;
+    
     {
-        Ship ship{};
-        ship.pos = Vec2{10.f, 10.f};
-        ship.velocity = Vec2{5.f, 0.f};
-        world.ships.push_back(ship);
+        gameFrameUpdate(registry, 0.f, worldSize);
+        const std::optional<GameEventGameResult> optGameResult = tryGetGameResult(registry, 1);
+        assert(!optGameResult.has_value());
     }
-
+    
+    std::optional<GameEventGameResult> optGameResult;
+    
+    for (int i = 0; i < 20; ++i)
     {
-        Ship ship{};
-        ship.pos = Vec2{20.f, 10.f};
-        ship.velocity = Vec2{-5.f, 0.f};
-        world.ships.push_back(ship);
+        gameFrameUpdate(registry, 0.1f, worldSize);
+        optGameResult = tryGetGameResult(registry, 1);
+
+        if (optGameResult)
+        {
+            break;
+        }
     }
-
-    assert(!world.ships[0].isDead);
-    assert(!world.ships[1].isDead);
-
-    {
-        const GameEvents gameEvents = gameSimulate(world, 0.5f);
-        assert(!gameEvents.result.has_value());
-        assert(gameEvents.shipDeath.empty());
-    }
-
-    assert(!world.ships[0].isDead);
-    assert(!world.ships[1].isDead);
-
-    {
-        const GameEvents gameEvents = gameSimulate(world, 0.5f);
-        assert(gameEvents.result.has_value());
-        assert(gameEvents.result->isTie());
-        assert(gameEvents.shipDeath.size() == 2);
-        assert(gameEvents.shipDeath[0].shipIndex == 0);
-        assert(gameEvents.shipDeath[1].shipIndex == 1);
-    }
-
-    assert(world.ships[0].isDead);
-    assert(world.ships[1].isDead);
+    
+    assert(optGameResult.has_value());
+    assert(optGameResult->isTie());   
 }
 
 static void testPlayerWinsGameWithKill()
@@ -222,7 +195,6 @@ void runTests()
     // game simulation tests
     testProjectileKillsShip();
     testShipsKillEachOtherWithProjectiles();
-    testProjectileLifetime();
     testShipShipCollisionKillsBoth();
     testPlayerWinsGameWithKill();
 }

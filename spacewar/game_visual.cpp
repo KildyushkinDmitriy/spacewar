@@ -58,7 +58,7 @@ void enableParticleEmitterByAccelerateInputSystem(entt::registry& registry)
 
     for (auto [_, emitter, accelerate] : view.each())
     {
-        emitter.isEnabled = accelerate.accelerateInput;
+        emitter.isEnabled = accelerate.input;
     }
 }
 

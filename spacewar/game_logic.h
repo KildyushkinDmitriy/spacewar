@@ -142,7 +142,7 @@ struct RotationSpeedComponent
 
 struct AccelerateByInputComponent
 {
-    bool accelerateInput = false;
+    bool input = false;
     float acceleration = 0.f;
 };
 

@@ -127,7 +127,7 @@ int main()
                 if (registry.valid(player.shipEntity))
                 {
                     auto input = readPlayerInput(player.keymap);
-                    registry.get<AccelerateByInputComponent>(player.shipEntity).accelerateInput = input.thrust;
+                    registry.get<AccelerateByInputComponent>(player.shipEntity).input = input.thrust;
                     registry.get<RotateByInputComponent>(player.shipEntity).input = input.rotate;
                     registry.get<ShootingComponent>(player.shipEntity).input = input.shoot;
                     registry.get<AccelerateImpulseByInputComponent>(player.shipEntity).input = input.thrustBurst;
