@@ -49,55 +49,6 @@ GameWorld createWorld(const Vec2 size)
     return world;
 }
 
-GameVisualWorld createVisualWorld(const GameWorld& logicWorld)
-{
-    GameVisualWorld visualWorld;
-
-    ParticleEmitterSettings& shipThrustEmitter = visualWorld.shipThrustEmitterSettings;
-    shipThrustEmitter.particlesPerSec = 30.f;
-    shipThrustEmitter.angleRange = FloatRange{-10.f, 10.f};
-    shipThrustEmitter.speedRange = FloatRange{180.f, 220.f};
-    shipThrustEmitter.lifetimeRange = FloatRange{0.4f, 0.6f};
-    shipThrustEmitter.startRadiusRange = FloatRange{7.f, 12.f};
-    shipThrustEmitter.finishRadiusRange = FloatRange{1.f, 2.f};
-    shipThrustEmitter.startColorRange = ColorRange{sf::Color{255, 0, 0, 150}, sf::Color{255, 150, 0, 150}};
-    shipThrustEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
-
-    ParticleEmitterSettings& shipThrustBurstEmitter = visualWorld.shipThrustBurstEmitSettings;
-    shipThrustBurstEmitter.particlesPerSpawn = 50;
-    shipThrustBurstEmitter.angleRange = FloatRange{-30.f, 30.f};
-    shipThrustBurstEmitter.speedRange = FloatRange{150.f, 300.f};
-    shipThrustBurstEmitter.lifetimeRange = FloatRange{0.2f, 0.4f};
-    shipThrustBurstEmitter.startRadiusRange = FloatRange{9.f, 15.f};
-    shipThrustBurstEmitter.finishRadiusRange = FloatRange{2.f, 3.f};
-    shipThrustBurstEmitter.startColorRange = ColorRange{sf::Color{255, 100, 0, 150}, sf::Color{255, 150, 0, 150}};
-    shipThrustBurstEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{25, 25, 0, 150}};
-
-    ParticleEmitterSettings& projectileTrailEmitter = visualWorld.projectileTrailEmitterSettings;
-    projectileTrailEmitter.particlesPerSec = 30.f;
-    projectileTrailEmitter.angleRange = FloatRange{-5.f, 5.f};
-    projectileTrailEmitter.speedRange = FloatRange{15.f, 17.f};
-    projectileTrailEmitter.lifetimeRange = FloatRange{0.25f, 0.3f};
-    projectileTrailEmitter.startRadiusRange = FloatRange{4.f, 5.f};
-    projectileTrailEmitter.finishRadiusRange = FloatRange{1.f, 1.3f};
-    projectileTrailEmitter.startColorRange = ColorRange{sf::Color{100, 0, 0, 150}, sf::Color{100, 0, 0, 150}};
-    projectileTrailEmitter.finishColorRange = ColorRange{sf::Color{0, 0, 0, 0}, sf::Color{0, 0, 0, 150}};
-
-    visualWorld.shipThrustParticleEmitters.resize(logicWorld.ships.size());
-
-    for (int i = 0; i < 50; ++i)
-    {
-        Star star;
-        star.pos = Vec2{randomFloatRange(0, logicWorld.size.x), randomFloatRange(0, logicWorld.size.y)};
-        star.radius = randomFloatRange(0.5f, 2.f);
-        star.brightnessRange = FloatRange{randomFloatRange(0.2f, 0.6f), randomFloatRange(0.6f, 1.f)};
-        star.periodsPerSec = randomFloatRange(0.2f, 0.5f);
-        visualWorld.stars.push_back(star);
-    }
-
-    return visualWorld;
-}
-
 void startingStateSfEventHandler(AppStateStarting& startingState, std::vector<Player>& players, const sf::Event& event)
 {
     if (event.type != sf::Event::KeyReleased)
@@ -140,7 +91,7 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
 
     spawnDeadShipPiecesOnCollisionSystem(registry);
     enableParticleEmitterByAccelerateInputSystem(registry);
-    particleEmitterOnAccelerateImpulseAppliedSystem(registry);
+    emitParticlesOnAccelerateImpulseSystem(registry);
     particleEmitterSystem(registry, dt);
 
     accelerateImpulseAppliedOneshotComponentClearSystem(registry);
@@ -212,7 +163,7 @@ entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 posi
     }
 
     {
-        ParticleEmitterOnAccelerateImpulseAppliedComponent& emitterComponent = registry.emplace<ParticleEmitterOnAccelerateImpulseAppliedComponent>(entity);
+        ParticleEmitterOnAccelerateImpulseComponent& emitterComponent = registry.emplace<ParticleEmitterOnAccelerateImpulseComponent>(entity);
         ParticleEmitterSettings& emitterSettings = emitterComponent.settings;
         emitterSettings.emitOffset = 17.f;
         emitterSettings.emitAngleOffset = 180.f;
@@ -290,12 +241,10 @@ int main()
     }
 
     GameWorld world;
-    GameVisualWorld visualWorld;
 
-    const auto initWorlds = [&world, &visualWorld, &window]()
+    const auto initWorlds = [&world, &window]()
     {
         world = createWorld(Vec2{window.getSize()});
-        visualWorld = createVisualWorld(world);
     };
 
     initWorlds();
@@ -416,7 +365,6 @@ int main()
             const float slowMotionDt = slowMotionMultiplier * dt;
 
             const GameEvents gameEvents = gameSimulate(world, slowMotionDt);
-            gameVisualSimulate(visualWorld, world, gameEvents, slowMotionDt);
 
             const bool restartButtonPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
             if (restartButtonPressed || gameOverState->timeInState > gameOverState->timeWhenRestart)
