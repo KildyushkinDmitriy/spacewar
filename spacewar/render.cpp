@@ -161,47 +161,48 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
             window.draw(particleShape);
         }
     }
-
-    const Vec2 shipTextureSize = Vec2{shipTexture.getSize()};
-
-    // Dead ship pieces
-    std::array<sf::Vertex, 9> shipPiecesVertices;
-    shipPiecesVertices[0].position = Vec2{0.5f, 0.5f};
-    shipPiecesVertices[1].position = Vec2{0.0f, 0.0f};
-    shipPiecesVertices[2].position = Vec2{0.5f, 0.0f};
-    shipPiecesVertices[3].position = Vec2{1.0f, 0.f};
-    shipPiecesVertices[4].position = Vec2{1.0f, 0.5f};
-    shipPiecesVertices[5].position = Vec2{1.0f, 1.0f};
-    shipPiecesVertices[6].position = Vec2{0.5f, 1.0f};
-    shipPiecesVertices[7].position = Vec2{0.0f, 1.0f};
-    shipPiecesVertices[8].position = Vec2{0.0f, 0.5f};
-
-    for (sf::Vertex& vertex : shipPiecesVertices)
     {
-        vertex.texCoords = vertex.position;
-        vertex.texCoords.x *= shipTextureSize.x;
-        vertex.texCoords.y *= shipTextureSize.y;
-    }
+        const Vec2 shipTextureSize = Vec2{shipTexture.getSize()};
 
-    for (const DeadShipPiece& shipPiece : visualWorld.deadShipPieces)
-    {
-        const int i = shipPiece.pieceIndex;
-        sf::VertexArray triangleVertices{sf::Triangles, 3};
-        triangleVertices[0] = shipPiecesVertices[0];
-        triangleVertices[1] = shipPiecesVertices[i + 1];
-        triangleVertices[2] = shipPiecesVertices[i == 7 ? 1 : i + 2];
+        // Dead ship pieces
+        std::array<sf::Vertex, 9> shipPiecesVertices;
+        shipPiecesVertices[0].position = Vec2{0.5f, 0.5f};
+        shipPiecesVertices[1].position = Vec2{0.0f, 0.0f};
+        shipPiecesVertices[2].position = Vec2{0.5f, 0.0f};
+        shipPiecesVertices[3].position = Vec2{1.0f, 0.f};
+        shipPiecesVertices[4].position = Vec2{1.0f, 0.5f};
+        shipPiecesVertices[5].position = Vec2{1.0f, 1.0f};
+        shipPiecesVertices[6].position = Vec2{0.5f, 1.0f};
+        shipPiecesVertices[7].position = Vec2{0.0f, 1.0f};
+        shipPiecesVertices[8].position = Vec2{0.0f, 0.5f};
 
-        for (size_t vertexIdx = 0; vertexIdx < triangleVertices.getVertexCount(); ++vertexIdx)
+        for (sf::Vertex& vertex : shipPiecesVertices)
         {
-            sf::Color color = shipPiece.shipIndex == 1 ? sf::Color::Cyan : sf::Color::White;
-            triangleVertices[vertexIdx].color = color;
+            vertex.texCoords = vertex.position;
+            vertex.texCoords.x *= shipTextureSize.x;
+            vertex.texCoords.y *= shipTextureSize.y;
         }
 
-        CustomVerticesShape customShape{&shipTexture, triangleVertices};
-        customShape.setOrigin(Vec2{0.5, 0.5});
-        customShape.setScale(shipShape.getSize());
+        for (const DeadShipPiece& shipPiece : visualWorld.deadShipPieces)
+        {
+            const int i = shipPiece.pieceIndex;
+            sf::VertexArray triangleVertices{sf::Triangles, 3};
+            triangleVertices[0] = shipPiecesVertices[0];
+            triangleVertices[1] = shipPiecesVertices[i + 1];
+            triangleVertices[2] = shipPiecesVertices[i == 7 ? 1 : i + 2];
 
-        renderShipTexture9times(shipPiece.pos, shipPiece.rotation, world.size, customShape, customShape, window);
+            for (size_t vertexIdx = 0; vertexIdx < triangleVertices.getVertexCount(); ++vertexIdx)
+            {
+                sf::Color color = shipPiece.shipIndex == 1 ? sf::Color::Cyan : sf::Color::White;
+                triangleVertices[vertexIdx].color = color;
+            }
+
+            CustomVerticesShape customShape{&shipTexture, triangleVertices};
+            customShape.setOrigin(Vec2{0.5, 0.5});
+            customShape.setScale(shipShape.getSize());
+
+            renderShipTexture9times(shipPiece.pos, shipPiece.rotation, world.size, customShape, customShape, window);
+        }
     }
 
     // Ships
@@ -238,14 +239,69 @@ void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::
     }
 
     {
+        // ecs ships
         auto view = registry.view<const PositionComponent, const RotationComponent, const DrawUsingShipTextureComponent>();
 
         for (auto [entity, pos, rotation, draw] : view.each())
         {
+            // somehow exclude does not work on view
+            if (registry.try_get<DeadShipPieceComponent>(entity) != nullptr)
+            {
+                continue;
+            }
+
             shipShape.setSize(draw.size);
             shipShape.setOrigin(draw.size / 2.f);
             shipShape.setFillColor(draw.color);
             renderShipTexture9times(pos.vec, rotation.angle, world.size, shipShape, shipShape, window);
+        }
+    }
+
+    {
+        // ecs dead ships
+
+        const Vec2 shipTextureSize = Vec2{shipTexture.getSize()};
+
+        // Dead ship pieces
+        std::array<sf::Vertex, 9> shipPiecesVertices;
+        shipPiecesVertices[0].position = Vec2{0.5f, 0.5f};
+        shipPiecesVertices[1].position = Vec2{0.0f, 0.0f};
+        shipPiecesVertices[2].position = Vec2{0.5f, 0.0f};
+        shipPiecesVertices[3].position = Vec2{1.0f, 0.f};
+        shipPiecesVertices[4].position = Vec2{1.0f, 0.5f};
+        shipPiecesVertices[5].position = Vec2{1.0f, 1.0f};
+        shipPiecesVertices[6].position = Vec2{0.5f, 1.0f};
+        shipPiecesVertices[7].position = Vec2{0.0f, 1.0f};
+        shipPiecesVertices[8].position = Vec2{0.0f, 0.5f};
+
+        for (sf::Vertex& vertex : shipPiecesVertices)
+        {
+            vertex.texCoords = vertex.position;
+            vertex.texCoords.x *= shipTextureSize.x;
+            vertex.texCoords.y *= shipTextureSize.y;
+        }
+
+        auto view = registry.view<const PositionComponent, const RotationComponent, const DrawUsingShipTextureComponent,
+                                  const DeadShipPieceComponent>();
+
+        for (auto [entity, pos, rotation, draw, deadPiece] : view.each())
+        {
+            const int i = deadPiece.pieceIndex;
+            sf::VertexArray triangleVertices{sf::Triangles, 3};
+            triangleVertices[0] = shipPiecesVertices[0];
+            triangleVertices[1] = shipPiecesVertices[i + 1];
+            triangleVertices[2] = shipPiecesVertices[i == 7 ? 1 : i + 2];
+
+            for (size_t vertexIdx = 0; vertexIdx < triangleVertices.getVertexCount(); ++vertexIdx)
+            {
+                triangleVertices[vertexIdx].color = draw.color;
+            }
+
+            CustomVerticesShape customShape{&shipTexture, triangleVertices};
+            customShape.setOrigin(Vec2{0.5, 0.5});
+            customShape.setScale(draw.size);
+
+            renderShipTexture9times(pos.vec, rotation.angle, world.size, customShape, customShape, window);
         }
     }
 }

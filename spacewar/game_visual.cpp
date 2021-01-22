@@ -235,3 +235,42 @@ void particleEmitterOnAccelerateImpulseAppliedSystem(entt::registry& registry)
         emitParticles(registry, emitter.settings, position, rotation);
     }
 }
+
+
+void spawnDeadShipPiecesOnCollisionSystem(entt::registry& registry)
+{
+    const auto view = registry.view<
+        const PositionComponent,
+        const RotationComponent,
+        const VelocityComponent,
+        const DrawUsingShipTextureComponent,
+        const ShipComponent,
+        const CollisionHappenedComponent>();
+
+
+    for (auto [_, position, rotation, velocity, drawIn] : view.each())
+    {
+        const Vec2 pos = position.vec;
+        const float angle = rotation.angle;
+        DrawUsingShipTextureComponent draw = drawIn;
+        
+        // TODO: 8 is magic number
+        for (int deadPieceIndex = 0; deadPieceIndex < 8; ++deadPieceIndex)
+        {
+            const Vec2 extraVelocityDir = vec2AngleToDir(90.f * 3 + deadPieceIndex * 360.f / 8.f);
+            const Vec2 velocityVec = velocity.vec + extraVelocityDir * randomFloatRange(0.f, 100.f);
+            const float angularSpeed = randomFloatRange(-30.f, 30.f);
+            
+            const auto pieceEntity = registry.create();
+
+            registry.emplace<PositionComponent>(pieceEntity, pos);
+            registry.emplace<VelocityComponent>(pieceEntity, velocityVec);
+
+            registry.emplace<RotationComponent>(pieceEntity, angle);
+            registry.emplace<AngularSpeedComponent>(pieceEntity, angularSpeed);
+
+            registry.emplace<DeadShipPieceComponent>(pieceEntity, deadPieceIndex);
+            registry.emplace<DrawUsingShipTextureComponent>(pieceEntity, draw);
+        }
+    }
+}

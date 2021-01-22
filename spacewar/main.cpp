@@ -133,14 +133,16 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
     projectileMoveSystem(registry, dt);
     circleVsCircleCollisionSystem(registry);
     teleportSystem(registry);
-    destroyByCollisionSystem(registry);
-    destroyTimerSystem(registry, dt);
 
+    spawnDeadShipPiecesOnCollisionSystem(registry);
     enableParticleEmitterByAccelerateInputSystem(registry);
     particleEmitterOnAccelerateImpulseAppliedSystem(registry);
     particleEmitterSystem(registry, dt);
-    
+        
     accelerateImpulseAppliedOneshotComponentClearSystem(registry);
+    
+    destroyByCollisionSystem(registry);
+    destroyTimerSystem(registry, dt);
 }
 
 entt::registry::entity_type createProjectileEntity(entt::registry& registry)
@@ -172,6 +174,7 @@ entt::registry::entity_type createProjectileEntity(entt::registry& registry)
 entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position)
 {
     const auto entity = registry.create();
+    registry.emplace<ShipComponent>(entity);
     registry.emplace<PositionComponent>(entity, position);
     registry.emplace<DrawUsingShipTextureComponent>(entity, Vec2{35.f, 35.f}, sf::Color::Green);
     registry.emplace<VelocityComponent>(entity);
@@ -358,9 +361,11 @@ int main()
 
             update(registry, dt, world.size);
 
-            const GameEvents gameEvents = gameSimulate(world, dt);
-            gameVisualSimulate(visualWorld, world, gameEvents, dt);
+            // const GameEvents gameEvents = gameSimulate(world, dt);
+            // gameVisualSimulate(visualWorld, world, gameEvents, dt);
 
+            const GameEvents gameEvents{};
+            
             if (gameEvents.result.has_value())
             {
                 if (!gameEvents.result->isTie())

@@ -26,7 +26,7 @@ struct ParticleEmitterSettings
 {
     float emitOffset = 0.f;
     float emitAngleOffset = 0.f;
-    
+
     float particlesPerSec = 0.f;
     int particlesPerSpawn = 1;
 
@@ -115,6 +115,11 @@ struct ParticleEmitterOnAccelerateImpulseAppliedComponent
     ParticleEmitterSettings settings{};
 };
 
+struct DeadShipPieceComponent
+{
+    int pieceIndex = 0;
+};
+
 void gameVisualSimulate(GameVisualWorld& visualWorld, const GameWorld& logicWorld, const GameEvents& gameEvents,
                         float dt);
 
@@ -122,3 +127,5 @@ void particleEmitterSystem(entt::registry& registry, float dt);
 void enableParticleEmitterByAccelerateInputSystem(entt::registry& registry);
 
 void particleEmitterOnAccelerateImpulseAppliedSystem(entt::registry& registry);
+
+void spawnDeadShipPiecesOnCollisionSystem(entt::registry& registry);

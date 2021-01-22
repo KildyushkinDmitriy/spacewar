@@ -131,6 +131,11 @@ struct RotationComponent
     float angle = 0.f;
 };
 
+struct AngularSpeedComponent
+{
+    float speed = 0.f;
+};
+
 struct AccelerateByInputComponent
 {
     bool accelerateInput = false;
@@ -183,6 +188,7 @@ struct ProjectileComponent
 {
 };
 
+// TODO: rename to oneshot component?
 struct CollisionHappenedComponent
 {
 };
@@ -220,7 +226,12 @@ struct TeleportableComponent
 {
 };
 
+struct ShipComponent
+{
+};
+
 void integrateVelocitySystem(entt::registry& registry, float dt);
+void angularSpeedIntegrateSystem(entt::registry& registry, float dt);
 void rotateByInputSystem(entt::registry& registry, float dt);
 void accelerateByInputSystem(entt::registry& registry, float dt);
 void accelerateImpulseSystem(entt::registry& registry, float dt);
