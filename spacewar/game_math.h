@@ -47,3 +47,31 @@ struct ColorRange
 
     sf::Color getRandom() const;
 };
+
+struct CooldownTimer
+{
+    float timeLeft = 0.f;
+    float cooldownTotalTime = 0.f;
+
+    explicit CooldownTimer(const float cooldownTotalTime) : cooldownTotalTime(cooldownTotalTime)
+    {
+    }
+
+    bool updateAndGetIsUsed(const float dt, const bool useInput)
+    {
+        timeLeft -= dt;
+        if (timeLeft > 0)
+        {
+            return false;
+        }
+        timeLeft = 0.f;
+
+        if (useInput)
+        {
+            timeLeft = cooldownTotalTime;
+            return true;
+        }
+
+        return false;
+    }
+};

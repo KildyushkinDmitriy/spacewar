@@ -145,23 +145,24 @@ struct AccelerateByInput
 struct AccelerateImpulseByInput
 {
     bool input = false;
-    float cooldownLeft = 0.f;
+
+    CooldownTimer cooldownTimer;
 
     float shipThrustBurstImpulse = 0.f;
-    float shipThrustBurstImpulseCooldown = 0.f;
 };
 
 struct RotateByInput
 {
-    float rotateInput = 0.f; // [-1, 1] 
+    float input = 0.f; // [-1, 1] 
     float rotationSpeed = 0.f;
 };
 
 struct Shooting
 {
-    bool shootInput = false;
-    float shootCooldownLeft = 0.f;
-    float shootCooldown = 0.f;
+    bool input = false;
+
+    CooldownTimer cooldownTimer;
+
     float projectileBirthOffset = 0.f;
     float projectileSpeed = 0.f;
 };
@@ -174,6 +175,7 @@ struct GameWorldSize
 {
     Vec2 size{};
 };
+
 
 void integrateVelocitySystem(entt::registry& registry, float dt);
 void rotateByInputSystem(entt::registry& registry, float dt);

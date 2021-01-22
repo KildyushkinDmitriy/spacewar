@@ -171,9 +171,9 @@ int main()
     registry.emplace<Rotation>(shipEntity, 45.f);
     registry.emplace<AccelerateByInput>(shipEntity, false, 25.f);
     registry.emplace<RotateByInput>(shipEntity, 0.f, 180.f);
-    registry.emplace<Shooting>(shipEntity, false, 0.f, 1.f, 40.f, 200.f);
+    registry.emplace<Shooting>(shipEntity, false, CooldownTimer{1.f}, 40.f, 200.f);
     registry.emplace<WrapPositionAroundWorld>(shipEntity);
-    registry.emplace<AccelerateImpulseByInput>(shipEntity, false, 0.f, 75.f, 3.f);
+    registry.emplace<AccelerateImpulseByInput>(shipEntity, false, CooldownTimer{3.f}, 75.f);
 
     std::vector<Player> players{
         {
@@ -240,8 +240,8 @@ int main()
 
                 registry.get<AccelerateByInput>(shipEntity).accelerateInput = playerInputForEcs.thrust;
                 registry.get<AccelerateByInput>(shipEntity).accelerateInput = playerInputForEcs.thrust;
-                registry.get<RotateByInput>(shipEntity).rotateInput = playerInputForEcs.rotate;
-                registry.get<Shooting>(shipEntity).shootInput = playerInputForEcs.shoot;
+                registry.get<RotateByInput>(shipEntity).input = playerInputForEcs.rotate;
+                registry.get<Shooting>(shipEntity).input = playerInputForEcs.shoot;
                 registry.get<AccelerateImpulseByInput>(shipEntity).input = playerInputForEcs.thrustBurst;
             }
 

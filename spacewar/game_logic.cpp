@@ -235,7 +235,7 @@ GameEvents gameSimulate(GameWorld& world, const float dt)
 // }
 
 
-void integrateVelocitySystem(entt::registry& registry, float dt)
+void integrateVelocitySystem(entt::registry& registry, const float dt)
 {
     const auto view = registry.view<Position, const Velocity>();
 
@@ -245,18 +245,18 @@ void integrateVelocitySystem(entt::registry& registry, float dt)
     }
 }
 
-void rotateByInputSystem(entt::registry& registry, float dt)
+void rotateByInputSystem(entt::registry& registry, const float dt)
 {
     const auto view = registry.view<Rotation, const RotateByInput>();
 
     for (auto [entity, rotation, rotateByInput] : view.each())
     {
-        rotation.angle += rotateByInput.rotateInput * rotateByInput.rotationSpeed * dt;
+        rotation.angle += rotateByInput.input * rotateByInput.rotationSpeed * dt;
         rotation.angle = floatWrap(rotation.angle, 360.f);
     }
 }
 
-void accelerateByInputSystem(entt::registry& registry, float dt)
+auto accelerateByInputSystem(entt::registry& registry, const float dt) -> void
 {
     const auto view = registry.view<Velocity, const AccelerateByInput, const Rotation>();
 
@@ -270,23 +270,14 @@ void accelerateByInputSystem(entt::registry& registry, float dt)
     }
 }
 
-void shootingSystem(entt::registry& registry, float dt)
+void shootingSystem(entt::registry& registry, const float dt)
 {
     const auto view = registry.view<Shooting, const Position, const Rotation>();
 
     for (auto [entity, shooting, position, rotation] : view.each())
     {
-        shooting.shootCooldownLeft -= dt;
-        if (shooting.shootCooldownLeft > 0)
+        if (shooting.cooldownTimer.updateAndGetIsUsed(dt, shooting.input))
         {
-            continue;;
-        }
-        shooting.shootCooldownLeft = 0;
-
-        if (shooting.shootInput)
-        {
-            shooting.shootCooldownLeft = shooting.shootCooldown;
-
             const Vec2 forwardDir = vec2AngleToDir(rotation.angle);
             const Vec2 projectilePos = position.vec + forwardDir * shooting.projectileBirthOffset;
 
@@ -301,7 +292,7 @@ void shootingSystem(entt::registry& registry, float dt)
     }
 }
 
-void wrapPositionAroundWorldSystem(entt::registry& registry, Vec2 worldSize)
+void wrapPositionAroundWorldSystem(entt::registry& registry, const Vec2 worldSize)
 {
     const auto view = registry.view<Position>();
 
@@ -311,23 +302,14 @@ void wrapPositionAroundWorldSystem(entt::registry& registry, Vec2 worldSize)
     }
 }
 
-void accelerateImpulseSystem(entt::registry& registry, float dt)
+void accelerateImpulseSystem(entt::registry& registry, const float dt)
 {
     const auto view = registry.view<AccelerateImpulseByInput, Velocity, const Rotation>();
 
     for (auto [entity, accelerateImpulse, velocity, rotation] : view.each())
     {
-        accelerateImpulse.cooldownLeft -= dt;
-        if (accelerateImpulse.cooldownLeft > 0)
+        if (accelerateImpulse.cooldownTimer.updateAndGetIsUsed(dt, accelerateImpulse.input))
         {
-            continue;
-        }
-        accelerateImpulse.cooldownLeft = 0;
-
-        if (accelerateImpulse.input)
-        {
-            accelerateImpulse.cooldownLeft = accelerateImpulse.shipThrustBurstImpulseCooldown;
-
             const Vec2 forwardDir = vec2AngleToDir(rotation.angle);
             velocity.vec += forwardDir * accelerateImpulse.shipThrustBurstImpulse;
         }
