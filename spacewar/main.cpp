@@ -450,7 +450,7 @@ int main()
             }
             else
             {
-                renderGame(world, visualWorld, window, shipTexture, registry, time);
+                drawGame(window, shipTexture, registry, world.size, time);
             }
         }
 

@@ -25,7 +25,7 @@ private:
     const sf::Texture* m_texture;
 };
 
-static void renderShipTexture9times(const Vec2 pos, const float rotation, const Vec2& worldSize, sf::Drawable& drawable, sf::Transformable& transformable, sf::RenderWindow& window)
+static void drawShipTexture9times(const Vec2 pos, const float rotation, const Vec2& worldSize, sf::Drawable& drawable, sf::Transformable& transformable, sf::RenderWindow& window)
 {
     // sprite is pointing upwards, but with zero rotation it must be pointing right, so offset the rotation
     transformable.setRotation(rotation + 90.f);
@@ -61,163 +61,166 @@ static void renderShipTexture9times(const Vec2 pos, const float rotation, const 
     }
 }
 
-void renderGame(const GameWorld& world, const GameVisualWorld& visualWorld, sf::RenderWindow& window, const sf::Texture& shipTexture, const entt::registry& registry, const float time)
+void drawStarsSystem(const entt::registry& registry, sf::RenderWindow& window, const float time)
 {
+    const auto view = registry.view<const PositionComponent, const StarComponent>();
+    sf::CircleShape starShape;
+
+    for (auto [_, position, star] : view.each())
     {
-        // ecs stars
+        const float angle = floatWrap(time * star.brightnessPeriodsPerSec * 360.f, 360.f);
+        const float brightnessT = std::sin(degToRad(angle)) / 2.f + 0.5f;
 
-        auto view = registry.view<const PositionComponent, const StarComponent>();
-        sf::CircleShape starShape;
+        const float brightness = floatLerp(star.brightnessRange.min, star.brightnessRange.max, brightnessT);
+        const sf::Uint8 colorMagnitude = static_cast<sf::Uint8>(brightness * 255.f);
+        const sf::Color color = sf::Color{colorMagnitude, colorMagnitude, colorMagnitude, 255};
 
-        for (auto [_, position, star] : view.each())
-        {
-            const float angle = floatWrap(time * star.brightnessPeriodsPerSec * 360.f, 360.f);
-            const float brightnessT = std::sin(degToRad(angle)) / 2.f + 0.5f;
-
-            const float brightness = floatLerp(star.brightnessRange.min, star.brightnessRange.max, brightnessT);
-            const sf::Uint8 colorMagnitude = static_cast<sf::Uint8>(brightness * 255.f);
-            const sf::Color color = sf::Color{colorMagnitude, colorMagnitude, colorMagnitude, 255};
-
-            starShape.setPosition(position.vec);
-            starShape.setFillColor(color);
-            starShape.setRadius(star.radius);
-            starShape.setOrigin(Vec2{starShape.getRadius(), starShape.getRadius()});
-            window.draw(starShape);
-        }
+        starShape.setPosition(position.vec);
+        starShape.setFillColor(color);
+        starShape.setRadius(star.radius);
+        starShape.setOrigin(Vec2{starShape.getRadius(), starShape.getRadius()});
+        window.draw(starShape);
     }
+}
 
+void drawGravityWellsSystem(const entt::registry& registry, sf::RenderWindow& window, const float time)
+{
+    const auto view = registry.view<const PositionComponent, const GravityWellComponent>();
+
+    for (auto [_, position, gravityWell] : view.each())
     {
-        // ecs gravity wells
+        sf::CircleShape gravityWellShape;
+        gravityWellShape.setPosition(position.vec);
 
-        auto view = registry.view<const PositionComponent, const GravityWellComponent>();
+        const int count = 20;
 
-        for (auto [_, position, gravityWell] : view.each())
+        for (int i = 0; i < count; ++i)
         {
-            sf::CircleShape gravityWellShape;
-            gravityWellShape.setPosition(position.vec);
+            const float angle = floatWrap(time * 30.f + i * 260.f / count, 360.f);
+            const float radiusMultiplier = std::cos(degToRad(angle)) / 2.f + 0.5f;
+            const float radius = 100.f * radiusMultiplier;
 
-            const int count = 20;
-
-            for (int i = 0; i < count; ++i)
-            {
-                const float angle = floatWrap(time * 30.f + i * 260.f / count, 360.f);
-                const float radiusMultiplier = std::cos(degToRad(angle)) / 2.f + 0.5f;
-                const float radius = 100.f * radiusMultiplier;
-
-                gravityWellShape.setFillColor(colorLerp(sf::Color{0, 0, 0, 120}, sf::Color{0, 0, 0, 0}, radiusMultiplier));
-                gravityWellShape.setRadius(radius);
-                gravityWellShape.setOrigin(Vec2{gravityWellShape.getRadius(), gravityWellShape.getRadius()});
-                window.draw(gravityWellShape);
-            }
-        }
-    }
-
-    {
-        // ecs particles
-
-        sf::CircleShape particleShape;
-        auto view = registry.view<const PositionComponent, const ParticleComponent, const DestroyTimerComponent>();
-
-        for (auto [_, position, particle, destroyTimer] : view.each())
-        {
-            const float t = (particle.totalLifetime - destroyTimer.timeLeft) / particle.totalLifetime;
-            const float radius = floatLerp(particle.startRadius, particle.finishRadius, t);
-            const sf::Color color = colorLerp(particle.startColor, particle.finishColor, t);
-
-            particleShape.setRadius(radius);
-            particleShape.setOrigin(Vec2{particleShape.getRadius(), particleShape.getRadius()});
-            particleShape.setPosition(position.vec);
-            particleShape.setFillColor(color);
-            window.draw(particleShape);
-        }
-    }
-
-    {
-        // ecs ships and projectiles
-
-        sf::RectangleShape shipShape;
-        shipShape.setTexture(&shipTexture);
-
-        auto view = registry.view<const PositionComponent, const RotationComponent, const DrawUsingShipTextureComponent>();
-
-        for (auto [entity, pos, rotation, draw] : view.each())
-        {
-            // somehow exclude does not work on view
-            if (registry.try_get<DeadShipPieceComponent>(entity) != nullptr)
-            {
-                continue;
-            }
-
-            shipShape.setSize(draw.size);
-            shipShape.setOrigin(draw.size / 2.f);
-            shipShape.setFillColor(draw.color);
-            renderShipTexture9times(pos.vec, rotation.angle, world.size, shipShape, shipShape, window);
-        }
-    }
-
-    {
-        // ecs dead ships
-
-        const Vec2 shipTextureSize = Vec2{shipTexture.getSize()};
-
-        // Dead ship pieces
-        std::array<sf::Vertex, 9> shipPiecesVertices;
-        shipPiecesVertices[0].position = Vec2{0.5f, 0.5f};
-        shipPiecesVertices[1].position = Vec2{0.0f, 0.0f};
-        shipPiecesVertices[2].position = Vec2{0.5f, 0.0f};
-        shipPiecesVertices[3].position = Vec2{1.0f, 0.f};
-        shipPiecesVertices[4].position = Vec2{1.0f, 0.5f};
-        shipPiecesVertices[5].position = Vec2{1.0f, 1.0f};
-        shipPiecesVertices[6].position = Vec2{0.5f, 1.0f};
-        shipPiecesVertices[7].position = Vec2{0.0f, 1.0f};
-        shipPiecesVertices[8].position = Vec2{0.0f, 0.5f};
-
-        for (sf::Vertex& vertex : shipPiecesVertices)
-        {
-            vertex.texCoords = vertex.position;
-            vertex.texCoords.x *= shipTextureSize.x;
-            vertex.texCoords.y *= shipTextureSize.y;
-        }
-
-        auto view = registry.view<const PositionComponent, const RotationComponent, const DrawUsingShipTextureComponent,
-                                  const DeadShipPieceComponent>();
-
-        for (auto [entity, pos, rotation, draw, deadPiece] : view.each())
-        {
-            const int i = deadPiece.pieceIndex;
-            sf::VertexArray triangleVertices{sf::Triangles, 3};
-            triangleVertices[0] = shipPiecesVertices[0];
-            triangleVertices[1] = shipPiecesVertices[i + 1];
-            triangleVertices[2] = shipPiecesVertices[i == 7 ? 1 : i + 2];
-
-            for (size_t vertexIdx = 0; vertexIdx < triangleVertices.getVertexCount(); ++vertexIdx)
-            {
-                triangleVertices[vertexIdx].color = draw.color;
-            }
-
-            CustomVerticesShape customShape{&shipTexture, triangleVertices};
-            customShape.setOrigin(Vec2{0.5, 0.5});
-            customShape.setScale(draw.size);
-
-            renderShipTexture9times(pos.vec, rotation.angle, world.size, customShape, customShape, window);
+            gravityWellShape.setFillColor(colorLerp(sf::Color{0, 0, 0, 120}, sf::Color{0, 0, 0, 0}, radiusMultiplier));
+            gravityWellShape.setRadius(radius);
+            gravityWellShape.setOrigin(Vec2{gravityWellShape.getRadius(), gravityWellShape.getRadius()});
+            window.draw(gravityWellShape);
         }
     }
 }
 
-static void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, const sf::Color color,
-                          sf::RenderWindow& window)
+void drawParticlesSystem(const entt::registry& registry, sf::RenderWindow& window)
 {
-    const Vec2 diff = b - a;
-    const float angle = vec2DirToAngle(diff);
+    sf::CircleShape particleShape;
+    const auto view = registry.view<const PositionComponent, const ParticleComponent, const DestroyTimerComponent>();
 
-    sf::RectangleShape rectShape{Vec2{vec2Length(diff), thickness}};
-    rectShape.setPosition(a);
-    rectShape.setOrigin(Vec2{0.f, thickness / 2.f});
-    rectShape.rotate(angle);
-    rectShape.setFillColor(color);
-    window.draw(rectShape);
+    for (auto [_, position, particle, destroyTimer] : view.each())
+    {
+        const float t = (particle.totalLifetime - destroyTimer.timeLeft) / particle.totalLifetime;
+        const float radius = floatLerp(particle.startRadius, particle.finishRadius, t);
+        const sf::Color color = colorLerp(particle.startColor, particle.finishColor, t);
+
+        particleShape.setRadius(radius);
+        particleShape.setOrigin(Vec2{particleShape.getRadius(), particleShape.getRadius()});
+        particleShape.setPosition(position.vec);
+        particleShape.setFillColor(color);
+        window.draw(particleShape);
+    }
 }
 
+void drawUsingShipTextureSystem(const entt::registry& registry, sf::RenderWindow& window, const sf::Texture& shipTexture, const Vec2 worldSize)
+{
+    sf::RectangleShape shipShape;
+    shipShape.setTexture(&shipTexture);
+
+    const auto view = registry.view<const PositionComponent, const RotationComponent, const DrawUsingShipTextureComponent>();
+
+    for (auto [entity, pos, rotation, draw] : view.each())
+    {
+        // somehow exclude does not work on view
+        if (registry.try_get<DeadShipPieceComponent>(entity) != nullptr)
+        {
+            continue;
+        }
+
+        shipShape.setSize(draw.size);
+        shipShape.setOrigin(draw.size / 2.f);
+        shipShape.setFillColor(draw.color);
+        drawShipTexture9times(pos.vec, rotation.angle, worldSize, shipShape, shipShape, window);
+    }
+}
+
+void drawDeadShipPiecesSystem(const entt::registry& registry, sf::RenderWindow& window, const sf::Texture& shipTexture, const Vec2 worldSize)
+{
+    std::array<sf::Vertex, 9> shipPiecesVertices;
+    shipPiecesVertices[0].position = Vec2{0.5f, 0.5f};
+    shipPiecesVertices[1].position = Vec2{0.0f, 0.0f};
+    shipPiecesVertices[2].position = Vec2{0.5f, 0.0f};
+    shipPiecesVertices[3].position = Vec2{1.0f, 0.f};
+    shipPiecesVertices[4].position = Vec2{1.0f, 0.5f};
+    shipPiecesVertices[5].position = Vec2{1.0f, 1.0f};
+    shipPiecesVertices[6].position = Vec2{0.5f, 1.0f};
+    shipPiecesVertices[7].position = Vec2{0.0f, 1.0f};
+    shipPiecesVertices[8].position = Vec2{0.0f, 0.5f};
+
+    const Vec2 shipTextureSize = Vec2{shipTexture.getSize()};
+    for (sf::Vertex& vertex : shipPiecesVertices)
+    {
+        vertex.texCoords = vertex.position;
+        vertex.texCoords.x *= shipTextureSize.x;
+        vertex.texCoords.y *= shipTextureSize.y;
+    }
+
+    const auto view = registry.view<
+        const PositionComponent,
+        const RotationComponent,
+        const DrawUsingShipTextureComponent,
+        const DeadShipPieceComponent>();
+
+    for (auto [entity, pos, rotation, draw, deadPiece] : view.each())
+    {
+        const int i = deadPiece.pieceIndex;
+        sf::VertexArray triangleVertices{sf::Triangles, 3};
+        triangleVertices[0] = shipPiecesVertices[0];
+        triangleVertices[1] = shipPiecesVertices[i + 1];
+        triangleVertices[2] = shipPiecesVertices[i == 7 ? 1 : i + 2];
+
+        for (size_t vertexIdx = 0; vertexIdx < triangleVertices.getVertexCount(); ++vertexIdx)
+        {
+            triangleVertices[vertexIdx].color = draw.color;
+        }
+
+        CustomVerticesShape customShape{&shipTexture, triangleVertices};
+        customShape.setOrigin(Vec2{0.5, 0.5});
+        customShape.setScale(draw.size);
+
+        drawShipTexture9times(pos.vec, rotation.angle, worldSize, customShape, customShape, window);
+    }
+}
+
+void drawGame(sf::RenderWindow& window, const sf::Texture& shipTexture, const entt::registry& registry, const Vec2 worldSize, const float time)
+{
+    drawStarsSystem(registry, window, time);
+    drawGravityWellsSystem(registry, window, time);
+    drawParticlesSystem(registry, window);
+    drawUsingShipTextureSystem(registry, window, shipTexture, worldSize);
+    drawDeadShipPiecesSystem(registry, window, shipTexture, worldSize);
+}
+
+
+// static void drawThickLine(const Vec2 a, const Vec2 b, const float thickness, const sf::Color color,
+//                           sf::RenderWindow& window)
+// {
+//     const Vec2 diff = b - a;
+//     const float angle = vec2DirToAngle(diff);
+//
+//     sf::RectangleShape rectShape{Vec2{vec2Length(diff), thickness}};
+//     rectShape.setPosition(a);
+//     rectShape.setOrigin(Vec2{0.f, thickness / 2.f});
+//     rectShape.rotate(angle);
+//     rectShape.setFillColor(color);
+//     window.draw(rectShape);
+// }
+//
 //
 // void renderGameDebug(const GameWorld& world, sf::RenderWindow& window, const sf::Font& font)
 // {
