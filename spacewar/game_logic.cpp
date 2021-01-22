@@ -289,6 +289,7 @@ void shootingSystem(entt::registry& registry, const float dt)
             registry.emplace<DrawUsingShipTexture>(projectileEntity, sf::Color::Yellow);
             registry.emplace<WrapPositionAroundWorld>(projectileEntity);
             registry.emplace<ProjectileComponent>(projectileEntity);
+            registry.emplace<DestroyTimer>(projectileEntity, 5.f);
         }
     }
 }
@@ -370,5 +371,19 @@ void destroyByCollisionSystem(entt::registry& registry)
     for (auto [entity] : view.each())
     {
         registry.destroy(entity);
+    }
+}
+
+void destroyTimerSystem(entt::registry& registry, float dt)
+{
+    const auto view = registry.view<DestroyTimer>();
+
+    for (auto [entity, timer] : view.each())
+    {
+        timer.timeLeft -= dt;
+        if (timer.timeLeft <= 0)
+        {
+            registry.destroy(entity);
+        }
     }
 }

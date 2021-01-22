@@ -132,6 +132,7 @@ void update(entt::registry& registry, const float dt, const Vec2 worldSize)
     projectileMoveSystem(registry, dt);
     circleVsCircleCollisionSystem(registry);
     destroyByCollisionSystem(registry);
+    destroyTimerSystem(registry, dt);
 }
 
 entt::registry::entity_type createShipEntity(entt::registry& registry, Vec2 position)

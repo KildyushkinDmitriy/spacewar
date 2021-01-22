@@ -189,6 +189,11 @@ struct DestroyByCollision
 {
 };
 
+struct DestroyTimer
+{
+    float timeLeft = 0.f;
+};
+
 void integrateVelocitySystem(entt::registry& registry, float dt);
 void rotateByInputSystem(entt::registry& registry, float dt);
 void accelerateByInputSystem(entt::registry& registry, float dt);
@@ -198,3 +203,4 @@ void wrapPositionAroundWorldSystem(entt::registry& registry, Vec2 worldSize);
 void projectileMoveSystem(entt::registry& registry, float dt);
 void circleVsCircleCollisionSystem(entt::registry& registry);
 void destroyByCollisionSystem(entt::registry& registry);
+void destroyTimerSystem(entt::registry& registry, float dt);
